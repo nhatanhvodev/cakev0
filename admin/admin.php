@@ -78,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
         if (($admin && password_verify($password, $admin['password'])) || ($username === 'admin' && $password === 'admin123')) {
             session_regenerate_id(true);
             $_SESSION['admin_logged_in'] = true;
+            setAdminToast("Đăng nhập quản trị thành công!");
             unset($_SESSION['csrf_token']); // Reset token sau khi login
             header("Location: admin.php");
             exit;
@@ -93,18 +94,6 @@ if (isset($_SESSION['admin_logged_in'])) {
     // Tạo token mới nếu chưa có sau khi login
     if (empty($_SESSION['csrf_token']))
         regenerateCsrfToken();
-
-    /* --- XỬ LÝ BLOG (Duyệt/Hủy) --- */
-    if (isset($_POST['approve_blog']) || isset($_POST['reject_blog'])) {
-        if (hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-            $status = isset($_POST['approve_blog']) ? 'approved' : 'rejected';
-            // Nếu reject thì có thể xóa hoặc update status, ở đây update status
-            $stmt = $conn->prepare("UPDATE blogs SET status = ? WHERE id = ?");
-            $stmt->bind_param("si", $status, $_POST['blog_id']);
-            $stmt->execute();
-            regenerateCsrfToken();
-        }
-    }
 
     /* ===== UPLOAD HÌNH ẢNH SẢN PHẨM ===== */
     if (
@@ -177,23 +166,37 @@ if (isset($_SESSION['admin_logged_in'])) {
     }
 
 
-    /* --- XỬ LÝ ĐƠN HÀNG (Duyệt/Hủy) --- */
-    if (isset($_POST['approve_order']) || isset($_POST['cancel_order'])) {
-        if (hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-            $status = isset($_POST['approve_order']) ? 'approved' : 'cancelled';
-            $id = isset($_POST['approve_order']) ? $_POST['approve_order_id'] : $_POST['cancel_order_id'];
+    /* --- XỬ LÝ ĐƠN HÀNG (Cập nhật trạng thái hàng loạt) --- */
+    if (isset($_POST['update_order_statuses']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $allowed_statuses = ['pending', 'paid', 'approved', 'delivering', 'delivered', 'completed', 'cancelled', 'failed'];
+        $selected = $_POST['selected_orders'] ?? [];
+        $order_statuses = $_POST['order_status'] ?? [];
 
-            $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-            $stmt->bind_param("si", $status, $id);
-            $stmt->execute();
-
-            $msg = ($status === 'approved') ? "Đã xác nhận đơn hàng #$id" : "Đã hủy đơn hàng #$id";
-            setAdminToast($msg);
-
+        if (empty($selected)) {
+            setAdminToast("Vui lòng chọn ít nhất một đơn hàng", "warning");
             regenerateCsrfToken();
             header("Location: admin.php#orders");
             exit;
         }
+
+        $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $updated = 0;
+
+        foreach ($selected as $id) {
+            $id = (int)$id;
+            $status = $order_statuses[$id] ?? '';
+            if ($id > 0 && in_array($status, $allowed_statuses, true)) {
+                $stmt->bind_param("si", $status, $id);
+                $stmt->execute();
+                $updated++;
+            }
+        }
+
+        $stmt->close();
+        setAdminToast("Đã cập nhật trạng thái cho $updated đơn hàng");
+        regenerateCsrfToken();
+        header("Location: admin.php#orders");
+        exit;
     }
 
     /* --- XỬ LÝ KHUYẾN MÃI --- */
@@ -201,12 +204,18 @@ if (isset($_SESSION['admin_logged_in'])) {
         $stmt = $conn->prepare("INSERT INTO promotions (banh_id, gia_khuyen_mai, ngay_bat_dau, ngay_ket_thuc) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iiss", $_POST['banh_id'], $_POST['gia_khuyen_mai'], $_POST['ngay_bat_dau'], $_POST['ngay_ket_thuc']);
         $stmt->execute();
+        setAdminToast("Đã thêm khuyến mãi thành công!");
         regenerateCsrfToken();
+        header("Location: admin.php#promotions");
+        exit;
     }
 
     if (isset($_GET['delete_promotion_id'])) {
         $id = (int) $_GET['delete_promotion_id'];
         $conn->query("DELETE FROM promotions WHERE id=$id");
+        setAdminToast("Đã xóa khuyến mãi thành công!");
+        header("Location: admin.php#promotions");
+        exit;
     }
 }
 
@@ -216,7 +225,6 @@ $users = [];
 $orders = [];
 $order_items = [];
 $promotions = [];
-$blogs = [];
 $total_revenue = 0;
 $pending_count = 0;
 $js_dates = '[]';
@@ -249,7 +257,6 @@ $orders = $conn->query("SELECT o.*, u.username, u.email FROM orders o LEFT JOIN 
 
 $order_items = $conn->query("SELECT oi.*, b.ten_banh FROM order_items oi LEFT JOIN banh b ON oi.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
 $promotions = $conn->query("SELECT p.*, b.ten_banh FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
-$blogs = $conn->query("SELECT b.*, u.username FROM blogs b LEFT JOIN users u ON b.author_id = u.id ORDER BY b.created_at DESC")->fetch_all(MYSQLI_ASSOC);
 
 // --- LOGIC THỐNG KÊ & BIỂU ĐỒ ---
 // Khởi tạo mảng doanh thu 7 ngày gần nhất = 0
@@ -260,7 +267,10 @@ for ($i = 6; $i >= 0; $i--) {
 }
 
 foreach ($orders as $o) {
-    if ($o['status'] === 'approved') {
+    $status = strtolower($o['status']);
+    $is_revenue = in_array($status, ['paid', 'approved', 'delivered', 'completed'], true);
+
+    if ($is_revenue) {
         $total_revenue += $o['total_amount'];
 
         // Cộng tiền vào ngày tương ứng
@@ -269,8 +279,9 @@ foreach ($orders as $o) {
             $chart_data[$order_date] += $o['total_amount'];
         }
     }
-    if ($o['status'] === 'pending')
+    if ($status === 'pending') {
         $pending_count++;
+    }
 }
 
 // Chuyển dữ liệu sang JSON để JS sử dụng
@@ -295,17 +306,20 @@ $js_revenues = json_encode(array_values($chart_data));
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-green: #C8E6C9;
-            --light-green: #E8F5E9;
-            --dark-green: #2E7D32;
-            --accent-green: #81C784;
-            --sidebar-width: 250px;
+            --brown-900: #3c1819;
+            --brown-800: #4a1d1f;
+            --brown-700: #6a2d22;
+            --caramel: #f3e0be;
+            --cream: #fff7ea;
+            --ink: #272727;
+            --sidebar-width: 260px;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f0f2f5;
+            background: #fffaf2;
             margin: 0;
+            color: var(--ink);
         }
 
         /* --- LOGIN STYLES --- */
@@ -314,15 +328,16 @@ $js_revenues = json_encode(array_values($chart_data));
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #e8f5e9;
+            background: #fff7ea;
         }
 
         .admin-login-card {
             width: 420px;
             background: #fff;
-            border-radius: 24px;
+            border-radius: 26px;
             padding: 40px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--caramel);
+            box-shadow: 0 26px 60px rgba(74, 29, 31, 0.16);
             text-align: center;
             animation: fadeUp 0.4s ease;
         }
@@ -344,17 +359,17 @@ $js_revenues = json_encode(array_values($chart_data));
             height: 70px;
             margin: 0 auto 15px;
             border-radius: 50%;
-            background: var(--primary-green);
+            background: var(--cream);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--dark-green);
+            color: var(--brown-800);
             font-size: 28px;
         }
 
         .btn-admin-login {
-            background: var(--dark-green);
-            color: #fff;
+            background: var(--brown-800);
+            color: #fbedcd;
             border-radius: 30px;
             padding: 12px;
             font-weight: 600;
@@ -364,23 +379,24 @@ $js_revenues = json_encode(array_values($chart_data));
         }
 
         .btn-admin-login:hover {
-            background: #1b5e20;
+            background: #2f1415;
             transform: translateY(-2px);
         }
 
         /* --- DASHBOARD STYLES --- */
         .sidebar {
             width: var(--sidebar-width);
-            background: linear-gradient(180deg, var(--primary-green), #ffffff);
+            background: linear-gradient(180deg, #ffffff, #fff7ea);
             height: 100vh;
             position: fixed;
             padding: 20px;
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
+            border-right: 1px solid var(--caramel);
+            box-shadow: 4px 0 20px rgba(74, 29, 31, 0.06);
             z-index: 1000;
         }
 
         .sidebar h2 {
-            color: var(--dark-green);
+            color: var(--brown-800);
             font-weight: 700;
             text-align: center;
             margin-bottom: 30px;
@@ -388,20 +404,23 @@ $js_revenues = json_encode(array_values($chart_data));
         }
 
         .nav-link {
-            color: var(--dark-green);
+            color: var(--brown-700);
             padding: 12px 15px;
             margin-bottom: 8px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: 500;
             transition: all 0.3s;
             cursor: pointer;
+            border: 1px solid transparent;
         }
 
         .nav-link:hover,
         .nav-link.active {
-            background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            transform: translateX(5px);
+            background: #ffffff;
+            border-color: var(--caramel);
+            box-shadow: 0 6px 14px rgba(74, 29, 31, 0.08);
+            transform: translateX(4px);
+            color: var(--brown-800);
         }
 
         .main-content {
@@ -412,16 +431,28 @@ $js_revenues = json_encode(array_values($chart_data));
 
         /* Stat Cards */
         .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            border-left: 5px solid var(--dark-green);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 20px 22px;
+            border: 1px solid var(--caramel);
+            box-shadow: 0 12px 26px rgba(74, 29, 31, 0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
             height: 100%;
             transition: transform 0.2s;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(243, 224, 190, 0.55), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
         }
 
         .stat-card:hover {
@@ -431,27 +462,46 @@ $js_revenues = json_encode(array_values($chart_data));
         .stat-info h5 {
             margin: 0;
             font-size: 0.9rem;
-            color: #7f8c8d;
+            color: #7c6b67;
         }
 
         .stat-info h3 {
             margin: 5px 0 0;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #2c3e50;
+            color: var(--brown-800);
         }
 
         .stat-icon {
-            font-size: 1.8rem;
-            color: var(--dark-green);
-            background: var(--light-green);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            font-size: 1.7rem;
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 10px 20px rgba(74, 29, 31, 0.12);
+        }
+
+        .stat-icon.revenue {
+            background: #fff1d6;
+            color: #7a3b1d;
+        }
+
+        .stat-icon.pending {
+            background: #ffe7b8;
+            color: #b36b00;
+        }
+
+        .stat-icon.products {
+            background: #f4e1c9;
+            color: #7a4b2a;
+        }
+
+        .stat-icon.customers {
+            background: #f9ead5;
+            color: #6a2d22;
         }
 
         /* Tables & Tabs */
@@ -478,10 +528,11 @@ $js_revenues = json_encode(array_values($chart_data));
 
         .custom-table {
             background: white;
-            border-radius: 15px;
+            border-radius: 18px;
             padding: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 12px 26px rgba(74, 29, 31, 0.08);
             overflow-x: auto;
+            border: 1px solid var(--caramel);
         }
 
         table {
@@ -492,8 +543,8 @@ $js_revenues = json_encode(array_values($chart_data));
         }
 
         th {
-            background: var(--primary-green);
-            color: var(--dark-green);
+            background: #fff1d6;
+            color: var(--brown-800);
             padding: 15px;
             text-align: left;
         }
@@ -504,17 +555,17 @@ $js_revenues = json_encode(array_values($chart_data));
         }
 
         .btn-green {
-            background: var(--dark-green);
-            color: white;
+            background: var(--brown-800);
+            color: #fbedcd;
             border: none;
             padding: 8px 16px;
-            border-radius: 8px;
+            border-radius: 10px;
             transition: .2s;
         }
 
         .btn-green:hover {
-            background: #1b5e20;
-            color: white;
+            background: #2f1415;
+            color: #fbedcd;
         }
 
         .btn-action {
@@ -581,15 +632,14 @@ $js_revenues = json_encode(array_values($chart_data));
                 <a class="nav-link" onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
                 <a class="nav-link" onclick="showTab(event, 'users')"><i class="bi bi-people"></i> Khách hàng</a>
                 <a class="nav-link" onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
-                <a class="nav-link" onclick="showTab(event, 'blogs')"><i class="bi bi-newspaper"></i> Bài viết</a>
             </nav>
         </div>
 
         <!-- 2. MAIN CONTENT -->
         <div class="main-content">
             <!-- Top Bar -->
-            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
-                <h3 class="m-0 text-success fw-bold">Quản Trị Hệ Thống</h3>
+            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm" style="border:1px solid #f3e0be;">
+                <h3 class="m-0 fw-bold" style="color:#4a1d1f;">Quản Trị Hệ Thống</h3>
                 <a href="?logout=1" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng
                     xuất</a>
             </div>
@@ -604,7 +654,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <h5>Tổng doanh thu</h5>
                                 <h3><?= number_format($total_revenue, 0, ',', '.') ?>đ</h3>
                             </div>
-                            <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
+                            <div class="stat-icon revenue"><i class="bi bi-graph-up-arrow"></i></div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -613,7 +663,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <h5>Đơn chờ xử lý</h5>
                                 <h3 class="text-warning"><?= $pending_count ?></h3>
                             </div>
-                            <div class="stat-icon bg-warning text-white"><i class="bi bi-hourglass-split"></i></div>
+                            <div class="stat-icon pending"><i class="bi bi-receipt"></i></div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -622,7 +672,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <h5>Tổng sản phẩm</h5>
                                 <h3><?= count($products) ?></h3>
                             </div>
-                            <div class="stat-icon bg-info text-white"><i class="bi bi-box"></i></div>
+                            <div class="stat-icon products"><i class="bi bi-box2-heart"></i></div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -631,7 +681,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <h5>Khách hàng</h5>
                                 <h3><?= count($users) ?></h3>
                             </div>
-                            <div class="stat-icon bg-secondary text-white"><i class="bi bi-people"></i></div>
+                            <div class="stat-icon customers"><i class="bi bi-people-fill"></i></div>
                         </div>
                     </div>
                 </div>
@@ -639,8 +689,8 @@ $js_revenues = json_encode(array_values($chart_data));
                 <!-- Biểu đồ doanh thu -->
                 <div class="row mb-4">
                     <div class="col-md-12">
-                        <div class="card border-0 shadow-sm p-3">
-                            <h5 class="text-success mb-3"><i class="bi bi-graph-up-arrow"></i> Biểu đồ doanh thu 7 ngày qua
+                        <div class="card border-0 shadow-sm p-3" style="border:1px solid #f3e0be;">
+                            <h5 class="mb-3" style="color:#4a1d1f;"><i class="bi bi-graph-up-arrow"></i> Biểu đồ doanh thu 7 ngày qua
                             </h5>
                             <div style="height: 350px;">
                                 <canvas id="revenueChart"></canvas>
@@ -672,9 +722,12 @@ $js_revenues = json_encode(array_values($chart_data));
                                         $statusData = match (strtolower($o['status'])) {
                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                             'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ'],
-                                            'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
+                                            'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
+                                            'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
+                                            'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
                                             'delivered', 'da giao' => ['badge' => 'info', 'label' => 'Đã giao'],
-                                            'confirmed', 'approved' => ['badge' => 'primary', 'label' => 'Đã xác nhận'],
+                                            'failed' => ['badge' => 'danger', 'label' => 'Thanh toán lỗi'],
+                                            'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
                                             default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
                                         };
                                         ?>
@@ -689,75 +742,93 @@ $js_revenues = json_encode(array_values($chart_data));
 
             <!-- TAB 2: ORDERS -->
             <div id="orders" class="tab-content">
-                <h3 class="mb-4 text-success">Quản Lý Đơn Hàng</h3>
+                <h3 class="mb-4" style="color:#4a1d1f;">Quản Lý Đơn Hàng</h3>
                 <div class="custom-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Khách hàng</th>
-                                <th>Chi tiết SP</th>
-                                <th>Tổng tiền</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($orders as $o): ?>
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>#<?= $o['id'] ?></td>
-                                    <td>
-                                        <strong><?= htmlspecialchars($o['username'] ?? 'N/A') ?></strong><br>
-                                        <small class="text-muted"><?= htmlspecialchars($o['email'] ?? '') ?></small>
-                                    </td>
-                                    <td>
-                                        <?php foreach ($order_items as $i):
-                                            if ($i['order_id'] == $o['id']): ?>
-                                                <div class="small">- <?= htmlspecialchars($i['ten_banh']) ?> (x<?= $i['quantity'] ?>)
-                                                </div>
-                                            <?php endif; endforeach; ?>
-                                    </td>
-                                    <td class="fw-bold"><?= number_format($o['total_amount']) ?>đ</td>
-                                    <td>
-                                        <?php
-                                        $statusData = match (strtolower($o['status'])) {
-                                            'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
-                                            'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ'],
-                                            'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
-                                            'delivered', 'da giao' => ['badge' => 'info', 'label' => 'Đã giao'],
-                                            'confirmed', 'approved' => ['badge' => 'primary', 'label' => 'Đã xác nhận'],
-                                            default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
-                                        };
-                                        ?>
-                                        <span class="badge bg-<?= $statusData['badge'] ?>"><?= $statusData['label'] ?></span>
-
-                                        <?php if ($o['status'] == 'pending'): ?>
-                                            <div class="mt-2">
-                                                <form method="POST" class="d-inline">
-                                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                                    <input type="hidden" name="approve_order_id" value="<?= $o['id'] ?>">
-                                                    <button name="approve_order" class="btn btn-sm btn-success" title="Xác nhận"><i
-                                                            class="bi bi-check-lg"></i></button>
-                                                </form>
-                                                <form method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?')">
-                                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                                    <input type="hidden" name="cancel_order_id" value="<?= $o['id'] ?>">
-                                                    <button name="cancel_order" class="btn btn-sm btn-danger" title="Hủy"><i
-                                                            class="bi bi-x-lg"></i></button>
-                                                </form>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
+                                    <th style="width: 44px;"><input type="checkbox" id="selectAllOrders"></th>
+                                    <th>ID</th>
+                                    <th>Khách hàng</th>
+                                    <th>Chi tiết SP</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Cập nhật</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($orders as $o): ?>
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="selected_orders[]" value="<?= $o['id'] ?>" class="order-select">
+                                        </td>
+                                        <td>#<?= $o['id'] ?></td>
+                                        <td>
+                                            <strong><?= htmlspecialchars($o['username'] ?? 'N/A') ?></strong><br>
+                                            <small class="text-muted"><?= htmlspecialchars($o['email'] ?? '') ?></small>
+                                        </td>
+                                        <td>
+                                            <?php foreach ($order_items as $i):
+                                                if ($i['order_id'] == $o['id']): ?>
+                                                    <div class="small">- <?= htmlspecialchars($i['ten_banh']) ?> (x<?= $i['quantity'] ?>)
+                                                    </div>
+                                                <?php endif; endforeach; ?>
+                                        </td>
+                                        <td class="fw-bold"><?= number_format($o['total_amount']) ?>đ</td>
+                                        <td>
+                                            <?php
+                                            $statusData = match (strtolower($o['status'])) {
+                                                'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
+                                                'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ'],
+                                                'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
+                                                'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
+                                                'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
+                                                'delivered', 'da giao' => ['badge' => 'info', 'label' => 'Đã giao'],
+                                                'failed' => ['badge' => 'danger', 'label' => 'Thanh toán lỗi'],
+                                                'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
+                                                default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
+                                            };
+                                            ?>
+                                            <span class="badge bg-<?= $statusData['badge'] ?>"><?= $statusData['label'] ?></span>
+                                        </td>
+                                        <td>
+                                            <select name="order_status[<?= $o['id'] ?>]" class="form-select form-select-sm" style="min-width: 160px;">
+                                                <?php
+                                                $statusOptions = [
+                                                    'pending' => 'Đang chờ',
+                                                    'paid' => 'Đã thanh toán',
+                                                    'approved' => 'Đã xác nhận',
+                                                    'delivering' => 'Đang giao',
+                                                    'delivered' => 'Đã giao',
+                                                    'completed' => 'Hoàn tất',
+                                                    'cancelled' => 'Đã hủy',
+                                                    'failed' => 'Thanh toán lỗi'
+                                                ];
+                                                foreach ($statusOptions as $value => $label):
+                                                    $selected = (strtolower($o['status']) === $value) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $value ?>" <?= $selected ?>><?= $label ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button name="update_order_statuses" class="btn btn-green">
+                                <i class="bi bi-check2-circle"></i> Cập nhật trạng thái đã chọn
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
             <!-- TAB 3: PRODUCTS -->
             <div id="products" class="tab-content">
-                <h3 class="mb-4 text-success">Danh Sách Sản Phẩm</h3>
+                <h3 class="mb-4" style="color:#4a1d1f;">Danh Sách Sản Phẩm</h3>
                 <div class="card p-4 mb-4 border-0 shadow-sm">
                     <form method="POST" enctype="multipart/form-data" class="row g-3">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -833,7 +904,7 @@ $js_revenues = json_encode(array_values($chart_data));
 
             <!-- TAB 4: USERS -->
             <div id="users" class="tab-content">
-                <h3 class="mb-4 text-success">Khách Hàng</h3>
+                <h3 class="mb-4" style="color:#4a1d1f;">Khách Hàng</h3>
                 <div class="custom-table">
                     <table>
                         <thead>
@@ -860,7 +931,7 @@ $js_revenues = json_encode(array_values($chart_data));
 
             <!-- TAB 5: PROMOTIONS -->
             <div id="promotions" class="tab-content">
-                <h3 class="mb-4 text-success">Chương Trình Khuyến Mãi</h3>
+                <h3 class="mb-4" style="color:#4a1d1f;">Chương Trình Khuyến Mãi</h3>
                 <form method="POST" class="card p-3 border-0 shadow-sm mb-3 row g-2">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="col-md-4">
@@ -904,54 +975,6 @@ $js_revenues = json_encode(array_values($chart_data));
                 </div>
             </div>
 
-            <!-- TAB 6: BLOGS -->
-            <div id="blogs" class="tab-content">
-                <h3 class="mb-4 text-success">Quản Lý Bài Viết</h3>
-                <div class="custom-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tiêu đề</th>
-                                <th>Tác giả</th>
-                                <th>Trạng thái</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($blogs as $blog): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($blog['title']) ?></td>
-                                    <td><?= htmlspecialchars($blog['username']) ?></td>
-                                    <td>
-                                        <?php
-                                        $blogStatus = match (strtolower($blog['status'])) {
-                                            'approved' => ['badge' => 'success', 'label' => 'Đã duyệt'],
-                                            'rejected' => ['badge' => 'danger', 'label' => 'Từ chối'],
-                                            'pending' => ['badge' => 'warning', 'label' => 'Chờ duyệt'],
-                                            default => ['badge' => 'secondary', 'label' => ucfirst($blog['status'])]
-                                        };
-                                        ?>
-                                        <span class="badge bg-<?= $blogStatus['badge'] ?>"><?= $blogStatus['label'] ?></span>
-                                    </td>
-                                    <td>
-                                        <?php if ($blog['status'] == 'pending'): ?>
-                                            <form method="POST" class="d-inline">
-                                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                                <input type="hidden" name="blog_id" value="<?= $blog['id'] ?>">
-                                                <button name="approve_blog" class="btn-action btn-green" title="Duyệt"><i
-                                                        class="bi bi-check"></i></button>
-                                                <button name="reject_blog" class="btn-action btn-delete" title="Từ chối"><i
-                                                        class="bi bi-x"></i></button>
-                                            </form>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
         </div> <!-- End Main Content -->
 
         <!-- JAVASCRIPT LOGIC -->
@@ -961,23 +984,30 @@ $js_revenues = json_encode(array_values($chart_data));
         <script>
             // Global Toast Logic
             window.showToast = function (msg, type = 'success') {
-                let color = "#333";
-                if (type === 'success') color = "linear-gradient(to right, #00b09b, #96c93d)";
-                if (type === 'error') color = "linear-gradient(to right, #ff5f6d, #ffc371)";
-                if (type === 'warning') color = "linear-gradient(to right, #f59e0b, #facc15)";
+                let config = {
+                    success: { bg: 'linear-gradient(135deg, #4a1d1f, #6a2d22)', icon: '✓' },
+                    error: { bg: 'linear-gradient(135deg, #b42318, #f04438)', icon: '✕' },
+                    info: { bg: 'linear-gradient(135deg, #1d4ed8, #3b82f6)', icon: 'ℹ' },
+                    warning: { bg: 'linear-gradient(135deg, #b45309, #f59e0b)', icon: '⚠' }
+                };
+                let c = config[type] || config.success;
 
                 Toastify({
-                    text: msg,
+                    text: c.icon + ' ' + msg,
                     duration: 3500,
                     close: true,
                     gravity: "top",
                     position: "right",
                     stopOnFocus: true,
                     style: {
-                        background: color,
-                        borderRadius: "10px",
+                        background: c.bg,
+                        borderRadius: "14px",
+                        fontFamily: "'Poppins', sans-serif",
                         fontWeight: "600",
-                        boxShadow: "0 5px 15px rgba(0,0,0,0.1)"
+                        fontSize: "14px",
+                        padding: "14px 20px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+                        minWidth: "260px"
                     }
                 }).showToast();
             };
@@ -1003,6 +1033,16 @@ $js_revenues = json_encode(array_values($chart_data));
                 document.getElementById(tabName).classList.add("active");
                 evt.currentTarget.classList.add("active");
             }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const selectAll = document.getElementById('selectAllOrders');
+                if (!selectAll) return;
+                selectAll.addEventListener('change', function () {
+                    document.querySelectorAll('.order-select').forEach(function (item) {
+                        item.checked = selectAll.checked;
+                    });
+                });
+            });
 
             // 2. Vẽ biểu đồ Chart.js (Chỉ chạy khi đã login)
             document.addEventListener("DOMContentLoaded", function () {

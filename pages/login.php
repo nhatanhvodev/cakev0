@@ -40,15 +40,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $remember_me = isset($_POST['remember_me']); //
         $ip          = $_SERVER['REMOTE_ADDR'];
 
-        // Truy vấn thông tin user
-        $stmt = $conn->prepare(
-    "SELECT id, username, password, role FROM users WHERE username = ? LIMIT 1"
-);
+        // Cho phép đăng nhập admin từ bảng admins và chuyển thẳng vào trang admin
+        try {
+            $stmt = $conn->prepare(
+                "SELECT id, username, password FROM admins WHERE username = ? LIMIT 1"
+            );
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $admin = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
 
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $user = $stmt->get_result()->fetch_assoc();
-        $stmt->close(); //
+            if ($admin && password_verify($password, $admin['password'])) {
+                session_regenerate_id(true);
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_id'] = $admin['id'];
+                $_SESSION['username'] = $admin['username'];
+                $_SESSION['role'] = 'admin';
+                $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
+                unset($_SESSION['csrf_token']);
+                header("Location: /Cake/admin/admin.php");
+                exit;
+            }
+        } catch (mysqli_sql_exception $e) {
+            // Nếu không có bảng admins thì bỏ qua và xử lý như user thường.
+        }
+
+        // Fallback tài khoản admin demo
+        if ($username === 'admin' && $password === 'admin123') {
+            session_regenerate_id(true);
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_id'] = 0;
+            $_SESSION['username'] = $username;
+            $_SESSION['role'] = 'admin';
+            $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
+            unset($_SESSION['csrf_token']);
+            header("Location: /Cake/admin/admin.php");
+            exit;
+        }
+
+        // Truy vấn thông tin user
+        try {
+            $stmt = $conn->prepare(
+                "SELECT id, username, password, role FROM users WHERE username = ? LIMIT 1"
+            );
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close(); //
+        } catch (mysqli_sql_exception $e) {
+            // Fallback when the users table does not have a role column.
+            $stmt = $conn->prepare(
+                "SELECT id, username, password FROM users WHERE username = ? LIMIT 1"
+            );
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close(); //
+            if ($user) {
+                $user['role'] = 'user';
+            }
+        }
 
         // Xác thực mật khẩu
         if ($user && password_verify($password, $user['password'])) {
@@ -57,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id']  = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role']     = $user['role'];
+            $_SESSION['toast'] = ['msg' => 'Đăng nhập thành công!', 'type' => 'success'];
             unset($_SESSION['csrf_token']); //
 
             // Xử lý "Ghi nhớ đăng nhập" (Remember Me)
@@ -105,32 +157,206 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- -->
 
     <style>
-        /* CSS Tùy chỉnh */
-        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; }
-        .login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .login-card { max-width: 900px; width: 95%; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.15); background: #fff; }
-        
-        /* Cột Trái (Giới thiệu) */
-        .login-left { background: linear-gradient(135deg, #3f7f65, #6cc3a0); color: #fff; padding: 50px; text-align: center; } /* */
-        .login-left h2 { font-weight: 700; font-size: 28px; margin-bottom: 20px; }
-        .login-icons i { font-size: 32px; margin: 0 10px; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; transition: .3s; }
-        .login-icons i:hover { transform: translateY(-5px); background: rgba(255,255,255,0.4); } /* */
-        
-        /* Cột Phải (Form) */
-        .login-right { padding: 50px; background: #fff; }
-        .login-right h3 { color: #3f7f65; font-weight: 700; margin-bottom: 30px; text-align: center; }
-        .form-control { padding: 12px 15px; border-radius: 10px; border: 1px solid #ddd; }
-        .form-control:focus { border-color: #3f7f65; box-shadow: 0 0 0 0.2rem rgba(63,127,101,0.25); } /* */
-        .btn-login { background: #3f7f65; color: #fff; border-radius: 30px; padding: 12px; font-weight: 600; width: 100%; border: none; transition: .3s; }
-        .btn-login:hover { background: #2c5c49; transform: translateY(-2px); } /* */
-        .links a { text-decoration: none; color: #3f7f65; font-weight: 500; font-size: 14px; }
+        :root {
+            --brown-900: #3c1819;
+            --brown-800: #4a1d1f;
+            --brown-700: #6a2d22;
+            --caramel: #f3e0be;
+            --cream: #fff7ea;
+            --ink: #272727;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at 10% 20%, #fff3da 0%, transparent 45%),
+                        radial-gradient(circle at 90% 10%, #fde8c6 0%, transparent 40%),
+                        #ffffff;
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+
+        .login-card {
+            max-width: 980px;
+            width: 100%;
+            border-radius: 28px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--caramel);
+            box-shadow: 0 30px 80px rgba(74, 29, 31, .18);
+        }
+
+        .login-left {
+            position: relative;
+            background: linear-gradient(145deg, #3c1819, #7a4a2a);
+            color: #fbedcd;
+            padding: 48px 44px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 100%;
+        }
+
+        .login-left::after {
+            content: "";
+            position: absolute;
+            inset: 18px;
+            border: 1px solid rgba(255, 237, 205, 0.25);
+            border-radius: 22px;
+            pointer-events: none;
+        }
+
+        .brand-tag {
+            font-size: 12px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .login-left h2 {
+            font-weight: 700;
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .login-left p {
+            margin: 0;
+            line-height: 1.6;
+            color: rgba(255, 237, 205, 0.9);
+        }
+
+        .visual-stack {
+            position: relative;
+            margin-top: 10px;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+            background: #2a0f10;
+        }
+
+        .visual-stack img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+            filter: saturate(1.05);
+        }
+
+        .float-card {
+            position: absolute;
+            background: rgba(255, 247, 234, 0.95);
+            color: var(--brown-900);
+            padding: 10px 12px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .float-card img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .float-one { top: 18px; right: 18px; animation-delay: .2s; }
+        .float-two { bottom: 18px; left: 18px; animation-delay: 1s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .taste-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .taste-chip {
+            border: 1px solid rgba(255, 237, 205, 0.4);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            letter-spacing: 0.06em;
+        }
+
+        .login-right {
+            padding: 48px 44px;
+            background: var(--cream);
+        }
+
+        .login-right h3 {
+            color: var(--brown-800);
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #e5d6bf;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--brown-800);
+            box-shadow: 0 0 0 0.2rem rgba(74, 29, 31, 0.18);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #4a1d1f, #2f1415);
+            color: #fbedcd;
+            border-radius: 30px;
+            padding: 12px;
+            font-weight: 600;
+            width: 100%;
+            border: none;
+            transition: .3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 29, 31, 0.22);
+        }
+
+        .links a {
+            text-decoration: none;
+            color: var(--brown-800);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
         .links a:hover { text-decoration: underline; }
+
+        @media (max-width: 991px) {
+            .login-left { padding: 36px 28px; }
+            .login-right { padding: 36px 28px; }
+            .visual-stack img { height: 200px; }
+        }
+
+        @media (max-width: 767px) {
+            .login-left { order: 2; }
+            .login-right { order: 1; }
+        }
     </style>
 </head>
 <body>
@@ -140,22 +366,33 @@ $conn->close();
         <div class="row g-0">
             
             <!-- ===== CỘT TRÁI: GIỚI THIỆU ===== -->
-            <div class="col-md-6 login-left d-flex flex-column justify-content-center">
-                <h2><i class="fa-solid fa-heart"></i> Chào mừng trở lại</h2>
-                <p>
-                    Đăng nhập để quản lý <strong>đơn hàng</strong>, cập nhật
-                    <strong>thông tin cá nhân</strong> và chia sẻ những
-                    khoảnh khắc ngọt ngào cùng <strong>Gấu Bakery</strong>.
-                </p> <!-- -->
-                
-                <div class="login-icons mt-4">
-                    <i class="fa-solid fa-cake-candles"></i>
-                    <i class="fa-solid fa-cookie-bite"></i>
-                    <i class="fa-solid fa-mug-hot"></i>
-                </div> <!-- -->
-                
-                <div class="mt-4 small opacity-75">
-                    <i class="fa-solid fa-cake-candles" style="color: #ff6b9c;"></i> Mỗi chiếc bánh là một câu chuyện yêu thương
+            <div class="col-md-6 login-left">
+                <div class="brand-tag">GẤU BAKERY</div>
+                <h2>Chào mừng trở lại</h2>
+                <p>Đăng nhập để quản lý đơn hàng, cập nhật thông tin và lưu giữ những vị ngọt yêu thương.</p>
+
+                <div class="visual-stack">
+                    <img src="/Cake/assets/img/banner1.jpg" alt="Bánh ngon mỗi ngày">
+                    <div class="float-card float-one">
+                        <img src="/Cake/assets/img/banhngot/i1.jpg" alt="Bánh ngọt">
+                        <div>
+                            <div style="font-size:12px; font-weight:600;">Bánh mới</div>
+                            <div style="font-size:11px; opacity:.7;">Mỗi sáng</div>
+                        </div>
+                    </div>
+                    <div class="float-card float-two">
+                        <img src="/Cake/assets/img/banhkem/bk1.jpg" alt="Bánh kem">
+                        <div>
+                            <div style="font-size:12px; font-weight:600;">Đặc sắc</div>
+                            <div style="font-size:11px; opacity:.7;">Bán chạy</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="taste-row">
+                    <span class="taste-chip">Vị ngọt dịu</span>
+                    <span class="taste-chip">Kem sữa mềm</span>
+                    <span class="taste-chip">Hương bơ thơm</span>
                 </div>
             </div>
 
@@ -200,7 +437,7 @@ $conn->close();
                             <input type="checkbox" name="remember_me" class="form-check-input mt-0"> 
                             Ghi nhớ đăng nhập
                         </label>
-                        <a href="/Cake/pages/forgot_password.php" class="text-secondary">Quên mật khẩu?</a>
+                        <a href="/Cake/pages/forgot-password.php" class="text-secondary">Quên mật khẩu?</a>
                     </div> <!-- -->
 
                     <!-- Nút Submit -->
@@ -220,4 +457,38 @@ $conn->close();
 </div>
 
 </body>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+    window.showToast = function (msg, type) {
+        type = type || 'success';
+        let config = {
+            success: { bg: 'linear-gradient(135deg, #4a1d1f, #6a2d22)', icon: '✓' },
+            error: { bg: 'linear-gradient(135deg, #b42318, #f04438)', icon: '✕' },
+            info: { bg: 'linear-gradient(135deg, #1d4ed8, #3b82f6)', icon: 'ℹ' },
+            warning: { bg: 'linear-gradient(135deg, #b45309, #f59e0b)', icon: '⚠' }
+        };
+        let c = config[type] || config.success;
+        Toastify({
+            text: c.icon + ' ' + msg,
+            duration: 3500,
+            close: true,
+            gravity: 'top',
+            position: 'right',
+            style: {
+                background: c.bg,
+                borderRadius: '14px',
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: '600',
+                fontSize: '14px',
+                padding: '14px 20px',
+                boxShadow: '0 8px 24px rgba(0,0,0,.18)',
+                minWidth: '260px'
+            }
+        }).showToast();
+    };
+
+    <?php if (!empty($error_message)): ?>
+        window.showToast(<?= json_encode($error_message) ?>, 'error');
+    <?php endif; ?>
+</script>
 </html>

@@ -1,9 +1,5 @@
-
 <?php
-
 $pageTitle = 'Chính sách Thanh toán';
-
-include '../includes/header.php'; 
 ?>
 
 <!DOCTYPE html>
@@ -11,27 +7,29 @@ include '../includes/header.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
         
-        body { background: #f6f7fb; }
+        body {
+            background: #ffffff;
+            color: #272727;
+            font-family: 'Poppins', sans-serif;
+        }
 
         .policy-wrapper {
             background: #ffffff;
             border-radius: 32px;
             padding: 36px;
-            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+            border: 1px solid #f3e0be;
+            box-shadow: 0 24px 48px rgba(74, 29, 31, 0.12);
         }
 
         .notebook {
-        background: linear-gradient(
-        180deg,
-        #fde8ee 0%,
-        #f6f0ff 100%
-    );
+        background: linear-gradient(180deg, #fff7ea 0%, #fdf1db 100%);
 
             border-radius: 24px;
             padding: 32px;
@@ -52,13 +50,14 @@ include '../includes/header.php';
             font-weight: 600;
             font-size: 17px;
             padding: 20px 24px;
-            background: #eaf1ff;
+            background: #f7efe1;
+            color: #4a1d1f;
             border: none;
             box-shadow: none !important; 
         }
         .accordion-button:not(.collapsed) {
-            background: #dbe8ff;
-            color: #1f3c88;
+            background: #f0e2c8;
+            color: #4a1d1f;
         }
         
         .accordion-button::after { display: none; }
@@ -82,10 +81,11 @@ include '../includes/header.php';
         .policy-list li {
             display: flex;
             gap: 16px;
-            background: #f9fafb;
+            background: #fdf7ef;
             padding: 18px 20px;
             border-radius: 16px;
             margin-bottom: 16px;
+            border: 1px solid #f3e0be;
         }
         
         .policy-list li:last-child { margin-bottom: 0; }
@@ -96,7 +96,7 @@ include '../includes/header.php';
         
         .policy-item-content p {
             margin: 0;
-            color: #444;
+            color: #4a4a4a;
             font-size: 15px;
             line-height: 1.6;
         }
@@ -104,6 +104,8 @@ include '../includes/header.php';
 </head>
 
 <body>
+
+<?php include '../includes/header.php'; ?>
     
     <section class="container my-5">
         <div class="card shadow-lg border-0 rounded-4 p-4">
@@ -139,6 +141,14 @@ include '../includes/header.php';
                                         <div class="policy-item-content">
                                             <strong>Chuyển khoản ngân hàng</strong>
                                             <p>Thanh toán qua tài khoản ngân hàng theo thông tin Gấu Bakery cung cấp.</p>
+                                        </div>
+                                    </li>
+
+                                    <li>
+                                        <span class="policy-item-icon text-info"><i class="fa-solid fa-qrcode"></i></span>
+                                        <div class="policy-item-content">
+                                            <strong>Thanh toán qua VNPAY</strong>
+                                            <p>Thanh toán nhanh chóng qua cổng VNPAY bằng QR hoặc thẻ nội địa, xác nhận tự động sau khi giao dịch hoàn tất.</p>
                                         </div>
                                     </li>
                                 </ul>
@@ -202,10 +212,7 @@ include '../includes/header.php';
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<?php include '../includes/footer.html'; ?>
+
 </body>
 </html>
-
-<?php 
-
-include '../includes/footer.html'; 
-?>

@@ -423,7 +423,7 @@ function setupSearch() {
 
 // Modal Authentication
 function initModalAuth() {
-  const cartBtn = document.querySelector('a[href="giohang.php"] button');
+  const cartBtn = document.querySelector('a[href$="cart.php"] button');
   const modal = document.getElementById('auth-modal');
   const closeBtn = document.querySelector('.close-modal');
   const tabLogin = document.getElementById('tab-login');
@@ -633,7 +633,7 @@ function checkLoginForAction(actionFn) {
 
 // Header Action Functions
 function goToCart() {
-  checkLoginForAction(() => window.location.href = 'giohang.php');
+  checkLoginForAction(() => window.location.href = 'cart.php');
 }
 
 function goToBlog() {
@@ -660,7 +660,7 @@ function initBlog() {
   displayPosts();
 }
 
-// Function to update cart display (used in giohang.php)
+// Function to update cart display (used in cart.php)
 function displayCart() {
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
   const cartList = document.getElementById('cart-list');
@@ -683,7 +683,7 @@ function displayCart() {
   }
 }
 
-// Run displayCart on page load for giohang.php
+// Run displayCart on page load for cart.php
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('cart-list')) {
     displayCart();

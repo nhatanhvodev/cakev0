@@ -57,7 +57,7 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Chuyển hướng đến index.php
-header("Location: /Cake/index.php");
+// Chuyển hướng đến index.php kèm toast
+header("Location: /Cake/index.php?toast=logout");
 exit;
 ?>

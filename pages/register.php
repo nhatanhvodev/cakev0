@@ -42,6 +42,7 @@ $conn->set_charset("utf8mb4"); //
                 // Đăng ký thành công -> Tự động đăng nhập & chuyển hướng
                 $_SESSION['user_id'] = $conn->insert_id;
                 $_SESSION['username'] = $username;
+                $_SESSION['toast'] = ['msg' => 'Đăng ký thành công! Chào mừng bạn đến với Gấu Bakery.', 'type' => 'success'];
                 header("Location: /Cake/index.php");
                 exit; //
             } else {
@@ -63,7 +64,9 @@ $conn->set_charset("utf8mb4"); //
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Thư viện Icon & Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Bootstrap 5 (Cần thiết để chia cột col-md-6 hoạt động) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -72,7 +75,23 @@ $conn->set_charset("utf8mb4"); //
         
         /* Reset cơ bản */
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; }
+        :root {
+            --brown-900: #3c1819;
+            --brown-800: #4a1d1f;
+            --brown-700: #6a2d22;
+            --caramel: #f3e0be;
+            --cream: #fff7ea;
+            --ink: #272727;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at 12% 18%, #fff3da 0%, transparent 45%),
+                        radial-gradient(circle at 90% 12%, #fde8c6 0%, transparent 40%),
+                        #ffffff;
+            color: var(--ink);
+            min-height: 100vh;
+        }
 
         /* Wrapper căn giữa màn hình */
         .login-wrapper {
@@ -80,29 +99,51 @@ $conn->set_charset("utf8mb4"); //
             display: flex;
             align-items: center;
             justify-content: center; /* */
+            padding: 40px 16px;
         }
 
         /* Card chứa 2 cột */
         .login-card {
             max-width: 980px;
-            width: 95%;
-            border-radius: 26px;
+            width: 100%;
+            border-radius: 28px;
             overflow: hidden;
-            box-shadow: 0 24px 60px rgba(0,0,0,.18);
+            box-shadow: 0 30px 80px rgba(74, 29, 31, .18);
             background: #fff; /* */
+            border: 1px solid var(--caramel);
         }
 
         /* ===== CỘT TRÁI (LEFT) ===== */
         .login-left {
-            background: linear-gradient(135deg,#3f7f65,#6cc3a0);
-            color: #fff;
+            position: relative;
+            background: linear-gradient(145deg,#3c1819,#7a4a2a);
+            color: #fbedcd;
             padding: 56px 46px; /* */
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
         }
-        .login-left h2 { font-weight: 800; font-size: 30px; letter-spacing: .3px; }
-        .login-left p { opacity: .95; line-height: 1.8; font-size: 16px; } /* */
+
+        .login-left::after {
+            content: "";
+            position: absolute;
+            inset: 18px;
+            border: 1px solid rgba(255, 237, 205, 0.25);
+            border-radius: 22px;
+            pointer-events: none;
+        }
+
+        .brand-tag {
+            font-size: 12px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        .login-left h2 { font-weight: 800; font-size: 30px; letter-spacing: .3px; margin: 0; }
+        .login-left p { opacity: .95; line-height: 1.8; font-size: 16px; margin: 0; } /* */
         
         /* Icons trang trí */
-        .login-icons { margin-top: 28px; }
+        .login-icons { margin-top: 10px; }
         .login-icons i {
             font-size: 30px; margin-right: 18px; padding: 14px;
             border-radius: 50%; background: rgba(255,255,255,.18);
@@ -115,10 +156,10 @@ $conn->set_charset("utf8mb4"); //
         /* ===== CỘT PHẢI (RIGHT - FORM) ===== */
         .login-right {
             padding: 56px 48px;
-            background: #fff; /* */
+            background: var(--cream); /* */
         }
         .login-right h3 {
-            color: #3f7f65; font-weight: 800; font-size: 26px;
+            color: var(--brown-800); font-weight: 800; font-size: 26px;
             text-align: center; margin-bottom: 28px; /* */
         }
 
@@ -126,28 +167,94 @@ $conn->set_charset("utf8mb4"); //
         .login-right .form-label { font-weight: 600; font-size: 14px; color: #555; margin-bottom: 8px; display: block; } /* */
         .login-right .form-control {
             width: 100%; padding: 14px 18px; border-radius: 14px;
-            font-size: 15px; border: 1px solid #ddd; margin-bottom: 20px; /* */
+            font-size: 15px; border: 1px solid #e5d6bf; margin-bottom: 20px; /* */
+            background: #fff;
         }
         .login-right .form-control:focus {
-            border-color: #3f7f65; outline: none;
-            box-shadow: 0 0 0 .15rem rgba(63,127,101,.25); /* */
+            border-color: var(--brown-800); outline: none;
+            box-shadow: 0 0 0 .15rem rgba(74,29,31,.2); /* */
         }
 
         /* Nút Đăng ký */
         .btn-login {
-            width: 100%; background: #3f7f65; color: #fff;
+            width: 100%; background: linear-gradient(135deg, #4a1d1f, #2f1415); color: #fbedcd;
             border-radius: 30px; padding: 14px; font-weight: 700;
             font-size: 16px; border: none; transition: .3s ease; cursor: pointer; /* */
         }
-        .btn-login:hover { background: #ff6b9c; transform: translateY(-2px); } /* */
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(74, 29, 31, .22); } /* */
 
         /* Link chuyển trang */
-        .login-right a { color: #888; transition: .3s; text-decoration: none; }
-        .login-right a:hover { color: #3f7f65; } /* */
+        .login-right a { color: var(--brown-700); transition: .3s; text-decoration: none; }
+        .login-right a:hover { color: var(--brown-800); } /* */
         
         /* Responsive Mobile */
+        .visual-stack {
+            position: relative;
+            margin-top: 12px;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+            background: #2a0f10;
+        }
+
+        .visual-stack img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+            filter: saturate(1.05);
+        }
+
+        .float-card {
+            position: absolute;
+            background: rgba(255, 247, 234, 0.95);
+            color: var(--brown-900);
+            padding: 10px 12px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .float-card img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .float-one { top: 18px; right: 18px; animation-delay: .2s; }
+        .float-two { bottom: 18px; left: 18px; animation-delay: 1s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .taste-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .taste-chip {
+            border: 1px solid rgba(255, 237, 205, 0.4);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            letter-spacing: 0.06em;
+        }
+
+        @media (max-width: 991px) {
+            .login-left { padding: 36px 28px; }
+            .login-right { padding: 36px 28px; }
+            .visual-stack img { height: 200px; }
+        }
+
         @media (max-width: 768px) {
-            .login-left { text-align: center; }
+            .login-left { text-align: left; }
             .login-icons i { margin-bottom: 10px; } /* */
         }
     </style>
@@ -161,25 +268,36 @@ $conn->set_charset("utf8mb4"); //
                 
                 <!-- ===== CỘT TRÁI: GIỚI THIỆU (Intro) ===== -->
                 <!-- Sử dụng class col-md-6 để chiếm 50% chiều rộng -->
-                <div class="col-md-6 login-left d-flex flex-column justify-content-center"> <!-- -->
-                    <h2 class="mb-3">
-                        <i class="fa-solid fa-heart"></i> Chào mừng
-                    </h2> <!-- -->
+                <div class="col-md-6 login-left"> <!-- -->
+                    <div class="brand-tag">GẤU BAKERY</div>
+                    <h2 class="mb-3">Bắt đầu hành trình vị ngọt</h2> <!-- -->
                     
                     <p class="mt-2">
-                        Cùng thực hiện để đăng ký <strong>tài khoản</strong>, cập nhật
-                        <strong>thông tin cá nhân</strong> và chia sẻ những
-                        khoảnh khắc ngọt ngào cùng <strong>Gấu Bakery</strong>. <!-- -->
+                        Tạo tài khoản để lưu đơn hàng, nhận ưu đãi và lưu giữ khoảnh khắc ngọt ngào cùng Gấu Bakery.
                     </p>
-                    
-                    <div class="login-icons mt-4">
-                        <i class="fa-solid fa-cake-candles"></i>
-                        <i class="fa-solid fa-cookie-bite"></i>
-                        <i class="fa-solid fa-mug-hot"></i> <!-- -->
+
+                    <div class="visual-stack">
+                        <img src="/Cake/assets/img/banner1.jpg" alt="Bánh ngon mỗi ngày">
+                        <div class="float-card float-one">
+                            <img src="/Cake/assets/img/banhngot/i1.jpg" alt="Bánh ngọt">
+                            <div>
+                                <div style="font-size:12px; font-weight:600;">Bánh mới</div>
+                                <div style="font-size:11px; opacity:.7;">Mỗi ngày</div>
+                            </div>
+                        </div>
+                        <div class="float-card float-two">
+                            <img src="/Cake/assets/img/banhkem/bk1.jpg" alt="Bánh kem">
+                            <div>
+                                <div style="font-size:12px; font-weight:600;">Đặc sắc</div>
+                                <div style="font-size:11px; opacity:.7;">Yêu thích</div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="mt-4 small opacity-75">
-                        <i class="fa-solid fa-cake-candles" style="color: #ff6b9c;"></i> Mỗi chiếc bánh là một câu chuyện yêu thương <!-- -->
+
+                    <div class="taste-row">
+                        <span class="taste-chip">Ưu đãi thành viên</span>
+                        <span class="taste-chip">Giao nhanh</span>
+                        <span class="taste-chip">Thông báo mới</span>
                     </div>
                 </div>
 
@@ -232,4 +350,38 @@ $conn->set_charset("utf8mb4"); //
     </div> <!-- End .login-wrapper -->
 
 </body>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+    window.showToast = function (msg, type) {
+        type = type || 'success';
+        let config = {
+            success: { bg: 'linear-gradient(135deg, #4a1d1f, #6a2d22)', icon: '✓' },
+            error: { bg: 'linear-gradient(135deg, #b42318, #f04438)', icon: '✕' },
+            info: { bg: 'linear-gradient(135deg, #1d4ed8, #3b82f6)', icon: 'ℹ' },
+            warning: { bg: 'linear-gradient(135deg, #b45309, #f59e0b)', icon: '⚠' }
+        };
+        let c = config[type] || config.success;
+        Toastify({
+            text: c.icon + ' ' + msg,
+            duration: 3500,
+            close: true,
+            gravity: 'top',
+            position: 'right',
+            style: {
+                background: c.bg,
+                borderRadius: '14px',
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: '600',
+                fontSize: '14px',
+                padding: '14px 20px',
+                boxShadow: '0 8px 24px rgba(0,0,0,.18)',
+                minWidth: '260px'
+            }
+        }).showToast();
+    };
+
+    <?php if (!empty($error_message)): ?>
+        window.showToast(<?= json_encode($error_message) ?>, 'error');
+    <?php endif; ?>
+</script>
 </html>

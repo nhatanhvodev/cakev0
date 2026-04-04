@@ -32,6 +32,7 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
     <meta charset="UTF-8">
     <title>Kết quả thanh toán VNPAY</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -89,11 +90,12 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
 <body>
     <div class="container">
         <?php
+        $toast = null;
         if ($secureHash == $vnp_SecureHash) {
             $order_id = $_GET['vnp_TxnRef'];
             if ($_GET['vnp_ResponseCode'] == '00') {
                 // Thành công
-                $stmt = $conn->prepare("UPDATE orders SET status = 'pending' WHERE id = ?");
+                $stmt = $conn->prepare("UPDATE orders SET status = 'paid' WHERE id = ?");
                 $stmt->bind_param("i", $order_id);
                 $stmt->execute();
 
@@ -101,7 +103,8 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                 echo "<h2>Thanh toán thành công!</h2>";
                 echo "<p>Mã đơn hàng: <strong>#" . htmlspecialchars($order_id) . "</strong></p>";
                 echo "<p>Số tiền: <strong>" . number_format($_GET['vnp_Amount'] / 100, 0, ',', '.') . " VNĐ</strong></p>";
-                echo "<p>Đơn hàng của bạn đã được ghi nhận và đang chờ Admin xác nhận.</p>";
+                echo "<p>Đơn hàng của bạn đã được ghi nhận và chuyển trạng thái đã thanh toán.</p>";
+                $toast = ['msg' => 'Thanh toán VNPAY thành công!', 'type' => 'success'];
             } else {
                 // Thất bại
                 $stmt = $conn->prepare("UPDATE orders SET status = 'failed' WHERE id = ?");
@@ -112,15 +115,52 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                 echo "<h2>Thanh toán thất bại!</h2>";
                 echo "<p>Mã lỗi: " . htmlspecialchars($_GET['vnp_ResponseCode']) . "</p>";
                 echo "<p>Đơn hàng của bạn đã bị hủy hoặc thanh toán không thành công.</p>";
+                $toast = ['msg' => 'Thanh toán VNPAY thất bại.', 'type' => 'error'];
             }
         } else {
             echo "<div class='error'>⚠️</div>";
             echo "<h2>Chữ ký không hợp lệ!</h2>";
             echo "<p>Hệ thống có thể đang gặp sự cố bảo mật.</p>";
+            $toast = ['msg' => 'Chữ ký VNPAY không hợp lệ.', 'type' => 'error'];
         }
         ?>
         <a href="../index.php" class="btn">Quay lại trang chủ</a>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        window.showToast = function (msg, type) {
+            type = type || 'success';
+            let config = {
+                success: { bg: 'linear-gradient(135deg, #4a1d1f, #6a2d22)', icon: '✓' },
+                error: { bg: 'linear-gradient(135deg, #b42318, #f04438)', icon: '✕' },
+                info: { bg: 'linear-gradient(135deg, #1d4ed8, #3b82f6)', icon: 'ℹ' },
+                warning: { bg: 'linear-gradient(135deg, #b45309, #f59e0b)', icon: '⚠' }
+            };
+            let c = config[type] || config.success;
+            Toastify({
+                text: c.icon + ' ' + msg,
+                duration: 3500,
+                close: true,
+                gravity: 'top',
+                position: 'right',
+                style: {
+                    background: c.bg,
+                    borderRadius: '14px',
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    padding: '14px 20px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,.18)',
+                    minWidth: '260px'
+                }
+            }).showToast();
+        };
+
+        const toast = <?= json_encode($toast) ?>;
+        if (toast && toast.msg) {
+            window.showToast(toast.msg, toast.type);
+        }
+    </script>
 </body>
 
 </html>

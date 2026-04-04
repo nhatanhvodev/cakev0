@@ -56,28 +56,36 @@ function img($path) {
 
 $extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
 
-include '../includes/header.php';
 ?>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= !empty($pageTitle) ? htmlspecialchars($pageTitle) . ' | Gấu Bakery' : 'Gấu Bakery' ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<?php include '../includes/header.php'; ?>
 
 <style>
 body {
-    background-color: #e8f5f1;
-    background-image:
-        radial-gradient(circle at 10% 15%, rgba(255,255,255,.6) 0 40px, transparent 41px),
-        radial-gradient(circle at 80% 20%, rgba(255,255,255,.5) 0 35px, transparent 36px),
-        radial-gradient(circle at 30% 80%, rgba(255,255,255,.5) 0 45px, transparent 46px);
-    background-repeat: repeat;
-    font-family: 'Inter', Arial, sans-serif;
+    background: #ffffff;
+    color: #272727;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
 }
 
 .products-wrap {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 260px minmax(0, 1fr);
     gap: 24px;
-    padding: 30px;
-    max-width: 1200px;
-    margin: 20px auto;
+    padding: 30px 20px 40px;
+    max-width: 1180px;
+    margin: 20px auto 10px;
+    align-items: start;
 }
 
 @media(max-width: 900px) {
@@ -87,17 +95,20 @@ body {
 .product-menu {
     background: #fff;
     padding: 20px;
-    border-radius: 20px;
+    border-radius: 24px;
     height: fit-content;
-    box-shadow: 0 4px 16px rgba(0,0,0,.07);
+    border: 1px solid #f3e0be;
+    box-shadow: 0 16px 32px rgba(74, 29, 31, 0.08);
+    position: sticky;
+    top: 110px;
 }
 
 .product-menu h3 {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #888;
+    color: #7c6b67;
     margin: 0 0 14px;
 }
 
@@ -121,22 +132,40 @@ body {
 
 .product-menu button.active,
 .product-menu button:hover {
-    background: linear-gradient(135deg, #457762, #5fae92);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(69,119,98,.25);
+    background: #4a1d1f;
+    color: #fbedcd;
+    box-shadow: 0 10px 20px rgba(74, 29, 31, 0.2);
+}
+
+.product-content {
+    background: #fff;
+    border-radius: 28px;
+    border: 1px solid #f3e0be;
+    box-shadow: 0 18px 36px rgba(74, 29, 31, 0.08);
+    padding: 22px 22px 28px;
 }
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    align-content: start;
+}
+
+@media (max-width: 1120px) {
+    .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+    .product-grid { grid-template-columns: 1fr; }
 }
 
 .product-card {
     background: #fff;
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.07);
+    border: 1px solid #f3e0be;
+    box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
     display: flex;
     flex-direction: column;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -144,7 +173,7 @@ body {
 
 .product-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(69,119,98,.15);
+    box-shadow: 0 18px 36px rgba(74, 29, 31, 0.16);
 }
 
 .product-card img {
@@ -168,12 +197,12 @@ body {
 
 .price { margin-bottom: 10px; }
 .price del { color: #bbb; font-size: 13px; margin-right: 4px; }
-.price span { color: #e91e63; font-weight: 700; font-size: 16px; }
+.price span { color: #4a1d1f; font-weight: 700; font-size: 16px; }
 
 .add-btn {
     margin-top: auto;
-    background: linear-gradient(135deg, #457762, #5fae92);
-    color: #fff;
+    background: #4a1d1f;
+    color: #fbedcd;
     border: none;
     padding: 11px;
     border-radius: 12px;
@@ -188,8 +217,8 @@ body {
 }
 
 .add-btn:hover {
-    background: linear-gradient(135deg, #ff6b9c, #ff8fb3);
-    box-shadow: 0 6px 16px rgba(255,107,156,.3);
+    background: #2f1415;
+    box-shadow: 0 12px 20px rgba(74, 29, 31, 0.25);
 }
 
 /* Modal */
@@ -223,11 +252,11 @@ body {
 .modal-box h3 {
     margin: 0 0 6px;
     font-size: 18px;
-    color: #222;
+    color: #2f2f2f;
 }
 
 .modal-box .modal-price {
-    color: #e91e63;
+    color: #4a1d1f;
     font-weight: 700;
     font-size: 20px;
     margin-bottom: 20px;
@@ -257,8 +286,8 @@ body {
 }
 
 .qty-btn:hover {
-    border-color: #457762;
-    background: #457762;
+    border-color: #4a1d1f;
+    background: #4a1d1f;
     color: #fff;
 }
 
@@ -295,10 +324,10 @@ body {
         <?php endforeach; ?>
     </aside>
 
-    <section>
+    <section class="product-content">
         <?php foreach ($san_pham as $k => $ds): ?>
             <div id="<?= $k ?>" class="cat <?= $k == $loai_active ? '' : 'hidden' ?>">
-                <h2 style="color:#457762; margin-bottom:18px;"><?= $ten_loai[$k] ?></h2>
+                <h2 style="color:#4a1d1f; margin-bottom:18px;"><?= $ten_loai[$k] ?></h2>
                 <div class="product-grid">
                     <?php if (!$ds): ?>
                         <p style="color:#888">Không có sản phẩm nào.</p>
@@ -372,7 +401,7 @@ function chg(v) {
 
 function addCart() {
     let q = parseInt(mQty.value);
-    fetch('/Cake/pages/giohang.php', {
+    fetch('/Cake/pages/cart.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=add&banh_id=${cur.id}&qty=${q}`

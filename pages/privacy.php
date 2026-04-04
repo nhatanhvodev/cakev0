@@ -1,26 +1,35 @@
 <?php
 $pageTitle = 'Chính sách bảo mật';
-include '../includes/header.php';
 ?>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><?= !empty($pageTitle) ? htmlspecialchars($pageTitle) . ' | Gấu Bakery' : 'Gấu Bakery' ?></title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
 /* ===== GLOBAL ===== */
 body {
-  background: #f6f7fb;
+  background: #ffffff;
+  color: #272727;
+  font-family: 'Poppins', sans-serif;
+}
+
+.card {
+  border: 1px solid #f3e0be !important;
+  border-radius: 32px !important;
+  box-shadow: 0 24px 48px rgba(74, 29, 31, 0.12) !important;
 }
 
 /* ===== NOTEBOOK ===== */
 .notebook {
-        background: linear-gradient(
-        180deg,
-        #fde8ee 0%,
-        #f6f0ff 100%
-    );
+  background: linear-gradient(180deg, #fff7ea 0%, #fdf1db 100%);
 
   border-radius: 24px;
   padding: 28px;
@@ -36,7 +45,7 @@ body {
   width: 6px;
   background: repeating-linear-gradient(
     to bottom,
-    #2fd5d0 8px,
+    #d6b892 8px,
     transparent 8px,
     transparent 16px
   );
@@ -57,12 +66,13 @@ body {
   font-weight: 600;
   font-size: 17px;
   padding: 20px 24px;
-  background: #eaf1ff;
+  background: #f7efe1;
+  color: #4a1d1f;
 }
 
 .accordion-button:not(.collapsed) {
-  background: #dbe8ff;
-  color: #1f3c88;
+  background: #f0e2c8;
+  color: #4a1d1f;
 }
 
 .accordion-button::after {
@@ -96,10 +106,11 @@ body {
 .policy-list li {
   display: flex;
   gap: 16px;
-  background: #f9fafb;
+  background: #fdf7ef;
   padding: 18px 20px;
   border-radius: 16px;
   margin-bottom: 16px;
+  border: 1px solid #f3e0be;
 }
 
 .policy-item-icon {
@@ -115,11 +126,16 @@ body {
 
 .policy-item-content p {
   margin: 0;
-  color: #1f2937; 
+  color: #4a4a4a;
   font-size: 15px;
   line-height: 1.6;
 }
-</style>
+  </style>
+</head>
+
+<body>
+
+<?php include '../includes/header.php'; ?>
 
 <!-- ================= CONTENT ================= -->
 <section class="container my-5">
@@ -286,3 +302,6 @@ body {
 </section>
 
 <?php include '../includes/footer.html'; ?>
+
+</body>
+</html>

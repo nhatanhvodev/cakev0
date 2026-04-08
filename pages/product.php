@@ -19,15 +19,66 @@ $search = trim($_GET['search'] ?? '');
 $san_pham = [];
 $today = date('Y-m-d');
 
-if ($search) {
+function safeTransliterate(string $value): string {
+    $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    if ($converted === false || $converted === '') {
+        return $value;
+    }
+    return $converted;
+}
+
+function normalizeSearchTerm(string $value): string {
+    $slug = safeTransliterate($value);
+    $slug = strtolower($slug ?: $value);
+    $slug = preg_replace('/[^a-z0-9]+/', '', $slug);
+    return $slug ?? '';
+}
+
+if ($search !== '') {
+    $search = preg_replace('/\s+/', ' ', $search);
+    $terms = array_values(array_filter(preg_split('/\s+/', $search)));
+    $normalizedTerms = array_map('normalizeSearchTerm', $terms);
+    $categoryMap = [
+        'kem' => 'kem',
+        'banhkem' => 'kem',
+        'mi' => 'mi',
+        'banhmi' => 'mi',
+        'man' => 'man',
+        'banhman' => 'man',
+        'ngot' => 'ngot',
+        'banhngot' => 'ngot'
+    ];
+
+    $whereParts = [];
+    $params = [$today, $today];
+    $types = 'ss';
+
+    foreach ($normalizedTerms as $index => $term) {
+        if (isset($categoryMap[$term])) {
+            $whereParts[] = "b.loai = ?";
+            $params[] = $categoryMap[$term];
+            $types .= 's';
+        }
+        if (!empty($terms[$index])) {
+            $whereParts[] = "b.ten_banh LIKE ?";
+            $params[] = '%' . $terms[$index] . '%';
+            $types .= 's';
+        }
+    }
+
+    if (empty($whereParts)) {
+        $whereParts[] = "b.ten_banh LIKE ?";
+        $params[] = '%' . $search . '%';
+        $types .= 's';
+    }
+
     $sql = "SELECT b.*, p.gia_khuyen_mai
             FROM banh b
             LEFT JOIN promotions p ON b.id=p.banh_id
             AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?
-            WHERE b.ten_banh LIKE ?";
+            WHERE " . implode(' OR ', $whereParts);
     $stmt = $conn->prepare($sql);
-    $like = "%$search%";
-    $stmt->bind_param("sss", $today, $today, $like);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $san_pham['search'] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $ten_loai['search'] = "Kết quả: \"$search\"";
@@ -54,6 +105,22 @@ function img($path) {
     return '/Cake/' . ltrim($path, '/');
 }
 
+function slugify(string $value, ?int $id = null): string {
+    $slug = safeTransliterate($value);
+    $slug = strtolower($slug ?: $value);
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    $slug = trim($slug, '-');
+    if ($id !== null) {
+        $suffix = '-' . $id;
+        if ($slug === '') {
+            $slug = 'san-pham' . $suffix;
+        } elseif (!str_ends_with($slug, $suffix)) {
+            $slug .= $suffix;
+        }
+    }
+    return $slug;
+}
+
 $extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
 
 ?>
@@ -76,6 +143,13 @@ body {
     color: #272727;
     font-family: 'Poppins', sans-serif;
     margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-content {
+    flex: 1;
 }
 
 .products-wrap {
@@ -181,6 +255,11 @@ body {
     height: 160px;
     object-fit: cover;
     border-radius: 14px;
+}
+
+.product-link {
+    color: inherit;
+    display: block;
 }
 
 .product-name {
@@ -304,6 +383,7 @@ body {
 .hidden { display: none; }
 </style>
 
+<main class="page-content">
 <div class="products-wrap">
     <aside class="product-menu">
         <h3><i class="fa-solid fa-layer-group"></i> Danh mục</h3>
@@ -334,8 +414,11 @@ body {
                     <?php endif; ?>
                     <?php foreach ($ds as $p): ?>
                         <div class="product-card">
-                            <img src="<?= img($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
-                            <div class="product-name"><?= htmlspecialchars($p['ten_banh']) ?></div>
+                            <?php $slug = !empty($p['slug']) ? $p['slug'] : slugify($p['ten_banh'], (int) $p['id']); ?>
+                            <a class="product-link" href="/Cake/product/<?= urlencode($slug) ?>">
+                                <img src="<?= img($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
+                                <div class="product-name"><?= htmlspecialchars($p['ten_banh']) ?></div>
+                            </a>
                             <div class="price">
                                 <?php if ($p['gia_khuyen_mai']): ?>
                                     <del><?= number_format($p['gia']) ?>đ</del>
@@ -371,6 +454,7 @@ body {
         </button>
     </div>
 </div>
+</main>
 
 <?php include '../includes/footer.html'; ?>
 

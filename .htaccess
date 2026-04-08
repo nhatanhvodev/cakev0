@@ -1,0 +1,8 @@
+RewriteEngine On
+RewriteBase /Cake/
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteRule ^product/([^/]+)/?$ pages/product-detail.php?slug=$1 [L,QSA]

@@ -23,10 +23,37 @@ if (isset($_SESSION['user_id'])) {
 
 function buildImageUrl(?string $path): string {
     if (!$path) return '/Cake/assets/img/no-image.jpg';
+    if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
+        return '/Cake/' . ltrim($path, '/');
+    }
     if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
         $path = str_replace('img/', 'assets/img/', $path);
     }
     return '/Cake/' . ltrim($path, '/');
+}
+
+function safeTransliterate(string $value): string {
+    $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    if ($converted === false || $converted === '') {
+        return $value;
+    }
+    return $converted;
+}
+
+function slugify(string $value, ?int $id = null): string {
+    $slug = safeTransliterate($value);
+    $slug = strtolower($slug ?: $value);
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    $slug = trim($slug, '-');
+    if ($id !== null) {
+        $suffix = '-' . $id;
+        if ($slug === '') {
+            $slug = 'san-pham' . $suffix;
+        } elseif (!str_ends_with($slug, $suffix)) {
+            $slug .= $suffix;
+        }
+    }
+    return $slug;
 }
 
 function timeAgo($timestamp) {
@@ -40,21 +67,86 @@ function timeAgo($timestamp) {
     return date('d/m/Y', $time);
 }
 
+function normalizeStars($stars): int {
+    if (is_numeric($stars)) {
+        $rating = (int) $stars;
+    } else {
+        $rating = preg_match_all('/★/u', (string) $stars);
+    }
+    if ($rating < 1) return 1;
+    if ($rating > 5) return 5;
+    return $rating;
+}
+
 $isLoggedIn   = isset($_SESSION['user_id']);
 $loggedInUser = $_SESSION['username'] ?? 'Khách';
 
 if (isset($_POST['search_products'])) {
     header('Content-Type: application/json');
     $kw = trim($_POST['keyword']);
-    $stmt = $conn->prepare("SELECT id, ten_banh, gia, hinh_anh FROM banh WHERE ten_banh LIKE ? LIMIT 5");
-    $searchKw = "%$kw%";
-    $stmt->bind_param("s", $searchKw);
+    if ($kw === '') {
+        echo json_encode(['success' => true, 'products' => []]);
+        exit;
+    }
+
+    $kw = preg_replace('/\s+/', ' ', $kw);
+    $terms = array_values(array_filter(preg_split('/\s+/', $kw)));
+    $normalized = [];
+    foreach ($terms as $term) {
+        $norm = safeTransliterate($term);
+        $norm = strtolower($norm ?: $term);
+        $norm = preg_replace('/[^a-z0-9]+/', '', $norm);
+        $normalized[] = $norm;
+    }
+    $categoryMap = [
+        'kem' => 'kem',
+        'banhkem' => 'kem',
+        'mi' => 'mi',
+        'banhmi' => 'mi',
+        'man' => 'man',
+        'banhman' => 'man',
+        'ngot' => 'ngot',
+        'banhngot' => 'ngot'
+    ];
+
+    $whereParts = [];
+    $params = [];
+    $types = '';
+
+    foreach ($normalized as $index => $term) {
+        if (isset($categoryMap[$term])) {
+            $whereParts[] = 'b.loai = ?';
+            $params[] = $categoryMap[$term];
+            $types .= 's';
+        }
+        if (!empty($terms[$index])) {
+            $whereParts[] = 'b.ten_banh LIKE ?';
+            $params[] = '%' . $terms[$index] . '%';
+            $types .= 's';
+        }
+    }
+
+    if (empty($whereParts)) {
+        $whereParts[] = 'b.ten_banh LIKE ?';
+        $params[] = '%' . $kw . '%';
+        $types .= 's';
+    }
+
+    $sql = "SELECT b.id, b.ten_banh, b.gia, b.hinh_anh, b.slug
+            FROM banh b
+            WHERE " . implode(' OR ', $whereParts) . "
+            LIMIT 5";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
     foreach ($result as &$item) {
         $item['hinh_anh'] = buildImageUrl($item['hinh_anh']);
         $item['formatted_price'] = number_format($item['gia'], 0, ',', '.') . ' VNĐ';
+        if (empty($item['slug'])) {
+            $item['slug'] = slugify($item['ten_banh'], (int) $item['id']);
+        }
     }
     
     echo json_encode(['success' => true, 'products' => $result]);
@@ -96,6 +188,39 @@ if (isset($_POST['add_to_cart'])) {
     exit;
 }
 
+if (isset($_POST['submit_testimonial'])) {
+    $name = trim($_POST['review_name'] ?? '');
+    $rating = isset($_POST['review_rating']) ? (int) $_POST['review_rating'] : 0;
+    $text = trim($_POST['review_text'] ?? '');
+    $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+
+    if ($name === '' || $text === '' || $rating < 1 || $rating > 5) {
+        $_SESSION['testimonial_flash'] = 'Vui lòng nhập đầy đủ thông tin đánh giá.';
+        $_SESSION['testimonial_flash_type'] = 'error';
+        header('Location: /Cake/index.php#testimonial');
+        exit;
+    }
+
+    $stars = str_repeat('★', $rating);
+    $stmt = $conn->prepare(
+        "INSERT INTO reviews (name, text, stars, user_id, status, timestamp)
+         VALUES (?, ?, ?, ?, 'pending', ?)"
+    );
+    $timestamp = (int) (microtime(true) * 1000);
+    $stmt->bind_param('sssii', $name, $text, $stars, $userId, $timestamp);
+
+    if ($stmt->execute()) {
+        $_SESSION['testimonial_flash'] = 'Cảm ơn bạn! Đánh giá sẽ hiển thị sau khi được duyệt.';
+        $_SESSION['testimonial_flash_type'] = 'success';
+    } else {
+        $_SESSION['testimonial_flash'] = 'Không thể gửi đánh giá, vui lòng thử lại.';
+        $_SESSION['testimonial_flash_type'] = 'error';
+    }
+
+    header('Location: /Cake/index.php#testimonial');
+    exit;
+}
+
 $slides = [
     [
         'title' => 'Tết Đoàn Viên',
@@ -126,10 +251,54 @@ $slides = [
     ]
 ];
 
-$res_prod = $conn->query("SELECT * FROM banh WHERE is_featured=1 ORDER BY id DESC LIMIT 10");
-$products = ($res_prod) ? $res_prod->fetch_all(MYSQLI_ASSOC) : [];
+$bestLimit = 8;
+$manualBestRes = $conn->query(
+    "SELECT * FROM banh WHERE is_best_manual = 1 ORDER BY (best_rank = 0), best_rank ASC, id DESC LIMIT {$bestLimit}"
+);
+$manualBest = ($manualBestRes) ? $manualBestRes->fetch_all(MYSQLI_ASSOC) : [];
 
-$sql_review = "SELECT * FROM reviews ORDER BY timestamp DESC LIMIT 4";
+$topSellingRes = $conn->query(
+    "SELECT b.*, SUM(oi.quantity) AS sold_qty
+     FROM banh b
+     JOIN order_items oi ON oi.banh_id = b.id
+     JOIN orders o ON o.id = oi.order_id
+     WHERE o.status IN ('paid','approved','delivered','completed')
+     GROUP BY b.id
+     ORDER BY sold_qty DESC, b.id DESC
+     LIMIT {$bestLimit}"
+);
+$topSelling = ($topSellingRes) ? $topSellingRes->fetch_all(MYSQLI_ASSOC) : [];
+
+$bestList = [];
+$bestMap = [];
+foreach ($manualBest as $item) {
+    $bestMap[$item['id']] = true;
+    $bestList[] = $item;
+}
+foreach ($topSelling as $item) {
+    if (!isset($bestMap[$item['id']])) {
+        $bestMap[$item['id']] = true;
+        $bestList[] = $item;
+    }
+    if (count($bestList) >= $bestLimit) {
+        break;
+    }
+}
+if (count($bestList) < $bestLimit) {
+    $fallbackLimit = $bestLimit - count($bestList);
+    $fallbackRes = $conn->query(
+        "SELECT * FROM banh ORDER BY id DESC LIMIT {$fallbackLimit}"
+    );
+    $fallback = ($fallbackRes) ? $fallbackRes->fetch_all(MYSQLI_ASSOC) : [];
+    foreach ($fallback as $item) {
+        if (!isset($bestMap[$item['id']])) {
+            $bestMap[$item['id']] = true;
+            $bestList[] = $item;
+        }
+    }
+}
+
+$sql_review = "SELECT * FROM reviews WHERE status = 'approved' ORDER BY timestamp DESC LIMIT 3";
 $res_review = $conn->query($sql_review);
 $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 ?>
@@ -377,6 +546,13 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             overflow-x: auto;
             padding-bottom: 16px;
             scroll-snap-type: x mandatory;
+            cursor: grab;
+            scroll-behavior: smooth;
+        }
+
+        .best-list.is-dragging {
+            cursor: grabbing;
+            user-select: none;
         }
 
         .best-card {
@@ -385,12 +561,19 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             flex: 0 0 auto;
         }
 
+        .best-link {
+            color: inherit;
+            display: block;
+        }
+
         .best-card img {
             width: 231px;
             height: 328px;
             border-radius: 33px;
             object-fit: cover;
             box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.2);
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
         .best-name {
@@ -401,18 +584,6 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             color: #000000;
         }
 
-        .best-rating {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 16px;
-            color: #707070;
-        }
-
-        .best-rating i {
-            color: #ffa903;
-            font-size: 18px;
-        }
 
         .section-btn {
             margin: 44px auto 0;
@@ -542,6 +713,25 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             position: relative;
         }
 
+        .testimonial-track {
+            position: relative;
+            min-height: 220px;
+        }
+
+        .testimonial-item {
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            position: absolute;
+            inset: 0;
+        }
+
+        .testimonial-item.active {
+            opacity: 1;
+            transform: translateY(0);
+            position: relative;
+        }
+
         .testimonial-badge {
             display: inline-flex;
             padding: 2px 8px;
@@ -559,6 +749,101 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             font-weight: 600;
             color: #272727;
             margin: 0;
+        }
+
+        .testimonial-meta {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #4a1d1f;
+        }
+
+        .testimonial-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .testimonial-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #ffa903;
+            font-size: 16px;
+        }
+
+        .testimonial-rating span {
+            color: #707070;
+            font-size: 14px;
+        }
+
+        .testimonial-message {
+            margin: 22px auto 0;
+            max-width: 520px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #ffffff;
+            border: 1px solid #ead9bf;
+        }
+
+        .testimonial-message.success {
+            color: #2f5f2f;
+            border-color: #d6e8d6;
+        }
+
+        .testimonial-message.error {
+            color: #a13a3a;
+            border-color: #f1c7c7;
+        }
+
+        .testimonial-form {
+            margin: 32px auto 0;
+            max-width: 640px;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 18px 36px rgba(74, 29, 31, 0.08);
+            border: 1px solid #f0e1c9;
+        }
+
+        .testimonial-fields {
+            display: grid;
+            grid-template-columns: 1fr 160px;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .testimonial-input,
+        .testimonial-select,
+        .testimonial-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e4d4bd;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .testimonial-textarea {
+            min-height: 120px;
+            resize: vertical;
+            grid-column: 1 / -1;
+        }
+
+        .testimonial-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 28px;
+            background: #4a1d1f;
+            color: #ffffff;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
         }
 
         .testimonial-dots {
@@ -643,6 +928,10 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 font-size: 28px;
                 line-height: 38px;
             }
+
+            .testimonial-fields {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -660,8 +949,6 @@ $heroStripImages = [
     'assets/img/banhkem/b6.jpg',
     'assets/img/banhkem/b8.jpg'
 ];
-$bestList = array_slice($products, 0, 8);
-$testimonial = !empty($reviews) ? $reviews[0]['text'] : 'Bánh không trứng ở đây thực sự rất ngon. Tôi đã đặt một chiếc bánh Kit Kat và nó thực sự rất ngon. Chắc chắn đáng để thử.';
 ?>
 
 <?php include 'includes/header.php'; ?>
@@ -717,16 +1004,11 @@ $testimonial = !empty($reviews) ? $reviews[0]['text'] : 'Bánh không trứng �
         <div class="best-list">
             <?php foreach ($bestList as $p): ?>
                 <div class="best-card">
-                    <img src="<?= buildImageUrl($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
-                    <div class="best-name"><?= htmlspecialchars($p['ten_banh']) ?> (500g)</div>
-                    <div class="best-rating">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-regular fa-star"></i>
-                        <span>4.0 Rating</span>
-                    </div>
+                    <?php $slug = !empty($p['slug']) ? $p['slug'] : slugify($p['ten_banh'], (int) $p['id']); ?>
+                    <a href="/Cake/product/<?= urlencode($slug) ?>" class="best-link">
+                        <img src="<?= buildImageUrl($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
+                        <div class="best-name"><?= htmlspecialchars($p['ten_banh']) ?> </div>
+                    </a>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -739,9 +1021,9 @@ $testimonial = !empty($reviews) ? $reviews[0]['text'] : 'Bánh không trứng �
     <section class="story-section">
         <div class="story-row">
             <div>
-                <h3 class="story-title">Chúng tôi nướng bánh cho bạn<br>Bánh mới ra lò</h3>
-                <p class="story-desc">Chúng tôi sử dụng nguyên liệu chất lượng cao được lấy trực tiếp từ nông dân. Các nhà đầu tư của chúng tôi đều là những người giàu kinh nghiệm trong lĩnh vực thực phẩm. Vì vậy, các sản phẩm chúng tôi sản xuất được đảm bảo về chất lượng và hương vị. Nó ngon đến mức bạn phải thử!</p>
-                <a class="story-link" href="/Cake/pages/policy.php">Đọc thêm <span></span></a>
+                <h3 class="story-title">Chúng tôi nướng bánh cho bạn thưởng thức.    Bánh mới ra lò mỗi ngày!</h3>
+                <p class="story-desc">Chúng tôi sử dụng nguyên liệu chất lượng cao được lấy từ các đơn vị cung cấp uy tín. Các nhà đầu tư của chúng tôi đều là những người giàu kinh nghiệm trong lĩnh vực thực phẩm. Vì vậy, các sản phẩm chúng tôi sản xuất được đảm bảo về chất lượng và hương vị. Nó ngon đến mức bạn phải thử ngay!</p>
+                <a class="story-link" href="/Cake/pages/about.php">Đọc thêm <span></span></a>
             </div>
             <img class="story-image" src="/Cake/assets/img/banhngot/i7.jpg" alt="Fresh baked">
         </div>
@@ -749,9 +1031,9 @@ $testimonial = !empty($reviews) ? $reviews[0]['text'] : 'Bánh không trứng �
         <div class="story-row reverse">
             <img class="story-image" src="/Cake/assets/img/banhngot/i8.jpg" alt="Bakery space">
             <div>
-                <h3 class="story-title">Hãy đến và chọn những món<br>bạn yêu thích nhất!</h3>
+                <h3 class="story-title">Hãy đến và chọn những món bạn yêu thích nhất!</h3>
                 <p class="story-desc">Hãy đến trực tiếp cửa hàng của chúng tôi để thưởng thức hương vị thơm ngon của bánh vừa mới ra lò. Vừa thưởng thức bánh cùng một tách cà phê hoặc trà trong không gian cửa hàng tiện nghi của chúng tôi. Rất thích hợp để trò chuyện, gặp gỡ đồng nghiệp.</p>
-                <a class="story-link" href="/Cake/pages/shipping.php">Đọc thêm <span></span></a>
+                <a class="story-link" href="/Cake/pages/contact.php">Đọc thêm <span></span></a>
             </div>
         </div>
     </section>
@@ -759,23 +1041,146 @@ $testimonial = !empty($reviews) ? $reviews[0]['text'] : 'Bánh không trứng �
     <section class="cta-section">
         <div class="cta-inner">
             <h3 class="cta-title">Đối với các đơn đặt bánh trên 1 KG</h3>
-            <p class="cta-desc">Vui lòng ghé thăm cửa hàng gần nhất của chúng tôi hoặc gọi điện cho chúng tôi theo số 0123 456 789 (10 giờ sáng đến 7 giờ tối) để đặt hàng.</p>
+            <p class="cta-desc">Vui lòng ghé thăm cửa hàng gần nhất của chúng tôi hoặc gọi điện cho chúng tôi theo số 0901 234 567 (08 giờ sáng đến 21 giờ tối tất cả các ngày trong tuần) để đặt hàng.</p>
             <a class="cta-btn" href="/Cake/pages/contact.php">Liên hệ với chúng tôi ngay</a>
         </div>
     </section>
 
-    <section class="testimonial">
+    <section class="testimonial" id="testimonial">
         <div class="testimonial-inner">
             <div class="testimonial-badge">Đánh giá</div>
-            <p class="testimonial-text">“<?= htmlspecialchars($testimonial) ?>”</p>
-            <div class="testimonial-dots">
-                <span></span>
-                <span class="active"></span>
-                <span></span>
+            <div class="testimonial-track">
+                <?php if (!empty($reviews)): ?>
+                    <?php foreach ($reviews as $index => $review):
+                        $rating = normalizeStars($review['stars'] ?? '');
+                    ?>
+                        <div class="testimonial-item <?= $index === 0 ? 'active' : '' ?>">
+                            <p class="testimonial-text">“<?= htmlspecialchars($review['text']) ?>”</p>
+                            <div class="testimonial-meta">
+                                <span class="testimonial-name"><?= htmlspecialchars($review['name']) ?></span>
+                                <div class="testimonial-rating">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="<?= $i <= $rating ? 'fa-solid' : 'fa-regular' ?> fa-star"></i>
+                                    <?php endfor; ?>
+                                    <span><?= $rating ?>.0 Rating</span>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="testimonial-item active">
+                        <p class="testimonial-text">“Bánh không trứng ở đây thực sự rất ngon. Tôi đã đặt một chiếc bánh Kit Kat và nó thực sự rất ngon. Chắc chắn đáng để thử.”</p>
+                        <div class="testimonial-meta">
+                            <span class="testimonial-name">Khách hàng</span>
+                            <div class="testimonial-rating">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <span>4.0 Rating</span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
+            <div class="testimonial-dots">
+                <?php if (!empty($reviews)): ?>
+                    <?php foreach ($reviews as $index => $review): ?>
+                        <span class="<?= $index === 0 ? 'active' : '' ?>"></span>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <span class="active"></span>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($_SESSION['testimonial_flash'])):
+                $flashType = $_SESSION['testimonial_flash_type'] ?? 'success';
+            ?>
+                <div class="testimonial-message <?= htmlspecialchars($flashType) ?>">
+                    <?= htmlspecialchars($_SESSION['testimonial_flash']) ?>
+                </div>
+                <?php unset($_SESSION['testimonial_flash'], $_SESSION['testimonial_flash_type']); ?>
+            <?php endif; ?>
+
+            <form class="testimonial-form" method="POST" action="/Cake/index.php#testimonial">
+                <input type="hidden" name="submit_testimonial" value="1">
+                <div class="testimonial-fields">
+                    <input class="testimonial-input" type="text" name="review_name" placeholder="Tên của bạn" required>
+                    <select class="testimonial-select" name="review_rating" required>
+                        <option value="">Rating</option>
+                        <option value="5">5 sao</option>
+                        <option value="4">4 sao</option>
+                        <option value="3">3 sao</option>
+                        <option value="2">2 sao</option>
+                        <option value="1">1 sao</option>
+                    </select>
+                    <textarea class="testimonial-textarea" name="review_text" placeholder="Chia sẻ cảm nhận của bạn" required></textarea>
+                </div>
+                <button class="testimonial-submit" type="submit">Gửi đánh giá</button>
+            </form>
         </div>
     </section>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const bestList = document.querySelector('.best-list');
+        if (bestList) {
+            let isDown = false;
+            let startX = 0;
+            let scrollLeft = 0;
+
+            const endDrag = () => {
+                isDown = false;
+                bestList.classList.remove('is-dragging');
+            };
+
+            bestList.addEventListener('mousedown', (e) => {
+                isDown = true;
+                bestList.classList.add('is-dragging');
+                startX = e.pageX - bestList.offsetLeft;
+                scrollLeft = bestList.scrollLeft;
+            });
+
+            bestList.addEventListener('mouseleave', endDrag);
+            bestList.addEventListener('mouseup', endDrag);
+
+            bestList.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - bestList.offsetLeft;
+                const walk = x - startX;
+                bestList.scrollLeft = scrollLeft - walk;
+            });
+
+            bestList.querySelectorAll('img').forEach((img) => {
+                img.setAttribute('draggable', 'false');
+            });
+            bestList.addEventListener('dragstart', (e) => e.preventDefault());
+        }
+
+        const items = Array.from(document.querySelectorAll('.testimonial-item'));
+        const dots = Array.from(document.querySelectorAll('.testimonial-dots span'));
+        if (items.length <= 1) return;
+
+        let activeIndex = 0;
+        const activate = (index) => {
+            items.forEach((item, i) => item.classList.toggle('active', i === index));
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+            activeIndex = index;
+        };
+
+        dots.forEach((dot, i) => {
+            dot.addEventListener('click', () => activate(i));
+        });
+
+        setInterval(() => {
+            const nextIndex = (activeIndex + 1) % items.length;
+            activate(nextIndex);
+        }, 6000);
+    });
+</script>
 
 <?php include 'includes/footer.html'; ?>
 </body>

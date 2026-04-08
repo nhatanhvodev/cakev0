@@ -25,6 +25,12 @@ function setAdminToast($msg, $type = 'success')
     $_SESSION['admin_toast'] = ['msg' => $msg, 'type' => $type];
 }
 
+function redirectToTab(string $tab): void
+{
+    header("Location: admin.php?tab={$tab}#{$tab}");
+    exit;
+}
+
 // Hàm xử lý đường dẫn ảnh (Kết hợp logic từ nguồn)
 function buildImageUrl(string $relativePath): array
 {
@@ -33,6 +39,14 @@ function buildImageUrl(string $relativePath): array
 
     if (empty($relativePath))
         return $result;
+
+    if (strpos($relativePath, 'admin/img/') === 0 || strpos($relativePath, 'admin/') === 0) {
+        $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($relativePath, '/');
+        if (file_exists($fullPath)) {
+            $result['url'] = '/Cake/' . ltrim($relativePath, '/');
+        }
+        return $result;
+    }
 
     // Handle assets/ prefix if it's stored as img/ in the DB
     if (strpos($relativePath, 'assets/') === false && strpos($relativePath, 'img/') === 0) {
@@ -44,6 +58,32 @@ function buildImageUrl(string $relativePath): array
         $result['url'] = '/Cake/' . ltrim($relativePath, '/');
     }
     return $result;
+}
+
+function safeTransliterate(string $value): string
+{
+    $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    if ($converted === false || $converted === '') {
+        return $value;
+    }
+    return $converted;
+}
+
+function slugify(string $value, ?int $id = null): string
+{
+    $slug = safeTransliterate($value);
+    $slug = strtolower($slug ?: $value);
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    $slug = trim($slug, '-');
+    if ($id !== null) {
+        $suffix = '-' . $id;
+        if ($slug === '') {
+            $slug = 'san-pham' . $suffix;
+        } elseif (!str_ends_with($slug, $suffix)) {
+            $slug .= $suffix;
+        }
+    }
+    return $slug;
 }
 
 // 2. XỬ LÝ LOGIC (POST REQUESTS)
@@ -80,8 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
             $_SESSION['admin_logged_in'] = true;
             setAdminToast("Đăng nhập quản trị thành công!");
             unset($_SESSION['csrf_token']); // Reset token sau khi login
-            header("Location: admin.php");
-            exit;
+            redirectToTab('dashboard');
         } else {
             $login_error = 'Sai tài khoản hoặc mật khẩu!';
         }
@@ -95,6 +134,18 @@ if (isset($_SESSION['admin_logged_in'])) {
     if (empty($_SESSION['csrf_token']))
         regenerateCsrfToken();
 
+    $missingSlugRows = $conn->query("SELECT id, ten_banh FROM banh WHERE slug IS NULL OR slug = ''");
+    if ($missingSlugRows) {
+        $slugStmt = $conn->prepare("UPDATE banh SET slug = ? WHERE id = ?");
+        while ($row = $missingSlugRows->fetch_assoc()) {
+            $newSlug = slugify($row['ten_banh'], (int) $row['id']);
+            $slugStmt->bind_param('si', $newSlug, $row['id']);
+            $slugStmt->execute();
+        }
+        $slugStmt->close();
+        $missingSlugRows->free();
+    }
+
     /* ===== UPLOAD HÌNH ẢNH SẢN PHẨM ===== */
     if (
         $_SERVER['REQUEST_METHOD'] === 'POST' &&
@@ -106,63 +157,221 @@ if (isset($_SESSION['admin_logged_in'])) {
         $ten_banh = trim($_POST['ten_banh'] ?? '');
         $loai = $_POST['loai'] ?? '';
         $gia = isset($_POST['gia']) ? (float) $_POST['gia'] : 0;
-        $feat = isset($_POST['is_featured']) ? 1 : 0;
-
+        $mo_ta = trim($_POST['mo_ta'] ?? '');
         if ($ten_banh === '' || $loai === '' || $gia <= 0) {
             setAdminToast("Dữ liệu sản phẩm không hợp lệ", "error");
-            header("Location: admin.php#products");
-            exit;
+            redirectToTab('products');
         }
 
         /* ===== UPLOAD HÌNH ẢNH ===== */
         $hinh_anh = '';
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/admin/img/uploads/banh{$loai}/";
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
 
         if (isset($_FILES['hinh_anh']) && $_FILES['hinh_anh']['error'] === 0) {
-
-            $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/assets/img/banh{$loai}/";
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-
             $ext = strtolower(pathinfo($_FILES['hinh_anh']['name'], PATHINFO_EXTENSION));
             $allow = ['jpg', 'jpeg', 'png', 'webp'];
             if (!in_array($ext, $allow)) {
                 setAdminToast("Định dạng ảnh không hợp lệ (hỗ trợ: jpg, png, webp)", "error");
-                header("Location: admin.php#products");
-                exit;
+                redirectToTab('products');
             }
 
             $fileName = uniqid('banh_', true) . '.' . $ext;
             $targetPath = $upload_dir . $fileName;
-            $hinh_anh = "assets/img/banh{$loai}/" . $fileName;
+            $hinh_anh = "admin/img/uploads/banh{$loai}/" . $fileName;
 
             if (!move_uploaded_file($_FILES['hinh_anh']['tmp_name'], $targetPath)) {
                 setAdminToast("Không thể tải ảnh lên máy chủ", "error");
-                header("Location: admin.php#products");
-                exit;
+                redirectToTab('products');
             }
         }
 
         /* ===== INSERT DB ===== */
         $stmt = $conn->prepare(
-            "INSERT INTO banh (ten_banh, loai, gia, hinh_anh, is_featured)
+            "INSERT INTO banh (ten_banh, loai, gia, hinh_anh, mo_ta)
          VALUES (?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "ssdsi",
+            "ssdss",
             $ten_banh,
             $loai,
             $gia,
             $hinh_anh,
-            $feat
+            $mo_ta
         );
 
         $stmt->execute();
 
+        $newId = $stmt->insert_id;
+        if ($newId) {
+            $newSlug = slugify($ten_banh, $newId);
+            $slugStmt = $conn->prepare("UPDATE banh SET slug = ? WHERE id = ?");
+            $slugStmt->bind_param('si', $newSlug, $newId);
+            $slugStmt->execute();
+            $slugStmt->close();
+
+            if (!empty($_FILES['gallery_images']['name'][0])) {
+                $galleryStmt = $conn->prepare(
+                    "INSERT INTO product_images (product_id, image_path) VALUES (?, ?)"
+                );
+                foreach ($_FILES['gallery_images']['name'] as $index => $name) {
+                    if ($_FILES['gallery_images']['error'][$index] !== 0) {
+                        continue;
+                    }
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    $allow = ['jpg', 'jpeg', 'png', 'webp'];
+                    if (!in_array($ext, $allow)) {
+                        continue;
+                    }
+                    $fileName = uniqid('banh_', true) . '.' . $ext;
+                    $targetPath = $upload_dir . $fileName;
+                    $relativePath = "admin/img/uploads/banh{$loai}/" . $fileName;
+                    if (move_uploaded_file($_FILES['gallery_images']['tmp_name'][$index], $targetPath)) {
+                        $galleryStmt->bind_param('is', $newId, $relativePath);
+                        $galleryStmt->execute();
+                    }
+                }
+                $galleryStmt->close();
+            }
+        }
+
         setAdminToast("Thêm sản phẩm thành công!");
-        header("Location: admin.php#products");
-        exit;
+        redirectToTab('products');
+    }
+
+    /* --- CẬP NHẬT SẢN PHẨM --- */
+    if (
+        $_SERVER['REQUEST_METHOD'] === 'POST' &&
+        isset($_POST['update_product']) &&
+        hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+    ) {
+        $productId = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
+        $ten_banh = trim($_POST['ten_banh'] ?? '');
+        $loai = $_POST['loai'] ?? '';
+        $gia = isset($_POST['gia']) ? (float) $_POST['gia'] : 0;
+        $mo_ta = trim($_POST['mo_ta'] ?? '');
+        $currentImage = $_POST['current_image'] ?? '';
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/admin/img/uploads/banh{$loai}/";
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+
+        if ($productId <= 0 || $ten_banh === '' || $loai === '' || $gia <= 0) {
+            setAdminToast("Dữ liệu cập nhật không hợp lệ", "error");
+            redirectToTab('products');
+        }
+
+        $hinh_anh = $currentImage;
+        if (isset($_FILES['hinh_anh']) && $_FILES['hinh_anh']['error'] === 0) {
+            $ext = strtolower(pathinfo($_FILES['hinh_anh']['name'], PATHINFO_EXTENSION));
+            $allow = ['jpg', 'jpeg', 'png', 'webp'];
+            if (!in_array($ext, $allow)) {
+                setAdminToast("Định dạng ảnh không hợp lệ (hỗ trợ: jpg, png, webp)", "error");
+                redirectToTab('products');
+            }
+
+            $fileName = uniqid('banh_', true) . '.' . $ext;
+            $targetPath = $upload_dir . $fileName;
+            $hinh_anh = "admin/img/uploads/banh{$loai}/" . $fileName;
+
+            if (!move_uploaded_file($_FILES['hinh_anh']['tmp_name'], $targetPath)) {
+                setAdminToast("Không thể tải ảnh lên máy chủ", "error");
+                redirectToTab('products');
+            }
+        }
+
+        $newSlug = slugify($ten_banh, $productId);
+        $stmt = $conn->prepare(
+            "UPDATE banh SET ten_banh = ?, loai = ?, gia = ?, hinh_anh = ?, mo_ta = ?, slug = ? WHERE id = ?"
+        );
+        $stmt->bind_param('ssdsssi', $ten_banh, $loai, $gia, $hinh_anh, $mo_ta, $newSlug, $productId);
+        $stmt->execute();
+        $stmt->close();
+
+        if (!empty($_FILES['gallery_images']['name'][0])) {
+            $galleryStmt = $conn->prepare(
+                "INSERT INTO product_images (product_id, image_path) VALUES (?, ?)"
+            );
+            foreach ($_FILES['gallery_images']['name'] as $index => $name) {
+                if ($_FILES['gallery_images']['error'][$index] !== 0) {
+                    continue;
+                }
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                $allow = ['jpg', 'jpeg', 'png', 'webp'];
+                if (!in_array($ext, $allow)) {
+                    continue;
+                }
+                $fileName = uniqid('banh_', true) . '.' . $ext;
+                $targetPath = $upload_dir . $fileName;
+                $relativePath = "admin/img/uploads/banh{$loai}/" . $fileName;
+                if (move_uploaded_file($_FILES['gallery_images']['tmp_name'][$index], $targetPath)) {
+                    $galleryStmt->bind_param('is', $productId, $relativePath);
+                    $galleryStmt->execute();
+                }
+            }
+            $galleryStmt->close();
+        }
+
+        setAdminToast("Đã cập nhật sản phẩm");
+        regenerateCsrfToken();
+        redirectToTab('products');
+    }
+
+    /* --- CẬP NHẬT BEST SELLING (THỦ CÔNG) --- */
+    if (
+        $_SERVER['REQUEST_METHOD'] === 'POST' &&
+        isset($_POST['update_best_selling']) &&
+        hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+    ) {
+        $productIds = $_POST['product_ids'] ?? [];
+        $manualBest = $_POST['manual_best'] ?? [];
+        $bestRank = $_POST['best_rank'] ?? [];
+
+        $stmt = $conn->prepare("UPDATE banh SET is_best_manual = ?, best_rank = ? WHERE id = ?");
+        $updated = 0;
+
+        foreach ($productIds as $id) {
+            $id = (int) $id;
+            $isBest = isset($manualBest[$id]) ? 1 : 0;
+            $rank = isset($bestRank[$id]) ? (int) $bestRank[$id] : 0;
+            if ($id > 0) {
+                $stmt->bind_param('iii', $isBest, $rank, $id);
+                $stmt->execute();
+                $updated++;
+            }
+        }
+
+        $stmt->close();
+        setAdminToast("Đã cập nhật best selling cho {$updated} sản phẩm");
+        regenerateCsrfToken();
+        redirectToTab('best-selling');
+    }
+
+    /* --- DUYỆT ĐÁNH GIÁ --- */
+    if (
+        $_SERVER['REQUEST_METHOD'] === 'POST' &&
+        isset($_POST['update_review_status']) &&
+        hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+    ) {
+        $reviewId = isset($_POST['review_id']) ? (int) $_POST['review_id'] : 0;
+        $status = $_POST['review_status'] ?? '';
+        $allowed = ['approved', 'rejected', 'pending'];
+
+        if ($reviewId > 0 && in_array($status, $allowed, true)) {
+            $stmt = $conn->prepare("UPDATE reviews SET status = ? WHERE id = ?");
+            $stmt->bind_param('si', $status, $reviewId);
+            $stmt->execute();
+            $stmt->close();
+            setAdminToast("Đã cập nhật trạng thái đánh giá");
+        } else {
+            setAdminToast("Dữ liệu đánh giá không hợp lệ", "error");
+        }
+
+        regenerateCsrfToken();
+        redirectToTab('testimonials');
     }
 
 
@@ -175,8 +384,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         if (empty($selected)) {
             setAdminToast("Vui lòng chọn ít nhất một đơn hàng", "warning");
             regenerateCsrfToken();
-            header("Location: admin.php#orders");
-            exit;
+            redirectToTab('orders');
         }
 
         $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
@@ -195,8 +403,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         $stmt->close();
         setAdminToast("Đã cập nhật trạng thái cho $updated đơn hàng");
         regenerateCsrfToken();
-        header("Location: admin.php#orders");
-        exit;
+        redirectToTab('orders');
     }
 
     /* --- XỬ LÝ KHUYẾN MÃI --- */
@@ -206,16 +413,14 @@ if (isset($_SESSION['admin_logged_in'])) {
         $stmt->execute();
         setAdminToast("Đã thêm khuyến mãi thành công!");
         regenerateCsrfToken();
-        header("Location: admin.php#promotions");
-        exit;
+        redirectToTab('promotions');
     }
 
     if (isset($_GET['delete_promotion_id'])) {
         $id = (int) $_GET['delete_promotion_id'];
         $conn->query("DELETE FROM promotions WHERE id=$id");
         setAdminToast("Đã xóa khuyến mãi thành công!");
-        header("Location: admin.php#promotions");
-        exit;
+        redirectToTab('promotions');
     }
 }
 
@@ -241,8 +446,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         $stmt->execute();
 
         setAdminToast("Đã ngừng bán sản phẩm thành công!");
-        header("Location: admin.php#products");
-        exit;
+        redirectToTab('products');
     }
 }
 
@@ -257,6 +461,26 @@ $orders = $conn->query("SELECT o.*, u.username, u.email FROM orders o LEFT JOIN 
 
 $order_items = $conn->query("SELECT oi.*, b.ten_banh FROM order_items oi LEFT JOIN banh b ON oi.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
 $promotions = $conn->query("SELECT p.*, b.ten_banh FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
+$reviews = $conn->query("SELECT * FROM reviews ORDER BY timestamp DESC")->fetch_all(MYSQLI_ASSOC);
+$productImages = $conn->query("SELECT * FROM product_images ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
+
+$productImageMap = [];
+foreach ($productImages as $imgRow) {
+    $productImageMap[(int) $imgRow['product_id']][] = $imgRow;
+}
+
+$bestSalesRows = $conn->query(
+    "SELECT oi.banh_id, SUM(oi.quantity) AS sold_qty
+     FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     WHERE o.status IN ('paid','approved','delivered','completed')
+     GROUP BY oi.banh_id"
+)->fetch_all(MYSQLI_ASSOC);
+
+$bestSalesMap = [];
+foreach ($bestSalesRows as $row) {
+    $bestSalesMap[(int) $row['banh_id']] = (int) $row['sold_qty'];
+}
 
 // --- LOGIC THỐNG KÊ & BIỂU ĐỒ ---
 // Khởi tạo mảng doanh thu 7 ngày gần nhất = 0
@@ -626,12 +850,14 @@ $js_revenues = json_encode(array_values($chart_data));
         <div class="sidebar">
             <h2><i class="bi bi-flower1"></i> Bánh Store</h2>
             <nav class="nav flex-column">
-                <a class="nav-link active" onclick="showTab(event, 'dashboard')"><i class="bi bi-speedometer2"></i>
+                <a class="nav-link active" href="admin.php?tab=dashboard#dashboard" data-tab="dashboard" onclick="showTab(event, 'dashboard')"><i class="bi bi-speedometer2"></i>
                     Dashboard</a>
-                <a class="nav-link" onclick="showTab(event, 'orders')"><i class="bi bi-cart-check"></i> Đơn hàng</a>
-                <a class="nav-link" onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
-                <a class="nav-link" onclick="showTab(event, 'users')"><i class="bi bi-people"></i> Khách hàng</a>
-                <a class="nav-link" onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
+                <a class="nav-link" href="admin.php?tab=orders#orders" data-tab="orders" onclick="showTab(event, 'orders')"><i class="bi bi-cart-check"></i> Đơn hàng</a>
+                <a class="nav-link" href="admin.php?tab=products#products" data-tab="products" onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
+                <a class="nav-link" href="admin.php?tab=best-selling#best-selling" data-tab="best-selling" onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Best Selling</a>
+                <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials" onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
+                <a class="nav-link" href="admin.php?tab=users#users" data-tab="users" onclick="showTab(event, 'users')"><i class="bi bi-people"></i> Khách hàng</a>
+                <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions" onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
             </nav>
         </div>
 
@@ -781,7 +1007,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                             <?php
                                             $statusData = match (strtolower($o['status'])) {
                                                 'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
-                                                'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ'],
+                                                'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
                                                 'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                                 'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                                 'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -848,15 +1074,17 @@ $js_revenues = json_encode(array_values($chart_data));
                             <label class="form-label">Giá (VNĐ)</label>
                             <input type="number" name="gia" class="form-control" required>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="mo_ta" class="form-control" rows="2" placeholder="Mô tả ngắn về sản phẩm"></textarea>
+                        </div>
                         <div class="col-md-3">
                             <label class="form-label">Hình ảnh</label>
                             <input type="file" name="hinh_anh" class="form-control" required>
                         </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="is_featured" id="featCheck">
-                                <label class="form-check-label" for="featCheck">Nổi bật</label>
-                            </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ảnh bổ sung</label>
+                            <input type="file" name="gallery_images[]" class="form-control" multiple>
                         </div>
                         <div class="col-12">
                             <button name="add_product" class="btn btn-green"><i class="bi bi-plus-circle"></i> Thêm Sản
@@ -873,7 +1101,9 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <th>Tên</th>
                                 <th>Loại</th>
                                 <th>Giá</th>
-                                <th>Nổi bật</th>
+                                <th>Mô tả</th>
+                                <th>Cập nhật</th>
+                                <th>Gallery</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
@@ -883,10 +1113,59 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <tr>
                                     <td><img src="<?= $img['url'] ?>" width="50" height="50" style="object-fit:cover"
                                             class="rounded"></td>
-                                    <td><?= htmlspecialchars($p['ten_banh']) ?></td>
-                                    <td><span class="badge bg-light text-dark"><?= $p['loai'] ?></span></td>
-                                    <td><?= number_format($p['gia']) ?>đ</td>
-                                    <td><?= $p['is_featured'] ? '<i class="bi bi-star-fill text-warning"></i>' : '' ?></td>
+                                    <td>
+                                        <input type="text" name="ten_banh" class="form-control form-control-sm"
+                                            value="<?= htmlspecialchars($p['ten_banh']) ?>" form="product-form-<?= $p['id'] ?>">
+                                    </td>
+                                    <td>
+                                        <select name="loai" class="form-select form-select-sm" form="product-form-<?= $p['id'] ?>">
+                                            <option value="ngot" <?= $p['loai'] === 'ngot' ? 'selected' : '' ?>>Bánh ngọt</option>
+                                            <option value="man" <?= $p['loai'] === 'man' ? 'selected' : '' ?>>Bánh mặn</option>
+                                            <option value="kem" <?= $p['loai'] === 'kem' ? 'selected' : '' ?>>Bánh kem</option>
+                                            <option value="mi" <?= $p['loai'] === 'mi' ? 'selected' : '' ?>>Bánh mì</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="gia" class="form-control form-control-sm"
+                                            value="<?= (int) $p['gia'] ?>" form="product-form-<?= $p['id'] ?>">
+                                    </td>
+                                    <td>
+                                        <textarea name="mo_ta" class="form-control form-control-sm" rows="2"
+                                            form="product-form-<?= $p['id'] ?>"><?= htmlspecialchars($p['mo_ta'] ?? '') ?></textarea>
+                                    </td>
+                                    <td>
+                                        <form id="product-form-<?= $p['id'] ?>" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                            <input type="hidden" name="update_product" value="1">
+                                            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+                                            <input type="hidden" name="current_image" value="<?= htmlspecialchars($p['hinh_anh']) ?>">
+                                            <input type="file" name="hinh_anh" class="form-control form-control-sm">
+                                            <button class="btn btn-sm btn-green" type="submit"><i class="bi bi-save"></i></button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form method="POST" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                            <input type="hidden" name="update_product" value="1">
+                                            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+                                            <input type="hidden" name="ten_banh" value="<?= htmlspecialchars($p['ten_banh']) ?>">
+                                            <input type="hidden" name="loai" value="<?= htmlspecialchars($p['loai']) ?>">
+                                            <input type="hidden" name="gia" value="<?= (int) $p['gia'] ?>">
+                                            <input type="hidden" name="mo_ta" value="<?= htmlspecialchars($p['mo_ta'] ?? '') ?>">
+                                            <input type="hidden" name="current_image" value="<?= htmlspecialchars($p['hinh_anh']) ?>">
+                                            <input type="file" name="gallery_images[]" class="form-control form-control-sm" multiple>
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">Thêm ảnh</button>
+                                        </form>
+                                        <?php if (!empty($productImageMap[(int) $p['id']])): ?>
+                                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                                <?php foreach (array_slice($productImageMap[(int) $p['id']], 0, 4) as $gallery):
+                                                    $galleryUrl = buildImageUrl($gallery['image_path']);
+                                                ?>
+                                                    <img src="<?= $galleryUrl['url'] ?>" width="40" height="40" style="object-fit:cover;border-radius:8px;">
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>
                                         <a href="?delete_product_id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-danger"
                                             onclick="return confirm('Ngừng bán sản phẩm này?')">
@@ -922,6 +1201,96 @@ $js_revenues = json_encode(array_values($chart_data));
                                     <td><?= htmlspecialchars($u['username']) ?></td>
                                     <td><?= htmlspecialchars($u['email']) ?></td>
                                     <td><?= date('d/m/Y H:i', strtotime($u['created_at'])) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4B: BEST SELLING -->
+            <div id="best-selling" class="tab-content">
+                <h3 class="mb-4" style="color:#4a1d1f;">Best Selling</h3>
+
+                <div class="custom-table mb-4">
+                    <h5 class="mb-3">Chọn thủ công Best Selling</h5>
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Tên</th>
+                                    <th>Đã bán</th>
+                                    <th>Thủ công</th>
+                                    <th>Thứ tự</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($products as $p):
+                                    $img = buildImageUrl($p['hinh_anh']);
+                                    $soldQty = $bestSalesMap[(int) $p['id']] ?? 0;
+                                ?>
+                                    <tr>
+                                        <td><img src="<?= $img['url'] ?>" width="46" height="46" style="object-fit:cover" class="rounded"></td>
+                                        <td><?= htmlspecialchars($p['ten_banh']) ?></td>
+                                        <td><?= $soldQty ?></td>
+                                        <td>
+                                            <input type="hidden" name="product_ids[]" value="<?= $p['id'] ?>">
+                                            <input class="form-check-input" type="checkbox" name="manual_best[<?= $p['id'] ?>]" <?= !empty($p['is_best_manual']) ? 'checked' : '' ?>>
+                                        </td>
+                                        <td style="width: 120px;">
+                                            <input type="number" min="0" name="best_rank[<?= $p['id'] ?>]" class="form-control form-control-sm" value="<?= (int) ($p['best_rank'] ?? 0) ?>">
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button name="update_best_selling" class="btn btn-green">
+                                <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- TAB 4C: TESTIMONIALS -->
+            <div id="testimonials" class="tab-content">
+                <h3 class="mb-4" style="color:#4a1d1f;">Duyệt đánh giá khách hàng</h3>
+                <div class="custom-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên</th>
+                                <th>Nội dung</th>
+                                <th>Sao</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($reviews as $r): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($r['name']) ?></td>
+                                    <td><?= htmlspecialchars($r['text']) ?></td>
+                                    <td><?= htmlspecialchars($r['stars']) ?></td>
+                                    <td><span class="badge bg-light text-dark"><?= htmlspecialchars($r['status']) ?></span></td>
+                                    <td>
+                                        <form method="POST" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                            <input type="hidden" name="review_id" value="<?= $r['id'] ?>">
+                                            <input type="hidden" name="review_status" value="approved">
+                                            <button name="update_review_status" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i></button>
+                                        </form>
+                                        <form method="POST" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                            <input type="hidden" name="review_id" value="<?= $r['id'] ?>">
+                                            <input type="hidden" name="review_status" value="rejected">
+                                            <button name="update_review_status" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -1018,23 +1387,47 @@ $js_revenues = json_encode(array_values($chart_data));
             <?php endif; ?>
 
             // 1. Logic chuyển Tab
-            function showTab(evt, tabName) {
-                // Ẩn tất cả tab
+            function activateTab(tabName) {
+                if (!tabName) return;
                 var tabContent = document.getElementsByClassName("tab-content");
                 for (var i = 0; i < tabContent.length; i++) {
                     tabContent[i].classList.remove("active");
                 }
-                // Bỏ active ở link sidebar
+
                 var navLinks = document.getElementsByClassName("nav-link");
                 for (var i = 0; i < navLinks.length; i++) {
                     navLinks[i].classList.remove("active");
                 }
-                // Hiện tab được chọn
-                document.getElementById(tabName).classList.add("active");
-                evt.currentTarget.classList.add("active");
+
+                var tabElement = document.getElementById(tabName);
+                if (tabElement) {
+                    tabElement.classList.add("active");
+                }
+
+                var activeLink = document.querySelector('.nav-link[data-tab="' + tabName + '"]');
+                if (activeLink) {
+                    activeLink.classList.add("active");
+                }
+            }
+
+            function showTab(evt, tabName) {
+                if (evt) {
+                    evt.preventDefault();
+                }
+                activateTab(tabName);
+                if (history.replaceState) {
+                    history.replaceState(null, '', 'admin.php?tab=' + tabName + '#' + tabName);
+                } else {
+                    window.location.hash = tabName;
+                }
             }
 
             document.addEventListener('DOMContentLoaded', function () {
+                const params = new URLSearchParams(window.location.search);
+                const tabFromParam = params.get('tab');
+                const tabFromHash = window.location.hash.replace('#', '');
+                activateTab(tabFromParam || tabFromHash || 'dashboard');
+
                 const selectAll = document.getElementById('selectAllOrders');
                 if (!selectAll) return;
                 selectAll.addEventListener('change', function () {

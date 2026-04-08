@@ -20,6 +20,41 @@ $stmt->close();
 
 if (!$order) die("Không có quyền xem đơn này");
 
+function imgPath($path) {
+    if (!$path) return '/Cake/assets/img/no-image.jpg';
+    if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
+        return '/Cake/' . ltrim($path, '/');
+    }
+    if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
+        $path = str_replace('img/', 'assets/img/', $path);
+    }
+    return '/Cake/' . ltrim($path, '/');
+}
+
+function safeTransliterate(string $value): string {
+    $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    if ($converted === false || $converted === '') {
+        return $value;
+    }
+    return $converted;
+}
+
+function slugify(string $value, ?int $id = null): string {
+    $slug = safeTransliterate($value);
+    $slug = strtolower($slug ?: $value);
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    $slug = trim($slug, '-');
+    if ($id !== null) {
+        $suffix = '-' . $id;
+        if ($slug === '') {
+            $slug = 'san-pham' . $suffix;
+        } elseif (!str_ends_with($slug, $suffix)) {
+            $slug .= $suffix;
+        }
+    }
+    return $slug;
+}
+
 /* ===== TRẠNG THÁI ===== */
 $status = strtolower($order['status']);
 $statusClass = match ($status) {
@@ -33,9 +68,78 @@ $statusClass = match ($status) {
     default => 'warning'
 };
 
+$statusLabel = match ($status) {
+    'completed', 'thanh cong' => 'Hoàn tất',
+    'paid' => 'Đã thanh toán',
+    'approved', 'confirmed' => 'Đã xác nhận',
+    'delivering' => 'Đang giao hàng',
+    'delivered', 'da giao' => 'Đã giao hàng',
+    'failed' => 'Thất bại',
+    'cancelled', 'huy' => 'Đã hủy',
+    'pending', 'cho xac nhan' => 'Chờ xác nhận',
+    default => ucfirst($order['status'])
+};
+
+$allowedReviewStatuses = ['completed'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_product_review'])) {
+    if (!in_array($status, $allowedReviewStatuses, true)) {
+        $_SESSION['review_flash'] = 'Đơn hàng chưa đủ điều kiện để đánh giá.';
+        header("Location: order-detail.php?id={$order_id}#reviews");
+        exit;
+    }
+
+    $productId = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
+    $rating = isset($_POST['rating']) ? (int) $_POST['rating'] : 0;
+    $content = trim($_POST['content'] ?? '');
+
+    if ($productId <= 0 || $rating < 1 || $rating > 5) {
+        $_SESSION['review_flash'] = 'Vui lòng chọn số sao đánh giá.';
+        header("Location: order-detail.php?id={$order_id}#reviews");
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM order_items WHERE order_id = ? AND banh_id = ?");
+    $stmt->bind_param('ii', $order_id, $productId);
+    $stmt->execute();
+    $exists = (int) ($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+    $stmt->close();
+
+    if ($exists === 0) {
+        $_SESSION['review_flash'] = 'Sản phẩm không hợp lệ trong đơn hàng.';
+        header("Location: order-detail.php?id={$order_id}#reviews");
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM product_reviews WHERE order_id = ? AND product_id = ? AND user_id = ?");
+    $stmt->bind_param('iii', $order_id, $productId, $user_id);
+    $stmt->execute();
+    $already = (int) ($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+    $stmt->close();
+
+    if ($already > 0) {
+        $_SESSION['review_flash'] = 'Bạn đã đánh giá sản phẩm này.';
+        header("Location: order-detail.php?id={$order_id}#reviews");
+        exit;
+    }
+
+    $displayName = $_SESSION['username'] ?? $order['recipient_name'] ?? 'Khách hàng';
+    $stmt = $conn->prepare(
+        "INSERT INTO product_reviews (product_id, order_id, user_id, name, rating, content)
+         VALUES (?, ?, ?, ?, ?, ?)"
+    );
+    $stmt->bind_param('iiisis', $productId, $order_id, $user_id, $displayName, $rating, $content);
+    $stmt->execute();
+    $stmt->close();
+
+    $_SESSION['review_flash'] = 'Cảm ơn bạn đã đánh giá!';
+    header("Location: order-detail.php?id={$order_id}#reviews");
+    exit;
+}
+
 /* ===== CHI TIẾT BÁNH ===== */
 $stmt = $conn->prepare("
-    SELECT b.ten_banh, oi.quantity, oi.price
+    SELECT b.id, b.ten_banh, b.hinh_anh, b.slug, oi.quantity, oi.price
     FROM order_items oi
     JOIN banh b ON oi.banh_id = b.id
     WHERE oi.order_id = ?
@@ -44,6 +148,16 @@ $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+$reviewedProducts = [];
+$stmt = $conn->prepare("SELECT product_id FROM product_reviews WHERE order_id = ? AND user_id = ?");
+$stmt->bind_param('ii', $order_id, $user_id);
+$stmt->execute();
+$reviewRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+foreach ($reviewRows as $row) {
+    $reviewedProducts[(int) $row['product_id']] = true;
+}
 ?>
 
 <!DOCTYPE html>
@@ -230,7 +344,7 @@ body {
         <div>
             <h1>Chi tiết đơn hàng #<?= $order_id ?></h1>
             <div class="order-meta">
-                <span class="badge bg-<?= $statusClass ?>"><?= ucfirst($order['status']) ?></span>
+                <span class="badge bg-<?= $statusClass ?>"><?= $statusLabel ?></span>
                 <span class="badge bg-light text-dark"><?= htmlspecialchars($order['payment_method']) ?></span>
                 <span class="text-muted"><?= date("d/m/Y H:i", strtotime($order['created_at'])) ?></span>
             </div>
@@ -260,7 +374,7 @@ body {
             <h4><i class="fa-regular fa-clipboard"></i> Thông tin đơn</h4>
             <div class="order-list">
                 <div><span>Phương thức:</span> <?= htmlspecialchars($order['payment_method']) ?></div>
-                <div><span>Trạng thái:</span> <?= ucfirst($order['status']) ?></div>
+                <div><span>Trạng thái:</span> <?= $statusLabel ?></div>
                 <div><span>Mã đơn:</span> #<?= $order_id ?></div>
                 <div><span>Ngày đặt:</span> <?= date("d/m/Y H:i", strtotime($order['created_at'])) ?></div>
             </div>
@@ -293,6 +407,67 @@ body {
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="order-panel" id="reviews">
+        <h4><i class="fa-regular fa-star"></i> Đánh giá sản phẩm</h4>
+        <?php if (!empty($_SESSION['review_flash'])): ?>
+            <div class="alert alert-info"><?= htmlspecialchars($_SESSION['review_flash']) ?></div>
+            <?php unset($_SESSION['review_flash']); ?>
+        <?php endif; ?>
+
+        <?php if (!in_array($status, $allowedReviewStatuses, true)): ?>
+            <p>Đơn hàng chỉ có thể đánh giá khi đã hoàn tất.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table align-middle order-table">
+                    <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Đánh giá</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach($items as $it):
+                        $productSlug = !empty($it['slug']) ? $it['slug'] : slugify($it['ten_banh'], (int) $it['id']);
+                    ?>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="<?= imgPath($it['hinh_anh']) ?>" alt="<?= htmlspecialchars($it['ten_banh']) ?>" width="50" height="50" style="object-fit:cover;border-radius:10px;">
+                                    <a href="/Cake/product/<?= urlencode($productSlug) ?>" class="text-decoration-none">
+                                        <?= htmlspecialchars($it['ten_banh']) ?>
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                <?php if (!empty($reviewedProducts[(int) $it['id']])): ?>
+                                    <span class="badge bg-success">Đã đánh giá</span>
+                                <?php else: ?>
+                                    <form method="POST" class="d-flex flex-column gap-2">
+                                        <input type="hidden" name="submit_product_review" value="1">
+                                        <input type="hidden" name="product_id" value="<?= (int) $it['id'] ?>">
+                                        <div class="d-flex gap-2">
+                                            <select name="rating" class="form-select form-select-sm" style="max-width: 120px;" required>
+                                                <option value="">Sao</option>
+                                                <option value="5">5</option>
+                                                <option value="4">4</option>
+                                                <option value="3">3</option>
+                                                <option value="2">2</option>
+                                                <option value="1">1</option>
+                                            </select>
+                                            <button class="btn btn-sm btn-success" type="submit">Gửi</button>
+                                        </div>
+                                        <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Chia sẻ cảm nhận (không bắt buộc)"></textarea>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
 
     <div class="order-total">

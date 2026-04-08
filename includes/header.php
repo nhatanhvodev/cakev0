@@ -356,7 +356,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
-    function doSearch() {
+    function doAutocomplete() {
       let keyword = $("#searchInput").val().trim();
       if (keyword.length < 2) {
         $("#searchResult").hide().html("");
@@ -376,7 +376,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
             let html = "";
             res.products.forEach(p => {
               html += `
-<a class="search-item" href="/Cake/pages/product.php?search=${encodeURIComponent(p.ten_banh)}">
+<a class="search-item" href="/Cake/product/${encodeURIComponent(p.slug)}">
   <img src="${p.hinh_anh}" alt="${p.ten_banh}">
   <div class="search-info">
     <div class="search-name">${p.ten_banh}</div>
@@ -392,15 +392,22 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       });
     }
 
-    $("#searchInput").on("keyup", doSearch);
-    $("#searchBtn").on("click", doSearch);
+    function submitSearch() {
+      let keyword = $("#searchInput").val().trim();
+      if (!keyword) return;
+      window.location.href = "<?= BASE_URL ?>pages/product.php?search=" + encodeURIComponent(keyword);
+    }
 
-    $("#searchInput").on("keypress", function (e) {
+    $("#searchInput").on("keyup", function (e) {
       if (e.which === 13) {
         e.preventDefault();
-        doSearch();
+        submitSearch();
+        return;
       }
+      doAutocomplete();
     });
+
+    $("#searchBtn").on("click", submitSearch);
 
     $(document).on("click", function (e) {
       if (!$(e.target).closest(".search-box").length) {

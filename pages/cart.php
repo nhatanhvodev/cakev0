@@ -123,6 +123,9 @@ if ($action === 'add_custom') {
 
 function buildImageUrl($path) {
     if (!$path) return '/Cake/assets/img/no-image.jpg';
+    if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
+        return '/Cake/' . ltrim($path, '/');
+    }
     if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
         $path = str_replace('img/', 'assets/img/', $path);
     }

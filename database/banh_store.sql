@@ -50,11 +50,14 @@ INSERT INTO `admins` (`id`, `username`, `password`, `created_at`) VALUES
 CREATE TABLE `banh` (
   `id` int(11) NOT NULL,
   `ten_banh` varchar(255) NOT NULL,
+  `slug` varchar(255) DEFAULT NULL,
   `gia` decimal(10,2) NOT NULL,
   `hinh_anh` varchar(255) NOT NULL,
   `loai` varchar(50) NOT NULL,
   `mo_ta` text DEFAULT NULL,
-  `is_featured` tinyint(1) DEFAULT 0
+  `is_featured` tinyint(1) DEFAULT 0,
+  `is_best_manual` tinyint(1) DEFAULT 0,
+  `best_rank` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -413,6 +416,38 @@ INSERT INTO `reviews` (`id`, `name`, `text`, `stars`, `user_id`, `status`, `time
 (1, 'Nguyễn Văn A', 'Bánh rất ngon, giao hàng nhanh!', '★★★★★', 1, 'approved', 1714719600000),
 (2, 'Trần Thị B', 'Bánh kem hơi ngọt quá, nhưng nhìn rất đẹp.', '★★★★', 2, 'pending', 1714723200000),
 (3, 'Lê Minh C', 'Bánh mì mềm và thơm, sẽ mua lại!', '★★★★★', 3, 'approved', 1714726800000);
+
+-- --------------------------------------------------------
+--
+-- Table structure for table `product_reviews`
+--
+
+CREATE TABLE `product_reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `rating` tinyint(1) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_product_reviews_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+--
+-- Table structure for table `product_images`
+--
+
+CREATE TABLE `product_images` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `image_path` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_product_images_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 

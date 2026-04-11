@@ -5,6 +5,7 @@ $pageTitle = 'Về chúng tôi';
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= !empty($pageTitle) ? htmlspecialchars($pageTitle) . ' | Gấu Bakery' : 'Gấu Bakery' ?></title>
@@ -261,14 +262,14 @@ body {
         <div class="hero-visual">
             <img src="/Cake/assets/img/banner3.jpg" alt="Không gian Gấu Bakery">
             <div class="hero-float float-top">
-                <img src="/Cake/assets/img/banhngot/i1.jpg" alt="Bánh ngọt">
+                <img src="/Cake/assets/uploads/banhngot/banh_69d9eb68d56c32.13741672.jpg" alt="Bánh ngọt">
                 <div>
                     <div style="font-size:12px; font-weight:600;">Bánh mới</div>
                     <div style="font-size:11px; opacity:.7;">Mỗi sáng</div>
                 </div>
             </div>
             <div class="hero-float float-bottom">
-                <img src="/Cake/assets/img/banhkem/bk1.jpg" alt="Bánh kem">
+                <img src="/Cake/assets/uploads/banhkem/banh_69da05b2dce992.03049715.jpg" alt="Bánh kem">
                 <div>
                     <div style="font-size:12px; font-weight:600;">Signature</div>
                     <div style="font-size:11px; opacity:.7;">Bán chạy</div>

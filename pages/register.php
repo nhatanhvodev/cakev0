@@ -59,6 +59,7 @@ $conn->set_charset("utf8mb4"); //
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title>Đăng ký tài khoản</title> <!-- -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -279,14 +280,14 @@ $conn->set_charset("utf8mb4"); //
                     <div class="visual-stack">
                         <img src="/Cake/assets/img/banner1.jpg" alt="Bánh ngon mỗi ngày">
                         <div class="float-card float-one">
-                            <img src="/Cake/assets/img/banhngot/i1.jpg" alt="Bánh ngọt">
+                            <img src="/Cake/assets/uploads/banhngot/banh_69d9eb68d56c32.13741672.jpg" alt="Bánh ngọt">
                             <div>
                                 <div style="font-size:12px; font-weight:600;">Bánh mới</div>
                                 <div style="font-size:11px; opacity:.7;">Mỗi ngày</div>
                             </div>
                         </div>
                         <div class="float-card float-two">
-                            <img src="/Cake/assets/img/banhkem/bk1.jpg" alt="Bánh kem">
+                            <img src="/Cake/assets/uploads/banhkem/banh_69da05b2dce992.03049715.jpg" alt="Bánh kem">
                             <div>
                                 <div style="font-size:12px; font-weight:600;">Đặc sắc</div>
                                 <div style="font-size:11px; opacity:.7;">Yêu thích</div>

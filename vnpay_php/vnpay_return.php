@@ -29,6 +29,7 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
 <html lang="vi">
 
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title>Kết quả thanh toán VNPAY</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">

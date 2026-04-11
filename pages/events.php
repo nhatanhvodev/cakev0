@@ -61,6 +61,17 @@ $sql = "
 ";
 $promotions = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
 
+function buildImageUrl(?string $path): string {
+  if (!$path) return '/Cake/assets/img/no-image.jpg';
+  if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
+    return '/Cake/' . ltrim($path, '/');
+  }
+  if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
+    $path = str_replace('img/', 'assets/img/', $path);
+  }
+  return '/Cake/' . ltrim($path, '/');
+}
+
 /* ================== TRẠNG THÁI LOGIN ================== */
 $isLoggedIn   = isset($_SESSION['user_id']);
 $loggedInUser = $_SESSION['username'] ?? null;
@@ -69,6 +80,7 @@ $loggedInUser = $_SESSION['username'] ?? null;
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+  <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
 <meta charset="UTF-8">
 <title>Sự kiện & Khuyến mãi | Gấu Bakery</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -315,7 +327,7 @@ body{
 <?php foreach ($promotions as $p): ?>
   <div class="product-card">
 
-    <img src="<?= htmlspecialchars($p['hinh_anh']) ?>">
+    <img src="<?= htmlspecialchars(buildImageUrl($p['hinh_anh'])) ?>">
     <div class="product-name"><?= htmlspecialchars($p['ten_banh']) ?></div>
 
     <div class="price">

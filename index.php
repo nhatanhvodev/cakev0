@@ -225,7 +225,7 @@ $slides = [
     [
         'title' => 'Tết Đoàn Viên',
         'sub'   => 'Bánh thủ công tinh túy – trọn vị yêu thương cho mùa đoàn viên.',
-        'img_noi' => 'assets/img/banhngot/i6.jpg',
+        'img_noi' => 'assets/uploads/banhngot/banh_69d9ea7d9ec524.00079120.jpg',
         'link'  => '/Cake/pages/product.php',
         'color' => 'linear-gradient(135deg, #fff5f5, #ffe0e0)',
         'accent' => '#ff4d4d',
@@ -234,7 +234,7 @@ $slides = [
     [
         'title' => 'Ngọt Ngào Đam Mê',
         'sub'   => 'Hương vị Sô-cô-la bản sắc cho những khoảnh khắc thăng hoa.',
-        'img_noi' => 'assets/img/banhngot/i7.jpg',
+        'img_noi' => 'assets/uploads/banhngot/banh_69d9eabc6c4894.51052278.jpg',
         'link'  => '/Cake/pages/product.php',
         'color' => 'linear-gradient(135deg, #fff0f6, #ffdae9)',
         'accent' => '#ff3385',
@@ -243,7 +243,7 @@ $slides = [
     [
         'title' => 'Tươi Mới Mỗi Ngày',
         'sub'   => 'Thưởng thức vị tươi mát từ trái cây tự nhiên trên nền kem mịn.',
-        'img_noi' => 'assets/img/banhngot/i8.jpg',
+        'img_noi' => 'assets/uploads/banhngot/banh_69d9eac59eb400.94591478.jpg',
         'link'  => '/Cake/pages/product.php',
         'color' => 'linear-gradient(135deg, #f0f7ff, #d9e9ff)',
         'accent' => '#3399ff',
@@ -306,6 +306,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gấu Bakery - Trang Chủ</title>
@@ -938,16 +939,16 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 <body>
 
 <?php
-$heroImage = buildImageUrl($slides[0]['img_noi'] ?? 'assets/img/banhngot/i6.jpg');
+$heroImage = buildImageUrl($slides[0]['img_noi'] ?? 'assets/uploads/banhkem/banh_69da06e3dd40d8.60291082.jpg');
 $heroStripImages = [
-    'assets/img/banhngot/i1.jpg',
-    'assets/img/banhngot/i3.jpg',
-    'assets/img/banhngot/i6.jpg',
-    'assets/img/banhngot/i8.jpg',
-    'assets/img/banhkem/b1.jpg',
-    'assets/img/banhkem/b3.jpg',
-    'assets/img/banhkem/b6.jpg',
-    'assets/img/banhkem/b8.jpg'
+    'assets/uploads/banhngot/banh_69d9eacf5fa736.03782856.jpg',
+    'assets/uploads/banhngot/banh_69d9eb5ec0a885.68998267.jpg',
+    'assets/uploads/banhngot/banh_69d9eb68d54ca6.75574718.jpg',
+    'assets/uploads/banhngot/banh_69d9eb68d56c32.13741672.jpg',
+    'assets/uploads/banhkem/banh_69da05a99d5d70.48226621.jpg',
+    'assets/uploads/banhkem/banh_69da05b2dce992.03049715.jpg',
+    'assets/uploads/banhkem/banh_69da05bf64ff52.86378343.jpg',
+    'assets/uploads/banhkem/banh_69da05c7d16e92.29230616.jpg'
 ];
 ?>
 
@@ -1025,11 +1026,11 @@ $heroStripImages = [
                 <p class="story-desc">Chúng tôi sử dụng nguyên liệu chất lượng cao được lấy từ các đơn vị cung cấp uy tín. Các nhà đầu tư của chúng tôi đều là những người giàu kinh nghiệm trong lĩnh vực thực phẩm. Vì vậy, các sản phẩm chúng tôi sản xuất được đảm bảo về chất lượng và hương vị. Nó ngon đến mức bạn phải thử ngay!</p>
                 <a class="story-link" href="/Cake/pages/about.php">Đọc thêm <span></span></a>
             </div>
-            <img class="story-image" src="/Cake/assets/img/banhngot/i7.jpg" alt="Fresh baked">
+            <img class="story-image" src="/Cake/assets/uploads/banhngot/banh_69d9eb68d58901.56787194.jpg" alt="Fresh baked">
         </div>
 
         <div class="story-row reverse">
-            <img class="story-image" src="/Cake/assets/img/banhngot/i8.jpg" alt="Bakery space">
+            <img class="story-image" src="/Cake/assets/uploads/banhngot/banh_69d9ec089b5332.20465960.jpg" alt="Bakery space">
             <div>
                 <h3 class="story-title">Hãy đến và chọn những món bạn yêu thích nhất!</h3>
                 <p class="story-desc">Hãy đến trực tiếp cửa hàng của chúng tôi để thưởng thức hương vị thơm ngon của bánh vừa mới ra lò. Vừa thưởng thức bánh cùng một tách cà phê hoặc trà trong không gian cửa hàng tiện nghi của chúng tôi. Rất thích hợp để trò chuyện, gặp gỡ đồng nghiệp.</p>

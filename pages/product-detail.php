@@ -225,6 +225,7 @@ $extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($selected['ten_banh']) ?> | Gấu Bakery</title>
@@ -376,21 +377,6 @@ body {
     margin-right: 8px;
 }
 
-.detail-meta {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-}
-
-.detail-meta span {
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: #fbedcd;
-    color: #4a1d1f;
-    font-size: 13px;
-    font-weight: 600;
-}
 
 .detail-actions {
     display: flex;
@@ -561,11 +547,12 @@ body {
                     <?= number_format($selected['gia']) ?>đ
                 <?php endif; ?>
             </div>
-            <div class="detail-meta">
-                <span><?= htmlspecialchars($selected['loai']) ?></span>
-            </div>
             <?php if (!empty($selected['mo_ta'])): ?>
-                <p><?= htmlspecialchars($selected['mo_ta']) ?></p>
+                <?php
+                $desc = html_entity_decode($selected['mo_ta'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $desc = strip_tags($desc, '<p><br><strong><b><em><i><u><ul><ol><li><a><span><h1><h2><h3><h4><h5><h6>');
+                ?>
+                <div class="detail-desc"><?= $desc ?></div>
             <?php else: ?>
                 <p>Thông tin chi tiết sẽ được cập nhật sớm.</p>
             <?php endif; ?>

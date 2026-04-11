@@ -22,6 +22,7 @@ if (isset($_POST['action'])) {
 
     if ($action === 'add') {
         $banh_id = (int)$_POST['banh_id'];
+        $qty = max(1, (int)($_POST['qty'] ?? 1));
 
         if ($banh_id <= 0) {
             echo json_encode(['success' => false]);
@@ -38,13 +39,13 @@ if (isset($_POST['action'])) {
         if (!$is_new) {
             $conn->query("
                 UPDATE cart 
-                SET quantity = quantity + 1
+                SET quantity = quantity + $qty
                 WHERE user_id = $user_id AND banh_id = $banh_id
             ");
         } else {
             $conn->query("
                 INSERT INTO cart (user_id, banh_id, quantity)
-                VALUES ($user_id, $banh_id, 1)
+                VALUES ($user_id, $banh_id, $qty)
             ");
         }
 
@@ -150,6 +151,7 @@ foreach ($cartItems as $item) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title><?= $pageTitle ?></title>
     
@@ -224,12 +226,12 @@ foreach ($cartItems as $item) {
                 <table class="table align-middle text-center">
                     <thead>
                         <tr>
-                            <th><i class="fa-solid fa-circle-xmark" style="color: #d32f2f;"></i></th>
-                            <th><i class="fa-regular fa-image" style="color: #8b4513;"></i></th>
+                            <th><i class="fa-solid fa-circle-xmark" style="color: #000000;"></i></th>
+                            <th><i class="fa-regular fa-image" style="color: #000000;"></i></th>
                             <th>Sản phẩm</th>
-                            <th><i class="fa-solid fa-tags" style="color: #ff6b9c;"></i> Đơn giá</th>
-                            <th><i class="fa-solid fa-box-open" style="color: #8b4513;"></i> Số lượng</th>
-                            <th><i class="fa-solid fa-money-bill-wave" style="color: #2e7d32;"></i> Tổng</th>
+                            <th><i class="fa-solid fa-tags" style="color: #000000;"></i> Đơn giá</th>
+                            <th><i class="fa-solid fa-box-open" style="color: #000000;"></i> Số lượng</th>
+                            <th><i class="fa-solid fa-money-bill-wave" style="color: #000000;"></i> Tổng</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -289,7 +291,7 @@ foreach ($cartItems as $item) {
                 </div>
                 <div class="col-md-6">
                     <div class="summary-box">
-                        <h5><i class="fa-solid fa-money-bills" style="color: #2e7d32;"></i> Tổng giỏ hàng</h5>
+                        <h5><i class="fa-solid fa-money-bills" style="color: #000000;"></i> Tổng giỏ hàng</h5>
                         <table class="table mb-3">
                             <tr>
                                 <td>Tạm tính</td>
@@ -302,7 +304,7 @@ foreach ($cartItems as $item) {
                         </table>
                         <div class="d-flex justify-content-between">
                             <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i> Cập nhật</button>
-                            <a href="/Cake/pages/checkout.php" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #8b4513;"></i> Thanh toán</a>
+                            <a href="/Cake/pages/checkout.php" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toán</a>
                         </div>
                     </div>
                 </div>

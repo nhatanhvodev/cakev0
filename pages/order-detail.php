@@ -163,6 +163,7 @@ foreach ($reviewRows as $row) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
 <meta charset="UTF-8">
 <title>Chi tiết đơn hàng #<?= $order_id ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">

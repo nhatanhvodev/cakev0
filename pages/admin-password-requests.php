@@ -53,6 +53,7 @@ $result = $conn->query($sql);
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title>Quản lý yêu cầu đặt lại mật khẩu</title>
 </head>

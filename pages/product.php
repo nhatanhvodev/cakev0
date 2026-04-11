@@ -128,6 +128,7 @@ $extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= !empty($pageTitle) ? htmlspecialchars($pageTitle) . ' | Gấu Bakery' : 'Gấu Bakery' ?></title>
@@ -469,6 +470,7 @@ function showCat(id, btn) {
     const target = document.getElementById(id);
     if (target) target.classList.remove('hidden');
     if (btn) btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function openQty(id, name, price, imgUrl) {

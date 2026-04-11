@@ -165,28 +165,41 @@ if (isset($_SESSION['admin_logged_in'])) {
 
         /* ===== UPLOAD HÌNH ẢNH ===== */
         $hinh_anh = '';
-        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/admin/img/uploads/banh{$loai}/";
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/assets/uploads/banh{$loai}/";
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
 
-        if (isset($_FILES['hinh_anh']) && $_FILES['hinh_anh']['error'] === 0) {
-            $ext = strtolower(pathinfo($_FILES['hinh_anh']['name'], PATHINFO_EXTENSION));
-            $allow = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($ext, $allow)) {
-                setAdminToast("Định dạng ảnh không hợp lệ (hỗ trợ: jpg, png, webp)", "error");
-                redirectToTab('products');
-            }
+        $uploadedImages = $_FILES['product_images'] ?? null;
+        if (!$uploadedImages || empty($uploadedImages['name'][0])) {
+            setAdminToast("Vui lòng chọn ít nhất 1 ảnh sản phẩm", "error");
+            redirectToTab('products');
+        }
 
+        $allow = ['jpg', 'jpeg', 'png', 'webp'];
+        $uploadedPaths = [];
+        foreach ($uploadedImages['name'] as $index => $name) {
+            if ($uploadedImages['error'][$index] !== 0) {
+                continue;
+            }
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            if (!in_array($ext, $allow)) {
+                continue;
+            }
             $fileName = uniqid('banh_', true) . '.' . $ext;
             $targetPath = $upload_dir . $fileName;
-            $hinh_anh = "admin/img/uploads/banh{$loai}/" . $fileName;
-
-            if (!move_uploaded_file($_FILES['hinh_anh']['tmp_name'], $targetPath)) {
-                setAdminToast("Không thể tải ảnh lên máy chủ", "error");
-                redirectToTab('products');
+            $relativePath = "assets/uploads/banh{$loai}/" . $fileName;
+            if (move_uploaded_file($uploadedImages['tmp_name'][$index], $targetPath)) {
+                $uploadedPaths[] = $relativePath;
             }
         }
+
+        if (empty($uploadedPaths)) {
+            setAdminToast("Không thể tải ảnh lên máy chủ", "error");
+            redirectToTab('products');
+        }
+
+        $hinh_anh = $uploadedPaths[0];
 
         /* ===== INSERT DB ===== */
         $stmt = $conn->prepare(
@@ -212,27 +225,13 @@ if (isset($_SESSION['admin_logged_in'])) {
             $slugStmt->bind_param('si', $newSlug, $newId);
             $slugStmt->execute();
             $slugStmt->close();
-
-            if (!empty($_FILES['gallery_images']['name'][0])) {
+            if (count($uploadedPaths) > 1) {
                 $galleryStmt = $conn->prepare(
                     "INSERT INTO product_images (product_id, image_path) VALUES (?, ?)"
                 );
-                foreach ($_FILES['gallery_images']['name'] as $index => $name) {
-                    if ($_FILES['gallery_images']['error'][$index] !== 0) {
-                        continue;
-                    }
-                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                    $allow = ['jpg', 'jpeg', 'png', 'webp'];
-                    if (!in_array($ext, $allow)) {
-                        continue;
-                    }
-                    $fileName = uniqid('banh_', true) . '.' . $ext;
-                    $targetPath = $upload_dir . $fileName;
-                    $relativePath = "admin/img/uploads/banh{$loai}/" . $fileName;
-                    if (move_uploaded_file($_FILES['gallery_images']['tmp_name'][$index], $targetPath)) {
-                        $galleryStmt->bind_param('is', $newId, $relativePath);
-                        $galleryStmt->execute();
-                    }
+                foreach (array_slice($uploadedPaths, 1) as $path) {
+                    $galleryStmt->bind_param('is', $newId, $path);
+                    $galleryStmt->execute();
                 }
                 $galleryStmt->close();
             }
@@ -254,7 +253,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         $gia = isset($_POST['gia']) ? (float) $_POST['gia'] : 0;
         $mo_ta = trim($_POST['mo_ta'] ?? '');
         $currentImage = $_POST['current_image'] ?? '';
-        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/admin/img/uploads/banh{$loai}/";
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/assets/uploads/banh{$loai}/";
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
@@ -265,21 +264,37 @@ if (isset($_SESSION['admin_logged_in'])) {
         }
 
         $hinh_anh = $currentImage;
-        if (isset($_FILES['hinh_anh']) && $_FILES['hinh_anh']['error'] === 0) {
-            $ext = strtolower(pathinfo($_FILES['hinh_anh']['name'], PATHINFO_EXTENSION));
+        $replaceMain = isset($_POST['replace_main_image']) && $_POST['replace_main_image'] === '1';
+        $uploadedImages = $_FILES['product_images'] ?? null;
+        $uploadedPaths = [];
+        if ($uploadedImages && !empty($uploadedImages['name'][0])) {
             $allow = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($ext, $allow)) {
-                setAdminToast("Định dạng ảnh không hợp lệ (hỗ trợ: jpg, png, webp)", "error");
-                redirectToTab('products');
+            foreach ($uploadedImages['name'] as $index => $name) {
+                if ($uploadedImages['error'][$index] !== 0) {
+                    continue;
+                }
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                if (!in_array($ext, $allow)) {
+                    continue;
+                }
+                $fileName = uniqid('banh_', true) . '.' . $ext;
+                $targetPath = $upload_dir . $fileName;
+                $relativePath = "assets/uploads/banh{$loai}/" . $fileName;
+                if (move_uploaded_file($uploadedImages['tmp_name'][$index], $targetPath)) {
+                    $uploadedPaths[] = $relativePath;
+                }
             }
+        }
 
-            $fileName = uniqid('banh_', true) . '.' . $ext;
-            $targetPath = $upload_dir . $fileName;
-            $hinh_anh = "admin/img/uploads/banh{$loai}/" . $fileName;
-
-            if (!move_uploaded_file($_FILES['hinh_anh']['tmp_name'], $targetPath)) {
-                setAdminToast("Không thể tải ảnh lên máy chủ", "error");
-                redirectToTab('products');
+        $galleryPaths = $uploadedPaths;
+        if (!empty($uploadedPaths) && $replaceMain) {
+            $hinh_anh = $uploadedPaths[0];
+            $galleryPaths = array_slice($uploadedPaths, 1);
+            if ($currentImage && $currentImage !== $hinh_anh) {
+                $oldPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($currentImage, '/');
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
             }
         }
 
@@ -291,31 +306,50 @@ if (isset($_SESSION['admin_logged_in'])) {
         $stmt->execute();
         $stmt->close();
 
-        if (!empty($_FILES['gallery_images']['name'][0])) {
+        if (!empty($galleryPaths)) {
             $galleryStmt = $conn->prepare(
                 "INSERT INTO product_images (product_id, image_path) VALUES (?, ?)"
             );
-            foreach ($_FILES['gallery_images']['name'] as $index => $name) {
-                if ($_FILES['gallery_images']['error'][$index] !== 0) {
-                    continue;
-                }
-                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                $allow = ['jpg', 'jpeg', 'png', 'webp'];
-                if (!in_array($ext, $allow)) {
-                    continue;
-                }
-                $fileName = uniqid('banh_', true) . '.' . $ext;
-                $targetPath = $upload_dir . $fileName;
-                $relativePath = "admin/img/uploads/banh{$loai}/" . $fileName;
-                if (move_uploaded_file($_FILES['gallery_images']['tmp_name'][$index], $targetPath)) {
-                    $galleryStmt->bind_param('is', $productId, $relativePath);
-                    $galleryStmt->execute();
-                }
+            foreach ($galleryPaths as $path) {
+                $galleryStmt->bind_param('is', $productId, $path);
+                $galleryStmt->execute();
             }
             $galleryStmt->close();
         }
 
         setAdminToast("Đã cập nhật sản phẩm");
+        regenerateCsrfToken();
+        redirectToTab('products');
+    }
+
+    /* --- XÓA ẢNH GALLERY --- */
+    if (
+        $_SERVER['REQUEST_METHOD'] === 'POST' &&
+        isset($_POST['delete_product_image']) &&
+        hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+    ) {
+        $imageId = (int) $_POST['delete_product_image'];
+        if ($imageId > 0) {
+            $stmt = $conn->prepare("SELECT image_path FROM product_images WHERE id = ?");
+            $stmt->bind_param('i', $imageId);
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!empty($row['image_path'])) {
+                $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($row['image_path'], '/');
+                if (is_file($fullPath)) {
+                    unlink($fullPath);
+                }
+            }
+
+            $stmt = $conn->prepare("DELETE FROM product_images WHERE id = ?");
+            $stmt->bind_param('i', $imageId);
+            $stmt->execute();
+            $stmt->close();
+
+            setAdminToast("Đã xóa ảnh gallery");
+        }
         regenerateCsrfToken();
         redirectToTab('products');
     }
@@ -436,16 +470,140 @@ $js_dates = '[]';
 $js_revenues = '[]';
 
 if (isset($_SESSION['admin_logged_in'])) {
+    if (isset($_GET['delete_user_id'])) {
+        $userId = (int) $_GET['delete_user_id'];
+        try {
+            $conn->begin_transaction();
+
+            $stmt = $conn->prepare("DELETE FROM likes WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM login_logs WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM login_tokens WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM password_reset_requests WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM reviews WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM product_reviews WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare(
+                "DELETE oi FROM order_items oi JOIN orders o ON oi.order_id = o.id WHERE o.user_id = ?"
+            );
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM orders WHERE user_id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->commit();
+            setAdminToast("Đã xóa khách hàng thành công!");
+        } catch (mysqli_sql_exception $e) {
+            $conn->rollback();
+            setAdminToast("Xóa khách hàng thất bại. Vui lòng thử lại.", "error");
+        }
+
+        redirectToTab('users');
+    }
+
+    if (isset($_GET['delete_order_id'])) {
+        $orderId = (int) $_GET['delete_order_id'];
+        try {
+            $conn->begin_transaction();
+
+            $stmt = $conn->prepare("DELETE FROM product_reviews WHERE order_id = ?");
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM order_items WHERE order_id = ?");
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM orders WHERE id = ?");
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->commit();
+            setAdminToast("Đã xóa đơn hàng thành công!");
+        } catch (mysqli_sql_exception $e) {
+            $conn->rollback();
+            setAdminToast("Xóa đơn hàng thất bại: " . $e->getMessage(), "error");
+        }
+
+        redirectToTab('orders');
+    }
+
     if (isset($_GET['delete_product_id'])) {
         $id = (int) $_GET['delete_product_id'];
+        try {
+            $conn->begin_transaction();
 
-        $stmt = $conn->prepare(
-            "UPDATE banh SET is_deleted = 1 WHERE id = ?"
-        );
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
+            $stmt = $conn->prepare("DELETE FROM promotions WHERE banh_id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
 
-        setAdminToast("Đã ngừng bán sản phẩm thành công!");
+            $stmt = $conn->prepare("DELETE FROM order_items WHERE banh_id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM product_images WHERE product_id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM product_reviews WHERE product_id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("DELETE FROM banh WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->commit();
+            setAdminToast("Đã xóa sản phẩm thành công!");
+        } catch (mysqli_sql_exception $e) {
+            $conn->rollback();
+            setAdminToast("Xóa sản phẩm thất bại. Vui lòng thử lại.", "error");
+        }
+
         redirectToTab('products');
     }
 }
@@ -453,7 +611,13 @@ if (isset($_SESSION['admin_logged_in'])) {
 
 // Lấy dữ liệu từ DB
 $products = $conn->query("SELECT * FROM banh ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
-$users = $conn->query("SELECT * FROM users ORDER BY created_at DESC")->fetch_all(MYSQLI_ASSOC);
+$users = $conn->query(
+    "SELECT u.*, COALESCE(SUM(CASE WHEN o.status IN ('paid','approved','delivered','completed') THEN o.total_amount ELSE 0 END), 0) AS total_spent
+     FROM users u
+     LEFT JOIN orders o ON o.user_id = u.id
+     GROUP BY u.id
+     ORDER BY u.created_at DESC"
+)->fetch_all(MYSQLI_ASSOC);
 
 // Lấy đơn hàng kèm thông tin user (nếu có)
 // Lưu ý: Nếu user_id null hoặc đã xóa user, vẫn nên hiện đơn hàng -> dùng LEFT JOIN
@@ -517,6 +681,7 @@ $js_revenues = json_encode(array_values($chart_data));
 <html lang="vi">
 
 <head>
+    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Gấu Bakery</title>
@@ -528,6 +693,7 @@ $js_revenues = json_encode(array_values($chart_data));
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tiny.cloud/1/8ewsj6abyahhsoqf0ygrqyejbeo3wacxyil67w9581kjxt80/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         :root {
             --brown-900: #3c1819;
@@ -683,6 +849,51 @@ $js_revenues = json_encode(array_values($chart_data));
             transform: translateY(-5px);
         }
 
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .confirm-modal.is-open {
+            display: flex;
+        }
+
+        .confirm-modal-box {
+            background: #fff;
+            width: 92%;
+            max-width: 420px;
+            border-radius: 22px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+            animation: fadeUp 0.25s ease;
+        }
+
+        .confirm-modal-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            color: var(--brown-800);
+            font-weight: 700;
+        }
+
+        .confirm-modal-desc {
+            margin: 0 0 20px;
+            color: #6b6b6b;
+            font-size: 14px;
+        }
+
+        .confirm-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
         .stat-info h5 {
             margin: 0;
             font-size: 0.9rem;
@@ -807,6 +1018,10 @@ $js_revenues = json_encode(array_values($chart_data));
 
         .btn-delete:hover {
             background: #c0392b;
+        }
+
+        .is-hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -982,6 +1197,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                     <th>Tổng tiền</th>
                                     <th>Trạng thái</th>
                                     <th>Cập nhật</th>
+                                    <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1039,6 +1255,13 @@ $js_revenues = json_encode(array_values($chart_data));
                                                 <?php endforeach; ?>
                                             </select>
                                         </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-danger order-delete-btn"
+                                                data-delete-url="?delete_order_id=<?= $o['id'] ?>"
+                                                data-order-id="<?= $o['id'] ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -1056,39 +1279,54 @@ $js_revenues = json_encode(array_values($chart_data));
             <div id="products" class="tab-content">
                 <h3 class="mb-4" style="color:#4a1d1f;">Danh Sách Sản Phẩm</h3>
                 <div class="card p-4 mb-4 border-0 shadow-sm">
-                    <form method="POST" enctype="multipart/form-data" class="row g-3">
+                    <form id="productForm" method="POST" enctype="multipart/form-data" class="row g-3">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="product_id" id="productId">
+                        <input type="hidden" name="current_image" id="currentImage">
                         <div class="col-md-3">
                             <label class="form-label">Tên bánh</label>
-                            <input type="text" name="ten_banh" class="form-control" required>
+                            <input type="text" name="ten_banh" id="productName" class="form-control" required>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Loại</label>
-                            <select name="loai" class="form-select">
+                            <select name="loai" id="productType" class="form-select">
                                 <option value="ngot">Bánh ngọt</option>
                                 <option value="man">Bánh mặn</option>
                                 <option value="kem">Bánh kem</option>
+                                <option value="mi">Bánh mì</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Giá (VNĐ)</label>
-                            <input type="number" name="gia" class="form-control" required>
+                            <input type="number" name="gia" id="productPrice" class="form-control" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Mô tả</label>
-                            <textarea name="mo_ta" class="form-control" rows="2" placeholder="Mô tả ngắn về sản phẩm"></textarea>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Hình ảnh</label>
-                            <input type="file" name="hinh_anh" class="form-control" required>
+                            <textarea name="mo_ta" id="productDesc" class="form-control editor" rows="6" placeholder="Mô tả ngắn về sản phẩm"></textarea>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Ảnh bổ sung</label>
-                            <input type="file" name="gallery_images[]" class="form-control" multiple>
+                            <label class="form-label">Hình ảnh (ảnh đầu là ảnh chính)</label>
+                            <input type="file" name="product_images[]" class="form-control" multiple>
+                            <small class="text-muted">Bỏ trống nếu không đổi ảnh khi cập nhật.</small>
                         </div>
-                        <div class="col-12">
-                            <button name="add_product" class="btn btn-green"><i class="bi bi-plus-circle"></i> Thêm Sản
-                                Phẩm</button>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="replace_main_image" value="1" id="replaceMain">
+                                <label class="form-check-label" for="replaceMain">
+                                    Đặt ảnh đầu làm ảnh chính
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex flex-wrap gap-2">
+                            <button id="addProductBtn" name="add_product" class="btn btn-green">
+                                <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+                            </button>
+                            <button id="updateProductBtn" name="update_product" class="btn btn-outline-primary is-hidden">
+                                <i class="bi bi-save"></i> Lưu cập nhật
+                            </button>
+                            <button id="cancelEditBtn" type="button" class="btn btn-outline-secondary is-hidden">
+                                <i class="bi bi-x-circle"></i> Hủy sửa
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1102,7 +1340,6 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <th>Loại</th>
                                 <th>Giá</th>
                                 <th>Mô tả</th>
-                                <th>Cập nhật</th>
                                 <th>Gallery</th>
                                 <th>Hành động</th>
                             </tr>
@@ -1113,64 +1350,45 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <tr>
                                     <td><img src="<?= $img['url'] ?>" width="50" height="50" style="object-fit:cover"
                                             class="rounded"></td>
+                                    <td><?= htmlspecialchars($p['ten_banh']) ?></td>
+                                    <td><?= htmlspecialchars($p['loai']) ?></td>
+                                    <td><?= number_format((int) $p['gia']) ?>đ</td>
+                                    <td><?= !empty($p['mo_ta']) ? 'Có mô tả' : 'Chưa có' ?></td>
                                     <td>
-                                        <input type="text" name="ten_banh" class="form-control form-control-sm"
-                                            value="<?= htmlspecialchars($p['ten_banh']) ?>" form="product-form-<?= $p['id'] ?>">
-                                    </td>
-                                    <td>
-                                        <select name="loai" class="form-select form-select-sm" form="product-form-<?= $p['id'] ?>">
-                                            <option value="ngot" <?= $p['loai'] === 'ngot' ? 'selected' : '' ?>>Bánh ngọt</option>
-                                            <option value="man" <?= $p['loai'] === 'man' ? 'selected' : '' ?>>Bánh mặn</option>
-                                            <option value="kem" <?= $p['loai'] === 'kem' ? 'selected' : '' ?>>Bánh kem</option>
-                                            <option value="mi" <?= $p['loai'] === 'mi' ? 'selected' : '' ?>>Bánh mì</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="number" name="gia" class="form-control form-control-sm"
-                                            value="<?= (int) $p['gia'] ?>" form="product-form-<?= $p['id'] ?>">
-                                    </td>
-                                    <td>
-                                        <textarea name="mo_ta" class="form-control form-control-sm" rows="2"
-                                            form="product-form-<?= $p['id'] ?>"><?= htmlspecialchars($p['mo_ta'] ?? '') ?></textarea>
-                                    </td>
-                                    <td>
-                                        <form id="product-form-<?= $p['id'] ?>" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
-                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                            <input type="hidden" name="update_product" value="1">
-                                            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
-                                            <input type="hidden" name="current_image" value="<?= htmlspecialchars($p['hinh_anh']) ?>">
-                                            <input type="file" name="hinh_anh" class="form-control form-control-sm">
-                                            <button class="btn btn-sm btn-green" type="submit"><i class="bi bi-save"></i></button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="POST" enctype="multipart/form-data" class="d-flex flex-column gap-2">
-                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                            <input type="hidden" name="update_product" value="1">
-                                            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
-                                            <input type="hidden" name="ten_banh" value="<?= htmlspecialchars($p['ten_banh']) ?>">
-                                            <input type="hidden" name="loai" value="<?= htmlspecialchars($p['loai']) ?>">
-                                            <input type="hidden" name="gia" value="<?= (int) $p['gia'] ?>">
-                                            <input type="hidden" name="mo_ta" value="<?= htmlspecialchars($p['mo_ta'] ?? '') ?>">
-                                            <input type="hidden" name="current_image" value="<?= htmlspecialchars($p['hinh_anh']) ?>">
-                                            <input type="file" name="gallery_images[]" class="form-control form-control-sm" multiple>
-                                            <button class="btn btn-sm btn-outline-primary" type="submit">Thêm ảnh</button>
-                                        </form>
                                         <?php if (!empty($productImageMap[(int) $p['id']])): ?>
                                             <div class="d-flex flex-wrap gap-2 mt-2">
-                                                <?php foreach (array_slice($productImageMap[(int) $p['id']], 0, 4) as $gallery):
+                                                <?php foreach ($productImageMap[(int) $p['id']] as $gallery):
                                                     $galleryUrl = buildImageUrl($gallery['image_path']);
                                                 ?>
-                                                    <img src="<?= $galleryUrl['url'] ?>" width="40" height="40" style="object-fit:cover;border-radius:8px;">
+                                                    <div class="position-relative" style="width:40px;height:40px;">
+                                                        <img src="<?= $galleryUrl['url'] ?>" width="40" height="40" style="object-fit:cover;border-radius:8px;">
+                                                        <form method="POST" class="position-absolute" style="top:-6px;right:-6px;">
+                                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                                            <input type="hidden" name="delete_product_image" value="<?= (int) $gallery['id'] ?>">
+                                                            <button class="btn btn-sm btn-outline-danger" style="padding:0 4px;line-height:1;">
+                                                                <i class="bi bi-x"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 <?php endforeach; ?>
                                             </div>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <a href="?delete_product_id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Ngừng bán sản phẩm này?')">
+                                        <button type="button" class="btn btn-sm btn-outline-primary product-edit-btn"
+                                            data-id="<?= (int) $p['id'] ?>"
+                                            data-name="<?= htmlspecialchars($p['ten_banh'], ENT_QUOTES) ?>"
+                                            data-type="<?= htmlspecialchars($p['loai'], ENT_QUOTES) ?>"
+                                            data-price="<?= (int) $p['gia'] ?>"
+                                            data-desc="<?= htmlspecialchars($p['mo_ta'] ?? '', ENT_QUOTES) ?>"
+                                            data-image="<?= htmlspecialchars($p['hinh_anh'], ENT_QUOTES) ?>">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger product-delete-btn"
+                                            data-delete-url="?delete_product_id=<?= $p['id'] ?>"
+                                            data-product-name="<?= htmlspecialchars($p['ten_banh'], ENT_QUOTES) ?>">
                                             <i class="bi bi-trash"></i>
-                                        </a>
+                                        </button>
 
 
                                     </td>
@@ -1191,7 +1409,9 @@ $js_revenues = json_encode(array_values($chart_data));
                                 <th>ID</th>
                                 <th>Username</th>
                                 <th>Email</th>
+                                <th>Tổng chi tiêu</th>
                                 <th>Ngày đăng ký</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1200,7 +1420,15 @@ $js_revenues = json_encode(array_values($chart_data));
                                     <td><?= $u['id'] ?></td>
                                     <td><?= htmlspecialchars($u['username']) ?></td>
                                     <td><?= htmlspecialchars($u['email']) ?></td>
+                                    <td><?= number_format((float) $u['total_spent']) ?>đ</td>
                                     <td><?= date('d/m/Y H:i', strtotime($u['created_at'])) ?></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger user-delete-btn"
+                                            data-delete-url="?delete_user_id=<?= $u['id'] ?>"
+                                            data-user-name="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -1344,11 +1572,228 @@ $js_revenues = json_encode(array_values($chart_data));
                 </div>
             </div>
 
+            <div id="deleteProductModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteProductTitle">
+                <div class="confirm-modal-box">
+                    <div class="confirm-modal-title" id="deleteProductTitle">Xóa sản phẩm?</div>
+                    <p class="confirm-modal-desc" id="deleteProductDesc">Sản phẩm sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <div class="confirm-modal-actions">
+                        <button type="button" class="btn btn-outline-secondary" id="deleteProductCancel">Hủy</button>
+                        <button type="button" class="btn btn-danger" id="deleteProductConfirm">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="deleteUserModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteUserTitle">
+                <div class="confirm-modal-box">
+                    <div class="confirm-modal-title" id="deleteUserTitle">Xóa khách hàng?</div>
+                    <p class="confirm-modal-desc" id="deleteUserDesc">Khách hàng sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <div class="confirm-modal-actions">
+                        <button type="button" class="btn btn-outline-secondary" id="deleteUserCancel">Hủy</button>
+                        <button type="button" class="btn btn-danger" id="deleteUserConfirm">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="deleteOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteOrderTitle">
+                <div class="confirm-modal-box">
+                    <div class="confirm-modal-title" id="deleteOrderTitle">Xóa đơn hàng?</div>
+                    <p class="confirm-modal-desc" id="deleteOrderDesc">Đơn hàng sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <div class="confirm-modal-actions">
+                        <button type="button" class="btn btn-outline-secondary" id="deleteOrderCancel">Hủy</button>
+                        <button type="button" class="btn btn-danger" id="deleteOrderConfirm">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+
         </div> <!-- End Main Content -->
 
         <!-- JAVASCRIPT LOGIC -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <script>
+            tinymce.init({
+                selector: 'textarea.editor',
+                height: 260,
+                menubar: false,
+                branding: false,
+                plugins: 'lists link table code',
+                toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | link table | code',
+                content_style: "body { font-family: 'Poppins', sans-serif; font-size: 14px; }"
+            });
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('productForm');
+                const addBtn = document.getElementById('addProductBtn');
+                const updateBtn = document.getElementById('updateProductBtn');
+                const cancelBtn = document.getElementById('cancelEditBtn');
+                const productId = document.getElementById('productId');
+                const currentImage = document.getElementById('currentImage');
+                const nameInput = document.getElementById('productName');
+                const typeInput = document.getElementById('productType');
+                const priceInput = document.getElementById('productPrice');
+                const descInput = document.getElementById('productDesc');
+                const replaceMain = document.getElementById('replaceMain');
+
+                function setEditorValue(value) {
+                    const editor = tinymce.get('productDesc');
+                    if (editor) {
+                        editor.setContent(value || '');
+                    } else {
+                        descInput.value = value || '';
+                    }
+                }
+
+                function resetForm() {
+                    form.reset();
+                    productId.value = '';
+                    currentImage.value = '';
+                    replaceMain.checked = false;
+                    addBtn.classList.remove('is-hidden');
+                    updateBtn.classList.add('is-hidden');
+                    cancelBtn.classList.add('is-hidden');
+                    setEditorValue('');
+                }
+
+                document.querySelectorAll('.product-edit-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        productId.value = btn.dataset.id || '';
+                        currentImage.value = btn.dataset.image || '';
+                        nameInput.value = btn.dataset.name || '';
+                        typeInput.value = btn.dataset.type || 'ngot';
+                        priceInput.value = btn.dataset.price || '';
+                        replaceMain.checked = false;
+                        addBtn.classList.add('is-hidden');
+                        updateBtn.classList.remove('is-hidden');
+                        cancelBtn.classList.remove('is-hidden');
+                        setEditorValue(btn.dataset.desc || '');
+                        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                });
+
+                cancelBtn.addEventListener('click', function () {
+                    resetForm();
+                });
+
+                const deleteModal = document.getElementById('deleteProductModal');
+                const deleteCancel = document.getElementById('deleteProductCancel');
+                const deleteConfirm = document.getElementById('deleteProductConfirm');
+                const deleteDesc = document.getElementById('deleteProductDesc');
+                let deleteUrl = '';
+
+                function closeDeleteModal() {
+                    deleteModal.classList.remove('is-open');
+                    deleteUrl = '';
+                }
+
+                document.querySelectorAll('.product-delete-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        deleteUrl = btn.dataset.deleteUrl || '';
+                        const name = btn.dataset.productName || 'Sản phẩm này';
+                        deleteDesc.textContent = name + ' sẽ bị xóa vĩnh viễn và không thể khôi phục.';
+                        deleteModal.classList.add('is-open');
+                    });
+                });
+
+                deleteCancel.addEventListener('click', closeDeleteModal);
+                deleteConfirm.addEventListener('click', function () {
+                    if (deleteUrl) {
+                        window.location.href = deleteUrl;
+                    }
+                });
+
+                deleteModal.addEventListener('click', function (event) {
+                    if (event.target === deleteModal) {
+                        closeDeleteModal();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && deleteModal.classList.contains('is-open')) {
+                        closeDeleteModal();
+                    }
+                });
+
+                const deleteUserModal = document.getElementById('deleteUserModal');
+                const deleteUserCancel = document.getElementById('deleteUserCancel');
+                const deleteUserConfirm = document.getElementById('deleteUserConfirm');
+                const deleteUserDesc = document.getElementById('deleteUserDesc');
+                let deleteUserUrl = '';
+
+                function closeDeleteUserModal() {
+                    deleteUserModal.classList.remove('is-open');
+                    deleteUserUrl = '';
+                }
+
+                document.querySelectorAll('.user-delete-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        deleteUserUrl = btn.dataset.deleteUrl || '';
+                        const name = btn.dataset.userName || 'Khách hàng này';
+                        deleteUserDesc.textContent = name + ' sẽ bị xóa vĩnh viễn và không thể khôi phục.';
+                        deleteUserModal.classList.add('is-open');
+                    });
+                });
+
+                deleteUserCancel.addEventListener('click', closeDeleteUserModal);
+                deleteUserConfirm.addEventListener('click', function () {
+                    if (deleteUserUrl) {
+                        window.location.href = deleteUserUrl;
+                    }
+                });
+
+                deleteUserModal.addEventListener('click', function (event) {
+                    if (event.target === deleteUserModal) {
+                        closeDeleteUserModal();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && deleteUserModal.classList.contains('is-open')) {
+                        closeDeleteUserModal();
+                    }
+                });
+
+                const deleteOrderModal = document.getElementById('deleteOrderModal');
+                const deleteOrderCancel = document.getElementById('deleteOrderCancel');
+                const deleteOrderConfirm = document.getElementById('deleteOrderConfirm');
+                const deleteOrderDesc = document.getElementById('deleteOrderDesc');
+                let deleteOrderUrl = '';
+
+                function closeDeleteOrderModal() {
+                    deleteOrderModal.classList.remove('is-open');
+                    deleteOrderUrl = '';
+                }
+
+                document.querySelectorAll('.order-delete-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        deleteOrderUrl = btn.dataset.deleteUrl || '';
+                        const id = btn.dataset.orderId || '';
+                        deleteOrderDesc.textContent = 'Đơn hàng #' + id + ' sẽ bị xóa vĩnh viễn và không thể khôi phục.';
+                        deleteOrderModal.classList.add('is-open');
+                    });
+                });
+
+                deleteOrderCancel.addEventListener('click', closeDeleteOrderModal);
+                deleteOrderConfirm.addEventListener('click', function () {
+                    if (deleteOrderUrl) {
+                        window.location.href = deleteOrderUrl;
+                    }
+                });
+
+                deleteOrderModal.addEventListener('click', function (event) {
+                    if (event.target === deleteOrderModal) {
+                        closeDeleteOrderModal();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && deleteOrderModal.classList.contains('is-open')) {
+                        closeDeleteOrderModal();
+                    }
+                });
+            });
+        </script>
 
         <script>
             // Global Toast Logic

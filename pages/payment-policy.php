@@ -126,6 +126,17 @@ $pageTitle = 'Chính sách Thanh toán';
             font-size: 15px;
             line-height: 1.6;
         }
+
+        @media (max-width: 768px) {
+            .notebook { padding: 20px; }
+            .accordion-button { font-size: 15px; padding: 14px 16px; }
+            .policy-list li { flex-direction: column; align-items: flex-start; }
+            .page-icon { margin-right: 0; margin-bottom: 8px; }
+        }
+
+        @media (max-width: 520px) {
+            .policy-wrapper { border-radius: 24px; padding: 24px; }
+        }
     </style>
 </head>
 

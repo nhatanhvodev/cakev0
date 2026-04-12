@@ -203,9 +203,24 @@ $stmt->bind_param('i', $selected['id']);
 $stmt->execute();
 $galleryImages = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
-if (empty($galleryImages)) {
-    $galleryImages = [['image_path' => $selected['hinh_anh']]];
+$mainImage = $selected['hinh_anh'] ?? '';
+$finalGallery = [];
+if ($mainImage !== '') {
+    $finalGallery[] = ['image_path' => $mainImage];
 }
+foreach ($galleryImages as $img) {
+    if (!isset($img['image_path'])) {
+        continue;
+    }
+    if ($mainImage !== '' && $img['image_path'] === $mainImage) {
+        continue;
+    }
+    $finalGallery[] = $img;
+}
+if (empty($finalGallery)) {
+    $finalGallery = [['image_path' => $mainImage]];
+}
+$galleryImages = $finalGallery;
 
 $stmt = $conn->prepare(
     "SELECT name, rating, content, created_at
@@ -506,6 +521,32 @@ body {
 }
 
 @media (max-width: 640px) {
+    .detail-wrap {
+        padding: 0 16px;
+        margin: 16px auto 32px;
+    }
+
+    .detail-hero {
+        padding: 18px;
+    }
+
+    .detail-track img {
+        height: 280px;
+    }
+
+    .detail-info h1 {
+        font-size: 26px;
+    }
+
+    .detail-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .qty-input {
+        width: 100%;
+    }
+
     .related-grid {
         grid-template-columns: 1fr;
     }

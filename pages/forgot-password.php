@@ -137,6 +137,11 @@ body{
   text-decoration:none;
 }
 .links a:hover{text-decoration:underline}
+
+@media (max-width: 480px){
+  .forgot-box{padding:24px;border-radius:16px;}
+  .forgot-box h2{font-size:20px;}
+}
 </style>
 </head>
 

@@ -62,6 +62,14 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     gap: 18px;
   }
 
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    width: 100%;
+  }
+
   .logo {
     display: flex;
     align-items: center;
@@ -258,6 +266,93 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     transition: transform 0.2s;
   }
 
+  @media (max-width: 900px) {
+    .header-inner {
+      width: calc(100% - 32px);
+      height: auto;
+      padding: 12px 0;
+      flex-wrap: nowrap;
+    }
+
+    .header-top {
+      flex-wrap: nowrap;
+      gap: 10px;
+    }
+
+    .logo a {
+      font-size: 24px;
+    }
+
+    .logo {
+      order: 1;
+      align-self: center;
+    }
+
+    #main-nav {
+      order: 2;
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: flex-start;
+    }
+
+    #main-nav ul {
+      gap: 16px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #main-nav ul::-webkit-scrollbar {
+      display: none;
+    }
+
+    .header-actions {
+      order: 3;
+      width: auto;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .search-box {
+      flex: 1 1 auto;
+      width: auto;
+      max-width: none;
+    }
+
+    #user-actions {
+      margin-left: auto;
+    }
+
+    .search-box input {
+      width: 100%;
+      height: 40px;
+      font-size: 14px;
+      line-height: 40px;
+    }
+
+    .search-box button {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    #main-nav a {
+      font-size: 14px;
+    }
+
+    #user-actions a {
+      font-size: 20px;
+    }
+
+    .search-box input {
+      width: 200px;
+    }
+  }
+
   .cart-badge.pop {
     transform: scale(1.3);
   }
@@ -266,58 +361,25 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     display: none;
   }
 
-  @media (max-width: 960px) {
-    .header-inner {
-      height: auto;
-      padding: 16px 0 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    #main-nav {
-      order: 3;
-      width: 100%;
-    }
-
-    #main-nav ul {
-      flex-wrap: wrap;
-      justify-content: center;
-      white-space: normal;
-    }
-
-    .header-actions {
-      order: 2;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .header-actions {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .search-box input {
-      width: 220px;
-    }
-  }
 </style>
 
 <header id="site-header">
   <div class="header-inner">
-    <div class="logo">
-      <a href="<?= BASE_URL ?>index.php">Gấu Bakery</a>
-    </div>
+    <div class="header-top">
+      <div class="logo">
+        <a href="<?= BASE_URL ?>index.php">Gấu Bakery</a>
+      </div>
 
-    <nav id="main-nav">
-      <ul>
-        <li><a href="<?= BASE_URL ?>index.php">Trang chủ</a></li>
-        <li><a href="<?= BASE_URL ?>pages/product.php">Menu Bánh</a></li>
-        <li><a href="<?= BASE_URL ?>pages/about.php">Về chúng tôi</a></li>
-        <li><a href="<?= BASE_URL ?>pages/contact.php">Liên hệ với chúng tôi</a></li>
-      </ul>
-    </nav>
+      <nav id="main-nav">
+        <ul>
+          <li><a href="<?= BASE_URL ?>index.php">Trang chủ</a></li>
+          <li><a href="<?= BASE_URL ?>pages/product.php">Menu Bánh</a></li>
+          <li><a href="<?= BASE_URL ?>pages/about.php">Về chúng tôi</a></li>
+          <li><a href="<?= BASE_URL ?>pages/contact.php">Liên hệ với chúng tôi</a></li>
+        </ul>
+      </nav>
 
-    <div class="header-actions">
+      <div class="header-actions">
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Tìm kiếm">
         <button type="button" id="searchBtn">
@@ -471,7 +533,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   .confirm-icon {
     font-size: 40px;
     margin-bottom: 14px;
-    color: #ff6b9c;
+    color: #4a1d1f;
   }
 
   .confirm-box h4 {
@@ -506,7 +568,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .btn-confirm-ok {
-    background: linear-gradient(135deg, #ff6b9c, #ff8fb3);
+    background:  #4a1d1f;
     color: #fff;
     box-shadow: 0 4px 12px rgba(255, 107, 156, .3);
   }

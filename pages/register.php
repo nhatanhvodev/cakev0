@@ -258,6 +258,14 @@ $conn->set_charset("utf8mb4"); //
             .login-left { text-align: left; }
             .login-icons i { margin-bottom: 10px; } /* */
         }
+
+        @media (max-width: 600px) {
+            .login-wrapper { padding: 24px 12px; }
+            .login-card { border-radius: 20px; }
+            .login-left, .login-right { padding: 26px 20px; }
+            .login-left h2 { font-size: 24px; }
+            .login-right h3 { font-size: 22px; }
+        }
     </style>
 </head>
 <body>

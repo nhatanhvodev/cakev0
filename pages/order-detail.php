@@ -328,6 +328,29 @@ body {
     }
 }
 
+@media (max-width: 768px) {
+    .order-shell {
+        padding: 0 16px;
+        margin: 16px auto 40px;
+    }
+
+    .order-hero {
+        padding: 18px;
+    }
+
+    .order-actions {
+        justify-content: flex-start;
+    }
+
+    .order-map {
+        height: 160px;
+    }
+
+    .order-total {
+        font-size: 16px;
+    }
+}
+
 @media print {
     body { background: #fff !important; }
     .order-actions, .modal { display: none !important; }

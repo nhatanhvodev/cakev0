@@ -184,6 +184,31 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 768px) {
+    .contact-shell {
+        padding: 0 16px;
+        margin: 16px auto 40px;
+    }
+
+    .contact-card {
+        padding: 18px;
+    }
+
+    .contact-map {
+        height: 180px;
+    }
+
+    .contact-banner {
+        height: 140px;
+    }
+}
+
+@media (max-width: 520px) {
+    .contact-card h1 {
+        font-size: 22px;
+    }
+}
 </style>
 
 <section class="contact-shell">

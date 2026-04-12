@@ -58,29 +58,42 @@ $result = $conn->query($sql);
     <title>Quản lý yêu cầu đặt lại mật khẩu</title>
 </head>
 <body>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #ffffff; color: #272727; margin: 0; padding: 24px; }
+        h2 { margin: 0 0 16px; color: #4a1d1f; }
+        .table-wrap { overflow-x: auto; background: #fff; border: 1px solid #f3e0be; border-radius: 14px; padding: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 640px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #f3e0be; text-align: left; }
+        th { background: #fdf1db; color: #4a1d1f; font-weight: 600; }
+        a { color: #4a1d1f; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        @media (max-width: 600px) { body { padding: 16px; } }
+    </style>
     <h2>Danh sách yêu cầu đặt lại mật khẩu</h2>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Tên người dùng</th>
-            <th>Trạng thái</th>
-            <th>Thời gian yêu cầu</th>
-            <th>Hành động</th>
-        </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
-        <tr>
-            <td><?php echo $row['id']; ?></td>
-            <td><?php echo $row['username']; ?></td>
-            <td><?php echo $row['status']; ?></td>
-            <td><?php echo $row['created_at']; ?></td>
-            <td>
-                <?php if ($row['status'] === 'pending'): ?>
-                    <a href="?action=approve&id=<?php echo $row['id']; ?>">Duyệt</a> |
-                    <a href="?action=reject&id=<?php echo $row['id']; ?>">Từ chối</a>
-                <?php endif; ?>
-            </td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Tên người dùng</th>
+                <th>Trạng thái</th>
+                <th>Thời gian yêu cầu</th>
+                <th>Hành động</th>
+            </tr>
+            <?php while ($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo $row['id']; ?></td>
+                <td><?php echo $row['username']; ?></td>
+                <td><?php echo $row['status']; ?></td>
+                <td><?php echo $row['created_at']; ?></td>
+                <td>
+                    <?php if ($row['status'] === 'pending'): ?>
+                        <a href="?action=approve&id=<?php echo $row['id']; ?>">Duyệt</a> |
+                        <a href="?action=reject&id=<?php echo $row['id']; ?>">Từ chối</a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </table>
+    </div>
 </body>
 </html>

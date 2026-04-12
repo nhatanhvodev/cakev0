@@ -223,31 +223,13 @@ if (isset($_POST['submit_testimonial'])) {
 
 $slides = [
     [
-        'title' => 'Tết Đoàn Viên',
-        'sub'   => 'Bánh thủ công tinh túy – trọn vị yêu thương cho mùa đoàn viên.',
-        'img_noi' => 'assets/uploads/banhngot/banh_69d9ea7d9ec524.00079120.jpg',
-        'link'  => '/Cake/pages/product.php',
-        'color' => 'linear-gradient(135deg, #fff5f5, #ffe0e0)',
-        'accent' => '#ff4d4d',
-        'cta' => 'Khám phá ngay'
+        'img_noi' => 'assets/uploads/banhkem/banh_69da06e3dd40d8.60291082.jpg',
     ],
     [
-        'title' => 'Ngọt Ngào Đam Mê',
-        'sub'   => 'Hương vị Sô-cô-la bản sắc cho những khoảnh khắc thăng hoa.',
-        'img_noi' => 'assets/uploads/banhngot/banh_69d9eabc6c4894.51052278.jpg',
-        'link'  => '/Cake/pages/product.php',
-        'color' => 'linear-gradient(135deg, #fff0f6, #ffdae9)',
-        'accent' => '#ff3385',
-        'cta' => 'Mua quà ngọt'
+        'img_noi' => 'assets/uploads/banhngot/banh_69d9fb68d5c6f8.29069485.jpg',
     ],
     [
-        'title' => 'Tươi Mới Mỗi Ngày',
-        'sub'   => 'Thưởng thức vị tươi mát từ trái cây tự nhiên trên nền kem mịn.',
-        'img_noi' => 'assets/uploads/banhngot/banh_69d9eac59eb400.94591478.jpg',
-        'link'  => '/Cake/pages/product.php',
-        'color' => 'linear-gradient(135deg, #f0f7ff, #d9e9ff)',
-        'accent' => '#3399ff',
-        'cta' => 'Thử ngay'
+        'img_noi' => 'assets/uploads/banhngot/banh_69d9fdd7888ac8.02599824.jpg',
     ]
 ];
 
@@ -415,12 +397,48 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
         }
 
-        .hero-image img {
+        .hero-slider {
             width: min(520px, 100%);
+            position: relative;
+        }
+
+        .hero-slide {
+            width: 100%;
             height: auto;
             transform: scaleX(-1);
+            opacity: 0;
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .hero-slide.is-active {
+            position: relative;
+            opacity: 1;
+        }
+
+        .hero-dots {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .hero-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid #4a1d1f;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .hero-dot.is-active {
+            background: #4a1d1f;
         }
 
         .hero-strip {
@@ -440,12 +458,12 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             border-radius: 24px;
             background: #ffffff;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-            height: 201px;
+            height: 260px;
         }
 
         .strip-thumb {
             width: 230px;
-            height: 129px;
+            height: 180px;
             border-radius: 18px;
             object-fit: cover;
             box-shadow: 0 4px 19px rgba(0, 0, 0, 0.2);
@@ -894,6 +912,39 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             }
         }
 
+        @media (max-width: 900px) {
+            .hero {
+                padding: 24px 0 80px;
+            }
+
+            .hero-inner {
+                gap: 24px;
+            }
+
+            .hero-image {
+                align-items: flex-start;
+            }
+
+            .hero-slider {
+                width: min(420px, 100%);
+            }
+
+            .hero-strip {
+                justify-content: center;
+            }
+
+            .strip-shell {
+                flex-direction: column;
+                height: auto;
+                width: 100%;
+                align-items: flex-start;
+            }
+
+            .strip-track {
+                width: 100%;
+            }
+        }
+
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 32px;
@@ -933,6 +984,38 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             .testimonial-fields {
                 grid-template-columns: 1fr;
             }
+
+            .hero-actions {
+                gap: 12px;
+            }
+
+            .btn-primary,
+            .btn-outline {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .strip-thumb {
+                width: 200px;
+                height: 150px;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .hero-title {
+                font-size: 28px;
+                line-height: 40px;
+            }
+
+            .hero-desc {
+                font-size: 16px;
+                line-height: 26px;
+            }
+
+            .strip-thumb {
+                width: 170px;
+                height: 130px;
+            }
         }
     </style>
 </head>
@@ -941,13 +1024,9 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 <?php
 $heroImage = buildImageUrl($slides[0]['img_noi'] ?? 'assets/uploads/banhkem/banh_69da06e3dd40d8.60291082.jpg');
 $heroStripImages = [
-    'assets/uploads/banhngot/banh_69d9eacf5fa736.03782856.jpg',
-    'assets/uploads/banhngot/banh_69d9eb5ec0a885.68998267.jpg',
-    'assets/uploads/banhngot/banh_69d9eb68d54ca6.75574718.jpg',
-    'assets/uploads/banhngot/banh_69d9eb68d56c32.13741672.jpg',
-    'assets/uploads/banhkem/banh_69da05a99d5d70.48226621.jpg',
-    'assets/uploads/banhkem/banh_69da05b2dce992.03049715.jpg',
-    'assets/uploads/banhkem/banh_69da05bf64ff52.86378343.jpg',
+    'assets/uploads/banhman/banh_69d9fe9a293131.39097090.jpg',
+    'assets/uploads/banhman/banh_69da01b95943c9.32898716.jpg',  
+    'assets/uploads/banhkem/banh_69da06e3dd04c3.21436288.jpg',
     'assets/uploads/banhkem/banh_69da05c7d16e92.29230616.jpg'
 ];
 ?>
@@ -966,7 +1045,23 @@ $heroStripImages = [
                 </div>
             </div>
             <div class="hero-image">
-                <img src="<?= htmlspecialchars($heroImage) ?>" alt="Chocolate cake">
+                <div class="hero-slider" id="heroSlider">
+                    <?php foreach ($slides as $index => $slide): ?>
+                        <img
+                            class="hero-slide <?= $index === 0 ? 'is-active' : '' ?>"
+                            src="<?= htmlspecialchars(buildImageUrl($slide['img_noi'])) ?>"
+                            alt="Bánh">
+                    <?php endforeach; ?>
+                </div>
+                <div class="hero-dots" id="heroDots">
+                    <?php foreach ($slides as $index => $slide): ?>
+                        <button
+                            type="button"
+                            class="hero-dot <?= $index === 0 ? 'is-active' : '' ?>"
+                            data-index="<?= $index ?>"
+                            aria-label="Slide <?= $index + 1 ?>"></button>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
 
@@ -1126,6 +1221,29 @@ $heroStripImages = [
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const heroSlider = document.getElementById('heroSlider');
+        const heroSlides = heroSlider ? Array.from(heroSlider.querySelectorAll('.hero-slide')) : [];
+        const heroDots = Array.from(document.querySelectorAll('.hero-dot'));
+        if (heroSlides.length > 1) {
+            let heroIndex = 0;
+            const showHero = (index) => {
+                const total = heroSlides.length;
+                const next = (index + total) % total;
+                heroSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === next));
+                heroDots.forEach((dot, i) => dot.classList.toggle('is-active', i === next));
+                heroIndex = next;
+            };
+
+            heroDots.forEach((dot) => {
+                dot.addEventListener('click', () => {
+                    const index = parseInt(dot.dataset.index || '0', 10);
+                    showHero(index);
+                });
+            });
+
+            setInterval(() => showHero(heroIndex + 1), 5000);
+        }
+
         const bestList = document.querySelector('.best-list');
         if (bestList) {
             let isDown = false;

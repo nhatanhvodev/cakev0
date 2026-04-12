@@ -358,6 +358,14 @@ $conn->close();
             .login-left { order: 2; }
             .login-right { order: 1; }
         }
+
+        @media (max-width: 600px) {
+            .login-wrapper { padding: 24px 12px; }
+            .login-card { border-radius: 20px; }
+            .login-left, .login-right { padding: 26px 20px; }
+            .login-left h2 { font-size: 24px; }
+            .login-right h3 { font-size: 22px; }
+        }
     </style>
 </head>
 <body>

@@ -155,7 +155,7 @@ body {
 
 .products-wrap {
     display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: 1fr;
     gap: 24px;
     padding: 30px 20px 40px;
     max-width: 1180px;
@@ -168,53 +168,73 @@ body {
 }
 
 .product-menu {
-    background: #fff;
-    padding: 20px;
-    border-radius: 24px;
-    height: fit-content;
+    background: #fbedcd;
+    padding: 12px 16px;
+    border-radius: 16px;
     border: 1px solid #f3e0be;
     box-shadow: 0 16px 32px rgba(74, 29, 31, 0.08);
-    position: sticky;
-    top: 110px;
-}
-
-.product-menu h3 {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #7c6b67;
-    margin: 0 0 14px;
-}
-
-.product-menu button {
-    width: 100%;
-    padding: 12px 16px;
-    border: none;
-    border-radius: 12px;
-    background: transparent;
-    margin-bottom: 6px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 15px;
-    color: #444;
-    cursor: pointer;
-    transition: all 0.2s;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.product-menu .menu-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000000;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-menu button,
+.product-menu .clear-search {
+    width: auto;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 14px;
+    background: #4a1d1f;
+    margin: 0;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fbedcd;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    text-decoration: none;
 }
 
 .product-menu button.active,
 .product-menu button:hover {
+    background: #ffffff;
+    color: #4a1d1f;
+    box-shadow: inset 0 0 0 1px #4a1d1f;
+}
+
+.product-menu .clear-search {
+    background: #ffffff;
+    color: #4a1d1f;
+    box-shadow: inset 0 0 0 1px #4a1d1f;
+}
+
+.product-menu .clear-search:hover {
     background: #4a1d1f;
     color: #fbedcd;
-    box-shadow: 0 10px 20px rgba(74, 29, 31, 0.2);
 }
 
 .product-content {
     background: #fff;
-    border-radius: 28px;
+    border-radius: 0;
     border: 1px solid #f3e0be;
     box-shadow: 0 18px 36px rgba(74, 29, 31, 0.08);
     padding: 22px 22px 28px;
@@ -232,12 +252,33 @@ body {
 }
 
 @media (max-width: 640px) {
-    .product-grid { grid-template-columns: 1fr; }
+    .products-wrap { grid-template-columns: 1fr; }
+    }
+
+    .product-content {
+        padding: 18px;
+        border-radius: 0;
+    }
+
+    .product-card img {
+        height: 180px;
+    }
+}
+
+@media (max-width: 520px) {
+    .product-menu {
+        padding: 16px;
+    }
+
+    .product-menu button {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
 }
 
 .product-card {
     background: #fff;
-    border-radius: 24px;
+    border-radius: 0;
     padding: 14px;
     border: 1px solid #f3e0be;
     box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
@@ -253,7 +294,7 @@ body {
 
 .product-card img {
     width: 100%;
-    height: 160px;
+    height: 300px;
     object-fit: cover;
     border-radius: 14px;
 }
@@ -285,7 +326,7 @@ body {
     color: #fbedcd;
     border: none;
     padding: 11px;
-    border-radius: 12px;
+    border-radius: 0;
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
@@ -301,111 +342,38 @@ body {
     box-shadow: 0 12px 20px rgba(74, 29, 31, 0.25);
 }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.5);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-.modal-box {
-    background: #fff;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 24px;
-    padding: 28px;
-    text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-
-.modal-box h3 {
-    margin: 0 0 6px;
-    font-size: 18px;
-    color: #2f2f2f;
-}
-
-.modal-box .modal-price {
-    color: #4a1d1f;
-    font-weight: 700;
-    font-size: 20px;
-    margin-bottom: 20px;
-}
-
-.qty {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    margin: 0 0 22px;
-}
-
-.qty-btn {
-    width: 38px;
-    height: 38px;
-    cursor: pointer;
-    border: 2px solid #ddd;
-    background: #f9f9f9;
-    border-radius: 50%;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.qty-btn:hover {
-    border-color: #4a1d1f;
-    background: #4a1d1f;
-    color: #fff;
-}
-
-.qty input {
-    width: 60px;
-    text-align: center;
-    padding: 8px;
-    border: 2px solid #eee;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
 .hidden { display: none; }
 </style>
 
 <main class="page-content">
 <div class="products-wrap">
-    <aside class="product-menu">
-        <h3><i class="fa-solid fa-layer-group"></i> Danh mục</h3>
-        <?php
-        $menuIcons = [
-            'ngot'   => 'fa-cookie-bite',
-            'man'    => 'fa-bread-slice',
-            'mi'     => 'fa-wheat-awn',
-            'kem'    => 'fa-ice-cream',
-            'search' => 'fa-magnifying-glass',
-        ];
-        foreach ($ten_loai as $k => $v): ?>
-            <button class="<?= $k == $loai_active ? 'active' : '' ?>"
-                    onclick="showCat('<?= $k ?>', this)">
-                <i class="fa-solid <?= $menuIcons[$k] ?? 'fa-circle' ?>"></i>
-                <?= $v ?>
-            </button>
-        <?php endforeach; ?>
-    </aside>
-
     <section class="product-content">
+        <div class="product-menu">
+            <span class="menu-label"><i class="fa-solid fa-layer-group"></i> Danh mục</span>
+            <?php
+            $menuIcons = [
+                'ngot'   => 'fa-cookie-bite',
+                'man'    => 'fa-bread-slice',
+                'mi'     => 'fa-wheat-awn',
+                'kem'    => 'fa-ice-cream',
+                'search' => 'fa-magnifying-glass',
+            ];
+            $menuKeys = array_keys($san_pham);
+            foreach ($menuKeys as $k):
+                $v = $ten_loai[$k] ?? $k;
+            ?>
+                <button class="<?= $k == $loai_active ? 'active' : '' ?>"
+                        onclick="showCat('<?= $k ?>', this)">
+                    <i class="fa-solid <?= $menuIcons[$k] ?? 'fa-circle' ?>"></i>
+                    <?= $v ?>
+                </button>
+            <?php endforeach; ?>
+            <?php if (!empty($search)): ?>
+                <a class="clear-search" href="/Cake/pages/product.php" aria-label="Bỏ tìm kiếm">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            <?php endif; ?>
+        </div>
         <?php foreach ($san_pham as $k => $ds): ?>
             <div id="<?= $k ?>" class="cat <?= $k == $loai_active ? '' : 'hidden' ?>">
                 <h2 style="color:#4a1d1f; margin-bottom:18px;"><?= $ten_loai[$k] ?></h2>
@@ -429,7 +397,7 @@ body {
                                 <?php endif; ?>
                             </div>
                             <button class="add-btn"
-                                    onclick="openQty(<?= $p['id'] ?>,'<?= htmlspecialchars($p['ten_banh'], ENT_QUOTES) ?>',<?= $p['gia_khuyen_mai'] ?: $p['gia'] ?>,'<?= img($p['hinh_anh']) ?>')">
+                                    onclick="addCartQuick(<?= $p['id'] ?>)">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                             </button>
                         </div>
@@ -440,63 +408,31 @@ body {
     </section>
 </div>
 
-<!-- MODAL CHỌN SỐ LƯỢNG -->
-<div id="qtyModal" class="modal">
-    <div class="modal-box">
-        <h3 id="mName"></h3>
-        <div id="mPrice" class="modal-price"></div>
-        <div class="qty">
-            <button class="qty-btn" onclick="chg(-1)">−</button>
-            <input id="mQty" type="number" value="1" min="1">
-            <button class="qty-btn" onclick="chg(1)">+</button>
-        </div>
-        <button class="add-btn" onclick="addCart()" style="width:100%; justify-content:center;">
-            <i class="fa-solid fa-check"></i> Xác nhận thêm
-        </button>
-    </div>
-</div>
 </main>
 
 <?php include '../includes/footer.html'; ?>
 
 <script>
-let cur = {};
-const qtyModal = document.getElementById('qtyModal');
-const mQty = document.getElementById('mQty');
-
 function showCat(id, btn) {
     document.querySelectorAll('.cat').forEach(c => c.classList.add('hidden'));
     document.querySelectorAll('.product-menu button').forEach(b => b.classList.remove('active'));
     const target = document.getElementById(id);
-    if (target) target.classList.remove('hidden');
+    if (!target) return;
+    target.classList.remove('hidden');
     if (btn) btn.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function openQty(id, name, price, imgUrl) {
-    cur = { id, name, price, imgUrl };
-    document.getElementById('mName').innerText = name;
-    document.getElementById('mPrice').innerText = new Intl.NumberFormat('vi-VN').format(price) + 'đ';
-    mQty.value = 1;
-    qtyModal.style.display = 'flex';
-}
-
-function chg(v) {
-    mQty.value = Math.max(1, parseInt(mQty.value) + v);
-}
-
-function addCart() {
-    let q = parseInt(mQty.value);
+function addCartQuick(productId) {
     fetch('/Cake/pages/cart.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `action=add&banh_id=${cur.id}&qty=${q}`
+        body: `action=add&banh_id=${productId}&qty=1`
     })
     .then(r => r.json())
     .then(d => {
         if (d.success) {
             window.showToast('🧁 Đã thêm vào giỏ hàng!', 'success');
-            qtyModal.style.display = 'none';
             // Dùng cart_count chính xác từ server (số loại sản phẩm)
             if (typeof d.cart_count !== 'undefined') {
                 window.setCartBadge(d.cart_count);
@@ -507,10 +443,6 @@ function addCart() {
     })
     .catch(() => window.showToast('Lỗi kết nối máy chủ!', 'error'));
 }
-
-qtyModal.onclick = e => {
-    if (e.target.id === 'qtyModal') qtyModal.style.display = 'none';
-};
 </script>
 
 <?php $conn->close(); ?>

@@ -264,7 +264,6 @@ if (isset($_SESSION['admin_logged_in'])) {
         }
 
         $hinh_anh = $currentImage;
-        $replaceMain = isset($_POST['replace_main_image']) && $_POST['replace_main_image'] === '1';
         $uploadedImages = $_FILES['product_images'] ?? null;
         $uploadedPaths = [];
         if ($uploadedImages && !empty($uploadedImages['name'][0])) {
@@ -287,7 +286,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         }
 
         $galleryPaths = $uploadedPaths;
-        if (!empty($uploadedPaths) && $replaceMain) {
+        if (!empty($uploadedPaths)) {
             $hinh_anh = $uploadedPaths[0];
             $galleryPaths = array_slice($uploadedPaths, 1);
             if ($currentImage && $currentImage !== $hinh_anh) {
@@ -1063,7 +1062,10 @@ $js_revenues = json_encode(array_values($chart_data));
 
         <!-- 1. SIDEBAR -->
         <div class="sidebar">
-            <h2><i class="bi bi-flower1"></i> Bánh Store</h2>
+            <h2>
+                <img src="/Cake/assets/img/logo.png" alt="Gấu Bakery" style="width:28px;height:28px;object-fit:contain;margin-right:8px;">
+                Gấu Bakery
+            </h2>
             <nav class="nav flex-column">
                 <a class="nav-link active" href="admin.php?tab=dashboard#dashboard" data-tab="dashboard" onclick="showTab(event, 'dashboard')"><i class="bi bi-speedometer2"></i>
                     Dashboard</a>
@@ -1309,14 +1311,6 @@ $js_revenues = json_encode(array_values($chart_data));
                             <input type="file" name="product_images[]" class="form-control" multiple>
                             <small class="text-muted">Bỏ trống nếu không đổi ảnh khi cập nhật.</small>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="replace_main_image" value="1" id="replaceMain">
-                                <label class="form-check-label" for="replaceMain">
-                                    Đặt ảnh đầu làm ảnh chính
-                                </label>
-                            </div>
-                        </div>
                         <div class="col-12 d-flex flex-wrap gap-2">
                             <button id="addProductBtn" name="add_product" class="btn btn-green">
                                 <i class="bi bi-plus-circle"></i> Thêm sản phẩm
@@ -1329,6 +1323,13 @@ $js_revenues = json_encode(array_values($chart_data));
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="flex-grow-1" style="max-width:360px;">
+                        <input type="text" id="productSearchInput" class="form-control"
+                            placeholder="Tìm theo tên, loại, giá...">
+                    </div>
                 </div>
 
                 <div class="custom-table">
@@ -1634,7 +1635,8 @@ $js_revenues = json_encode(array_values($chart_data));
                 const typeInput = document.getElementById('productType');
                 const priceInput = document.getElementById('productPrice');
                 const descInput = document.getElementById('productDesc');
-                const replaceMain = document.getElementById('replaceMain');
+                const searchInput = document.getElementById('productSearchInput');
+                const productTableBody = document.querySelector('#products .custom-table tbody');
 
                 function setEditorValue(value) {
                     const editor = tinymce.get('productDesc');
@@ -1649,7 +1651,6 @@ $js_revenues = json_encode(array_values($chart_data));
                     form.reset();
                     productId.value = '';
                     currentImage.value = '';
-                    replaceMain.checked = false;
                     addBtn.classList.remove('is-hidden');
                     updateBtn.classList.add('is-hidden');
                     cancelBtn.classList.add('is-hidden');
@@ -1663,7 +1664,6 @@ $js_revenues = json_encode(array_values($chart_data));
                         nameInput.value = btn.dataset.name || '';
                         typeInput.value = btn.dataset.type || 'ngot';
                         priceInput.value = btn.dataset.price || '';
-                        replaceMain.checked = false;
                         addBtn.classList.add('is-hidden');
                         updateBtn.classList.remove('is-hidden');
                         cancelBtn.classList.remove('is-hidden');
@@ -1675,6 +1675,23 @@ $js_revenues = json_encode(array_values($chart_data));
                 cancelBtn.addEventListener('click', function () {
                     resetForm();
                 });
+
+                if (searchInput && productTableBody) {
+                    const rows = Array.from(productTableBody.querySelectorAll('tr'));
+                    const filterRows = function () {
+                        const keyword = (searchInput.value || '').trim().toLowerCase();
+                        rows.forEach(function (row) {
+                            if (keyword === '') {
+                                row.style.display = '';
+                                return;
+                            }
+                            const text = (row.textContent || '').toLowerCase();
+                            row.style.display = text.includes(keyword) ? '' : 'none';
+                        });
+                    };
+
+                    searchInput.addEventListener('input', filterRows);
+                }
 
                 const deleteModal = document.getElementById('deleteProductModal');
                 const deleteCancel = document.getElementById('deleteProductCancel');

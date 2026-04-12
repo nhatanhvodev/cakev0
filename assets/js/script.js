@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.querySelector('#list-comment')) {
     initCommentSlider();
   }
+  if (document.querySelector('#heroSlider')) {
+    initHeroSlider();
+  }
   if (document.querySelector('#write-post') || document.querySelector('#posts')) {
     initBlog();
   }
@@ -77,6 +80,38 @@ function initCommentSlider() {
   }
 
   updateButtons();
+}
+
+function initHeroSlider() {
+  const slider = document.getElementById('heroSlider');
+  const slides = slider ? slider.querySelectorAll('.hero-slide') : [];
+  const dots = document.querySelectorAll('.hero-dot');
+  if (!slides.length) return;
+
+  let currentIndex = 0;
+  const total = slides.length;
+
+  function goTo(index) {
+    const nextIndex = (index + total) % total;
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('is-active', i === nextIndex);
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === nextIndex);
+    });
+    currentIndex = nextIndex;
+  }
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const index = parseInt(dot.dataset.index || '0', 10);
+      goTo(index);
+    });
+  });
+
+  setInterval(() => {
+    goTo(currentIndex + 1);
+  }, 5000);
 }
 
 // Register Handler

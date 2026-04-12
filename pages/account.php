@@ -407,6 +407,31 @@ foreach ($orders as $order) {
                 align-items: flex-start;
             }
         }
+
+        @media (max-width: 768px) {
+            .account-shell {
+                padding: 0 16px;
+                margin: 16px auto 40px;
+            }
+
+            .account-hero {
+                padding: 18px;
+            }
+
+            .account-hero h1 {
+                font-size: 22px;
+            }
+
+            .profile-card,
+            .content-card {
+                padding: 18px;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 

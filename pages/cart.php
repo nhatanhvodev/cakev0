@@ -211,6 +211,45 @@ foreach ($cartItems as $item) {
             background: #fff; padding: 60px; border-radius: 20px;
             text-align: center; box-shadow: 0 14px 30px rgba(74, 29, 31, 0.12);
         }
+
+        @media (max-width: 768px) {
+            .cart-card {
+                padding: 20px;
+                border-radius: 20px;
+            }
+
+            .cart-title {
+                font-size: 22px;
+                padding-left: 0;
+            }
+
+            table img {
+                width: 54px;
+            }
+
+            .qty-btn {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cart-card {
+                padding: 16px;
+            }
+
+            .table-responsive {
+                margin: 0 -8px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            .summary-box {
+                padding: 18px;
+            }
+        }
     </style>
 </head>
 <body>

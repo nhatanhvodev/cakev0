@@ -237,7 +237,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .qr-box img { max-width: 180px; border-radius: 10px; margin-top: 10px; }
 
-        @media (max-width: 768px) { .checkout-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) {
+            .checkout-wrapper { margin: 24px auto; }
+            .checkout-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .checkout-box { padding: 20px; border-radius: 16px; }
+            .checkout-box h3 { font-size: 20px; }
+            .checkout-box .btn-submit { font-size: 16px; padding: 14px; }
+        }
     </style>
 </head>
 <body>

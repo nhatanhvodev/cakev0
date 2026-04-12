@@ -238,6 +238,27 @@ body {
         flex-direction: column;
         text-align: center;
     }
+
+    .about-shell {
+        padding: 0 16px;
+        margin: 16px auto 40px;
+    }
+
+    .about-hero {
+        padding: 20px;
+    }
+
+    .about-hero h1 {
+        font-size: 24px;
+    }
+
+    .hero-visual img {
+        height: 200px;
+    }
+
+    .about-banner p {
+        font-size: 14px;
+    }
 }
 </style>
 

@@ -304,6 +304,19 @@ body{
   cursor:pointer;
 }
 
+@media (max-width: 900px){
+  .container{margin:24px auto 24px;padding:0 16px;}
+  .event-hero{padding:24px;}
+  .event-hero h1{font-size:24px;}
+  .promo-grid{gap:18px;}
+  .product-card img{height:140px;}
+}
+
+@media (max-width: 520px){
+  .event-hero{padding:20px;}
+  .quantity-box{padding:20px;}
+}
+
 </style>
 </head>
 

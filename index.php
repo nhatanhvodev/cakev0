@@ -229,6 +229,9 @@ $slides = [
         'img_noi' => 'assets/uploads/banhkem/banh_69db22e6a9f240.21037251.jpg',
     ],
     [
+        'img_noi' => 'assets/uploads/banhkem/banh_69dcb5ebdc62b1.08342034.jpg',
+    ],
+    [
         'img_noi' => 'assets/uploads/banhngot/banh_69dbab0d23b419.90601663.jpg',
     ],
     [
@@ -792,7 +795,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             align-items: center;
             gap: 6px;
             color: #ffa903;
-            font-size: 16px;
+            font-size: 10px;
         }
 
         .testimonial-rating span {
@@ -876,8 +879,8 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
         }
 
         .testimonial-dots span {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: rgba(251, 237, 205, 0.72);
         }
@@ -1020,6 +1023,39 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 height: 130px;
             }
         }
+
+        .scroll-top {
+            position: fixed;
+            right: 20px;
+            top: 80%;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #4a1d1f;
+            color: #fbedcd;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 24px rgba(74, 29, 31, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(calc(-50% + 6px));
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            z-index: 2000;
+        }
+
+        .scroll-top.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%);
+        }
+
+        .scroll-top:hover {
+            background: #2f1415;
+        }
     </style>
 </head>
 <body>
@@ -1030,7 +1066,7 @@ $heroStripImages = [
     'assets/uploads/banhngot/banh_69dbac321327a6.77842905.jpg',
     'assets/uploads/banhkem/banh_69db2d7a894377.87782327.jpg',  
     'assets/uploads/banhngot/banh_69dbabeec4c5e4.74925862.jpg',
-    'assets/uploads/banhngot/banh_69dbad194ea3f0.58335265.jpg',
+    'assets/uploads/banhkem/banh_69dcb5ebdbde19.27662116.jpg',
     'assets/uploads/banhman/banh_69dc5bfa161e54.16618725.jpg',
     'assets/uploads/banhkem/banh_69dc5c1c6aae10.93189009.jpg'
 ];
@@ -1141,7 +1177,7 @@ $heroStripImages = [
 
     <section class="cta-section">
         <div class="cta-inner">
-            <h3 class="cta-title">Đối với các đơn đặt bánh trên 1 KG</h3>
+            <h3 class="cta-title">Đối với các đơn đặt bánh Sự kiện lớn</h3>
             <p class="cta-desc">Vui lòng ghé thăm cửa hàng gần nhất của chúng tôi hoặc gọi điện cho chúng tôi theo số 0901 234 567 (08 giờ sáng đến 21 giờ tối tất cả các ngày trong tuần) để đặt hàng.</p>
             <a class="cta-btn" href="/Cake/pages/contact.php">Liên hệ với chúng tôi ngay</a>
         </div>
@@ -1306,7 +1342,27 @@ $heroStripImages = [
     });
 </script>
 
+<button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
+
 <?php include 'includes/footer.html'; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        if (!scrollTopBtn) return;
+
+        const toggleScrollTop = function () {
+            scrollTopBtn.classList.toggle('is-visible', window.scrollY > 300);
+        };
+
+        toggleScrollTop();
+        window.addEventListener('scroll', toggleScrollTop, { passive: true });
+
+        scrollTopBtn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+</script>
 </body>
 </html>
 <?php if(isset($conn)) $conn->close(); ?>

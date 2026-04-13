@@ -11,7 +11,8 @@ $ten_loai = [
     'ngot' => 'Bánh ngọt',
     'man'  => 'Bánh mặn',
     'mi'   => 'Bánh mì',
-    'kem'  => 'Bánh kem'
+    'kem'  => 'Bánh kem',
+    'khuyenmai' => 'Bánh đang khuyến mãi'
 ];
 
 $loai_active = $_GET['loai'] ?? 'ngot';
@@ -84,6 +85,15 @@ if ($search !== '') {
     $ten_loai['search'] = "Kết quả: \"$search\"";
     $loai_active = 'search';
 } else {
+    $sql = "SELECT b.*, p.gia_khuyen_mai
+            FROM banh b
+            INNER JOIN promotions p ON b.id=p.banh_id
+            AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $today, $today);
+    $stmt->execute();
+    $san_pham['khuyenmai'] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
     foreach ($ds_loai as $loai) {
         $sql = "SELECT b.*, p.gia_khuyen_mai
                 FROM banh b
@@ -349,6 +359,39 @@ body {
 }
 
 .hidden { display: none; }
+
+.scroll-top {
+    position: fixed;
+    right: 20px;
+    top: 80%;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #4a1d1f;
+    color: #fbedcd;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 12px 24px rgba(74, 29, 31, 0.25);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(calc(-50% + 6px));
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 2000;
+}
+
+.scroll-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%);
+}
+
+.scroll-top:hover {
+    background: #2f1415;
+}
 </style>
 
 <main class="page-content">
@@ -362,6 +405,7 @@ body {
                 'man'    => 'fa-bread-slice',
                 'mi'     => 'fa-wheat-awn',
                 'kem'    => 'fa-ice-cream',
+                'khuyenmai' => 'fa-tag',
                 'search' => 'fa-magnifying-glass',
             ];
             $menuKeys = array_keys($san_pham);
@@ -422,6 +466,8 @@ body {
 
 <?php include '../includes/footer.html'; ?>
 
+<button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
+
 <script>
 function showCat(id, btn) {
     document.querySelectorAll('.cat').forEach(c => c.classList.add('hidden'));
@@ -453,6 +499,24 @@ function addCartQuick(productId) {
     })
     .catch(() => window.showToast('Lỗi kết nối máy chủ!', 'error'));
 }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    if (!scrollTopBtn) return;
+
+    const toggleScrollTop = function () {
+        scrollTopBtn.classList.toggle('is-visible', window.scrollY > 300);
+    };
+
+    toggleScrollTop();
+    window.addEventListener('scroll', toggleScrollTop, { passive: true });
+
+    scrollTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
 </script>
 
 <?php $conn->close(); ?>

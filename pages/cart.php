@@ -250,6 +250,39 @@ foreach ($cartItems as $item) {
                 padding: 18px;
             }
         }
+
+        .scroll-top {
+            position: fixed;
+            right: 20px;
+            top: 80%;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #4a1d1f;
+            color: #fbedcd;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 24px rgba(74, 29, 31, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(calc(-50% + 6px));
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            z-index: 2000;
+        }
+
+        .scroll-top.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%);
+        }
+
+        .scroll-top:hover {
+            background: #2f1415;
+        }
     </style>
 </head>
 <body>
@@ -355,6 +388,8 @@ foreach ($cartItems as $item) {
 
 <?php include '../includes/footer.html'; ?>
 
+<button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -438,6 +473,23 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             window.showConfirm('Bạn có chắc chắn muốn xóa sản phẩm này?').then(ok => { if (!ok) return; ajaxCart('remove', btn.dataset.id); })
         });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    if (!scrollTopBtn) return;
+
+    const toggleScrollTop = function () {
+        scrollTopBtn.classList.toggle('is-visible', window.scrollY > 300);
+    };
+
+    toggleScrollTop();
+    window.addEventListener('scroll', toggleScrollTop, { passive: true });
+
+    scrollTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 });
 </script>

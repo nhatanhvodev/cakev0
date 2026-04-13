@@ -81,6 +81,45 @@ $statusLabel = match ($status) {
 };
 
 $allowedReviewStatuses = ['completed'];
+$editableOrderStatuses = ['pending', 'paid', 'approved'];
+$canEditOrderInfo = in_array($status, $editableOrderStatuses, true);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_info'])) {
+    if (!$canEditOrderInfo) {
+        $_SESSION['review_flash'] = 'Không thể chỉnh sửa thông tin đơn hàng ở trạng thái hiện tại.';
+        header("Location: order-detail.php?id={$order_id}");
+        exit;
+    }
+
+    $recipientName = trim($_POST['recipient_name'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $note = trim($_POST['note'] ?? '');
+
+    if ($recipientName === '' || $phone === '' || $address === '') {
+        $_SESSION['review_flash'] = 'Vui lòng nhập đầy đủ họ tên, số điện thoại và địa chỉ.';
+        header("Location: order-detail.php?id={$order_id}");
+        exit;
+    }
+
+    if (!preg_match('/^[0-9+\s\-().]{8,20}$/', $phone)) {
+        $_SESSION['review_flash'] = 'Số điện thoại không hợp lệ.';
+        header("Location: order-detail.php?id={$order_id}");
+        exit;
+    }
+
+    $stmt = $conn->prepare(
+        "UPDATE orders SET recipient_name = ?, phone = ?, address = ?, note = ?
+         WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'paid', 'approved')"
+    );
+    $stmt->bind_param('ssssii', $recipientName, $phone, $address, $note, $order_id, $user_id);
+    $stmt->execute();
+    $stmt->close();
+
+    $_SESSION['review_flash'] = 'Đã cập nhật thông tin đơn hàng.';
+    header("Location: order-detail.php?id={$order_id}");
+    exit;
+}
 
 // --- HỦY ĐƠN HÀNG (CHỈ KHI ĐANG CHỜ) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order'])) {
@@ -353,6 +392,31 @@ body {
     justify-content: center;
 }
 
+.order-edit-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    z-index: 3100;
+}
+
+.order-edit-modal.is-open {
+    display: flex;
+}
+
+.order-edit-box {
+    background: #fff;
+    width: 92%;
+    max-width: 520px;
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    animation: zoomIn .25s ease;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -418,6 +482,39 @@ body {
     .order-actions, .modal { display: none !important; }
     .order-shell { padding: 0; }
 }
+
+.scroll-top {
+    position: fixed;
+    right: 20px;
+    top: 80%;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #4a1d1f;
+    color: #fbedcd;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 12px 24px rgba(74, 29, 31, 0.25);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(calc(-50% + 6px));
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 2000;
+}
+
+.scroll-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%);
+}
+
+.scroll-top:hover {
+    background: #2f1415;
+}
 </style>
 </head>
 
@@ -439,6 +536,11 @@ body {
             <button class="btn btn-outline-primary btn-pill" onclick="openBill()"><i class="fa-regular fa-eye"></i> Xem nhanh</button>
             <button class="btn btn-outline-success btn-pill" onclick="window.print()"><i class="fa-solid fa-print"></i> In</button>
             <button class="btn btn-outline-danger btn-pill" onclick="exportPDF()"><i class="fa-regular fa-file-lines"></i> PDF</button>
+            <?php if ($canEditOrderInfo): ?>
+                <button type="button" id="editOrderBtn" class="btn btn-outline-warning btn-pill">
+                    <i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa thông tin
+                </button>
+            <?php endif; ?>
             <?php if ($status === 'pending'): ?>
                 <button type="button" id="cancelOrderBtn" class="btn btn-outline-danger btn-pill">
                     <i class="fa-regular fa-circle-xmark"></i> Hủy đơn
@@ -587,6 +689,8 @@ body {
 
 <?php include '../includes/footer.html'; ?>
 
+<button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
+
 <div id="cancelOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancelOrderTitle">
     <div class="confirm-modal-box">
         <div class="confirm-modal-title" id="cancelOrderTitle">Hủy đơn hàng?</div>
@@ -600,6 +704,37 @@ body {
     </div>
 </div>
 
+<?php if ($canEditOrderInfo): ?>
+<div id="orderEditModal" class="order-edit-modal" role="dialog" aria-modal="true" aria-labelledby="orderEditTitle">
+    <div class="order-edit-box">
+        <h5 id="orderEditTitle" class="mb-3"><i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa thông tin đơn hàng</h5>
+        <form method="POST" class="d-grid gap-3">
+            <input type="hidden" name="update_order_info" value="1">
+            <div>
+                <label class="form-label mb-1">Họ tên người nhận</label>
+                <input type="text" name="recipient_name" class="form-control" value="<?= htmlspecialchars($order['recipient_name']) ?>" required>
+            </div>
+            <div>
+                <label class="form-label mb-1">Số điện thoại</label>
+                <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($order['phone']) ?>" required>
+            </div>
+            <div>
+                <label class="form-label mb-1">Địa chỉ</label>
+                <textarea name="address" class="form-control" rows="2" required><?= htmlspecialchars($order['address']) ?></textarea>
+            </div>
+            <div>
+                <label class="form-label mb-1">Ghi chú</label>
+                <textarea name="note" class="form-control" rows="2"><?= htmlspecialchars($order['note'] ?? '') ?></textarea>
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-outline-secondary" id="orderEditCancel">Hủy</button>
+                <button type="submit" class="btn btn-warning">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
+
 <script>
 function openBill(){ document.getElementById('billModal').classList.add('show'); }
 function closeBill(){ document.getElementById('billModal').classList.remove('show'); }
@@ -607,9 +742,18 @@ function closeBill(){ document.getElementById('billModal').classList.remove('sho
 const cancelOrderModal = document.getElementById('cancelOrderModal');
 const cancelOrderBtn = document.getElementById('cancelOrderBtn');
 const cancelOrderCancel = document.getElementById('cancelOrderCancel');
+const orderEditModal = document.getElementById('orderEditModal');
+const editOrderBtn = document.getElementById('editOrderBtn');
+const orderEditCancel = document.getElementById('orderEditCancel');
 
 function closeCancelModal() {
     cancelOrderModal.classList.remove('is-open');
+}
+
+function closeOrderEditModal() {
+    if (orderEditModal) {
+        orderEditModal.classList.remove('is-open');
+    }
 }
 
 if (cancelOrderBtn) {
@@ -618,7 +762,17 @@ if (cancelOrderBtn) {
     });
 }
 
+if (editOrderBtn && orderEditModal) {
+    editOrderBtn.addEventListener('click', function () {
+        orderEditModal.classList.add('is-open');
+    });
+}
+
 cancelOrderCancel.addEventListener('click', closeCancelModal);
+
+if (orderEditCancel) {
+    orderEditCancel.addEventListener('click', closeOrderEditModal);
+}
 
 cancelOrderModal.addEventListener('click', function (event) {
     if (event.target === cancelOrderModal) {
@@ -626,9 +780,20 @@ cancelOrderModal.addEventListener('click', function (event) {
     }
 });
 
+if (orderEditModal) {
+    orderEditModal.addEventListener('click', function (event) {
+        if (event.target === orderEditModal) {
+            closeOrderEditModal();
+        }
+    });
+}
+
 document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && cancelOrderModal.classList.contains('is-open')) {
         closeCancelModal();
+    }
+    if (event.key === 'Escape' && orderEditModal && orderEditModal.classList.contains('is-open')) {
+        closeOrderEditModal();
     }
 });
 
@@ -646,6 +811,24 @@ function exportPDF(){
     doc.text("Tong tien: <?= number_format($order['total_amount']) ?> đ",20,y+10);
     doc.save("hoa-don-<?= $order_id ?>.pdf");
 }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    if (!scrollTopBtn) return;
+
+    const toggleScrollTop = function () {
+        scrollTopBtn.classList.toggle('is-visible', window.scrollY > 300);
+    };
+
+    toggleScrollTop();
+    window.addEventListener('scroll', toggleScrollTop, { passive: true });
+
+    scrollTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
 </script>
 
 </body>

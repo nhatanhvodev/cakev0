@@ -787,7 +787,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
     $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle('Doanh thu');
-    $sheet->fromArray(['Ngày', 'Doanh thu (VND)'], null, 'A1');
+    $sheet->fromArray(['Ngày/Tháng', 'Doanh thu (VND)'], null, 'A1');
     $row = 2;
     foreach ($chart_labels as $index => $label) {
         $value = $chart_values[$index] ?? 0;
@@ -1226,6 +1226,39 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
         .is-hidden {
             display: none !important;
+        }
+
+        .scroll-top {
+            position: fixed;
+            right: 20px;
+            top: 80%;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: var(--brown-800);
+            color: #fbedcd;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 24px rgba(74, 29, 31, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(calc(-50% + 6px));
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            z-index: 2000;
+        }
+
+        .scroll-top.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%);
+        }
+
+        .scroll-top:hover {
+            background: #2f1415;
         }
     </style>
 </head>
@@ -1799,8 +1832,14 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                     <td><?= date('d/m', strtotime($promo['ngay_bat_dau'])) ?> ->
                                         <?= date('d/m', strtotime($promo['ngay_ket_thuc'])) ?>
                                     </td>
-                                    <td><a href="?delete_promotion_id=<?= $promo['id'] ?>" class="text-danger"
-                                            onclick="return confirm('Xóa?')"><i class="bi bi-trash"></i></a></td>
+                                    <td>
+                                        <a href="?delete_promotion_id=<?= $promo['id'] ?>"
+                                           class="text-danger promo-delete-btn"
+                                           data-delete-url="?delete_promotion_id=<?= $promo['id'] ?>"
+                                           data-promo-name="<?= htmlspecialchars($promo['ten_banh']) ?>">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -1841,6 +1880,17 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
+            <div id="deletePromotionModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deletePromotionTitle">
+                <div class="confirm-modal-box">
+                    <div class="confirm-modal-title" id="deletePromotionTitle">Xóa khuyến mãi?</div>
+                    <p class="confirm-modal-desc" id="deletePromotionDesc">Khuyến mãi sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <div class="confirm-modal-actions">
+                        <button type="button" class="btn btn-outline-secondary" id="deletePromotionCancel">Hủy</button>
+                        <button type="button" class="btn btn-danger" id="deletePromotionConfirm">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="adminOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="adminOrderTitle">
                 <div class="confirm-modal-box user-orders-modal-box">
                     <div class="confirm-modal-title" id="adminOrderTitle">Chi tiết đơn hàng</div>
@@ -1868,6 +1918,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     </div>
                 </div>
             </div>
+
+            <button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
 
         </div> <!-- End Main Content -->
 
@@ -2073,6 +2125,46 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     }
                 });
 
+                const deletePromotionModal = document.getElementById('deletePromotionModal');
+                const deletePromotionCancel = document.getElementById('deletePromotionCancel');
+                const deletePromotionConfirm = document.getElementById('deletePromotionConfirm');
+                const deletePromotionDesc = document.getElementById('deletePromotionDesc');
+                let deletePromotionUrl = '';
+
+                function closeDeletePromotionModal() {
+                    deletePromotionModal.classList.remove('is-open');
+                    deletePromotionUrl = '';
+                }
+
+                document.querySelectorAll('.promo-delete-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        deletePromotionUrl = btn.dataset.deleteUrl || '';
+                        const name = btn.dataset.promoName || 'Khuyến mãi này';
+                        deletePromotionDesc.textContent = name + ' sẽ bị xóa vĩnh viễn và không thể khôi phục.';
+                        deletePromotionModal.classList.add('is-open');
+                    });
+                });
+
+                deletePromotionCancel.addEventListener('click', closeDeletePromotionModal);
+                deletePromotionConfirm.addEventListener('click', function () {
+                    if (deletePromotionUrl) {
+                        window.location.href = deletePromotionUrl;
+                    }
+                });
+
+                deletePromotionModal.addEventListener('click', function (event) {
+                    if (event.target === deletePromotionModal) {
+                        closeDeletePromotionModal();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && deletePromotionModal.classList.contains('is-open')) {
+                        closeDeletePromotionModal();
+                    }
+                });
+
                 const adminOrderModal = document.getElementById('adminOrderModal');
                 const adminOrderDesc = document.getElementById('adminOrderDesc');
                 const adminOrderDetail = document.getElementById('adminOrderDetail');
@@ -2105,11 +2197,11 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     adminOrderDetail.innerHTML =
                         '<h6>Đơn #' + detail.id + '</h6>' +
                         '<div class="user-orders-meta">' +
-                        '<div><strong>Người nhận:</strong> ' + detail.recipient_name + '</div>' +
+                        '<div><strong>Tên người nhận:</strong> ' + detail.recipient_name + '</div>' +
                         '<div><strong>SĐT:</strong> ' + detail.phone + '</div>' +
                         '<div><strong>Địa chỉ:</strong> ' + detail.address + '</div>' +
                         (detail.note ? '<div><strong>Ghi chú:</strong> ' + detail.note + '</div>' : '') +
-                        '<div><strong>Phương thức:</strong> ' + detail.payment_method + '</div>' +
+                        '<div><strong>Phương thức thanh toán:</strong> ' + detail.payment_method + '</div>' +
                         '<div><strong>Trạng thái:</strong> ' + formatStatus(detail.status) + '</div>' +
                         '<div><strong>Ngày đặt:</strong> ' + new Date(detail.created_at).toLocaleString('vi-VN') + '</div>' +
                         '<div><strong>Tổng tiền:</strong> ' + Number(detail.total_amount).toLocaleString('vi-VN') + 'đ</div>' +
@@ -2292,6 +2384,21 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 <?php unset($_SESSION['admin_toast']); ?>
             <?php endif; ?>
 
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+            function getActiveAdminTab() {
+                const activeTab = document.querySelector('.tab-content.active');
+                return activeTab ? activeTab.id : '';
+            }
+
+            function updateScrollTopButton() {
+                if (!scrollTopBtn) return;
+                const tab = getActiveAdminTab();
+                const allow = tab === 'orders' || tab === 'best-selling';
+                const shouldShow = allow && window.scrollY > 300;
+                scrollTopBtn.classList.toggle('is-visible', shouldShow);
+            }
+
             // 1. Logic chuyển Tab
             function activateTab(tabName) {
                 if (!tabName) return;
@@ -2314,6 +2421,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 if (activeLink) {
                     activeLink.classList.add("active");
                 }
+
+                updateScrollTopButton();
             }
 
             function showTab(evt, tabName) {
@@ -2326,6 +2435,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 } else {
                     window.location.hash = tabName;
                 }
+
+                updateScrollTopButton();
             }
 
             document.addEventListener('DOMContentLoaded', function () {
@@ -2333,6 +2444,15 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 const tabFromParam = params.get('tab');
                 const tabFromHash = window.location.hash.replace('#', '');
                 activateTab(tabFromParam || tabFromHash || 'dashboard');
+
+                updateScrollTopButton();
+                window.addEventListener('scroll', updateScrollTopButton, { passive: true });
+
+                if (scrollTopBtn) {
+                    scrollTopBtn.addEventListener('click', function () {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                }
 
                 const selectAll = document.getElementById('selectAllOrders');
                 if (!selectAll) return;

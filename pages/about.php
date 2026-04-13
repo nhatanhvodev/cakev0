@@ -283,14 +283,14 @@ body {
         <div class="hero-visual">
             <img src="/Cake/assets/img/banner3.jpg" alt="Không gian Gấu Bakery">
             <div class="hero-float float-top">
-                <img src="/Cake/assets/uploads/banhngot/banh_69d9eb68d56c32.13741672.jpg" alt="Bánh ngọt">
+                <img src="/Cake/assets/uploads/banhngot/banh_69dbaa8ed143d0.52774630.jpg" alt="Bánh ngọt">
                 <div>
                     <div style="font-size:12px; font-weight:600;">Bánh mới</div>
                     <div style="font-size:11px; opacity:.7;">Mỗi sáng</div>
                 </div>
             </div>
             <div class="hero-float float-bottom">
-                <img src="/Cake/assets/uploads/banhkem/banh_69da05b2dce992.03049715.jpg" alt="Bánh kem">
+                <img src="/Cake/assets/uploads/banhman/banh_69dbad2d994fc7.78344166.jpg" alt="Bánh mặn">
                 <div>
                     <div style="font-size:12px; font-weight:600;">Signature</div>
                     <div style="font-size:11px; opacity:.7;">Bán chạy</div>

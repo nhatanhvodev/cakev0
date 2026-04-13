@@ -313,7 +313,7 @@ body {
 
 .detail-track img {
     width: 100%;
-    height: 360px;
+    height: 500px;
     flex: 0 0 100%;
     border-radius: 18px;
     object-fit: contain;
@@ -390,6 +390,13 @@ body {
     color: #b7a39a;
     font-weight: 500;
     margin-right: 8px;
+}
+
+.detail-discount {
+    margin-left: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #b42318;
 }
 
 
@@ -584,6 +591,10 @@ body {
                 <?php if (!empty($selected['gia_khuyen_mai'])): ?>
                     <del><?= number_format($selected['gia']) ?>đ</del>
                     <?= number_format($selected['gia_khuyen_mai']) ?>đ
+                    <?php if ($selected['gia'] > 0): ?>
+                        <?php $discount = (int) round(100 - (($selected['gia_khuyen_mai'] / $selected['gia']) * 100)); ?>
+                        <span class="detail-discount">-<?= $discount ?>%</span>
+                    <?php endif; ?>
                 <?php else: ?>
                     <?= number_format($selected['gia']) ?>đ
                 <?php endif; ?>

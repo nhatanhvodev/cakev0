@@ -467,6 +467,15 @@ $total_revenue = 0;
 $pending_count = 0;
 $js_dates = '[]';
 $js_revenues = '[]';
+$chart_view = $_GET['chart_view'] ?? '7days';
+$chart_view = in_array($chart_view, ['7days', 'month', 'year'], true) ? $chart_view : '7days';
+$selected_year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
+$selected_month = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('m');
+$current_year = (int) date('Y');
+$selected_year = ($selected_year < 2000 || $selected_year > $current_year + 1) ? $current_year : $selected_year;
+$selected_month = ($selected_month < 1 || $selected_month > 12) ? (int) date('m') : $selected_month;
+$chart_title = 'Biểu đồ doanh thu 7 ngày qua';
+$chart_labels = [];
 
 if (isset($_SESSION['admin_logged_in'])) {
     if (isset($_GET['delete_user_id'])) {
@@ -622,7 +631,43 @@ $users = $conn->query(
 // Lưu ý: Nếu user_id null hoặc đã xóa user, vẫn nên hiện đơn hàng -> dùng LEFT JOIN
 $orders = $conn->query("SELECT o.*, u.username, u.email FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC")->fetch_all(MYSQLI_ASSOC);
 
+$ordersByUser = [];
+$ordersById = [];
+foreach ($orders as $order) {
+    if (empty($order['user_id'])) {
+        continue;
+    }
+    $uid = (int) $order['user_id'];
+    $orderId = (int) $order['id'];
+    $ordersById[$orderId] = [
+        'id' => $orderId,
+        'recipient_name' => (string) $order['recipient_name'],
+        'phone' => (string) $order['phone'],
+        'address' => (string) $order['address'],
+        'note' => (string) ($order['note'] ?? ''),
+        'payment_method' => (string) $order['payment_method'],
+        'total_amount' => (float) $order['total_amount'],
+        'status' => (string) $order['status'],
+        'created_at' => (string) $order['created_at']
+    ];
+    $ordersByUser[$uid][] = [
+        'id' => $orderId,
+        'total_amount' => (float) $order['total_amount'],
+        'status' => (string) $order['status'],
+        'created_at' => (string) $order['created_at']
+    ];
+}
+
 $order_items = $conn->query("SELECT oi.*, b.ten_banh FROM order_items oi LEFT JOIN banh b ON oi.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
+$orderItemsById = [];
+foreach ($order_items as $item) {
+    $oid = (int) $item['order_id'];
+    $orderItemsById[$oid][] = [
+        'ten_banh' => (string) $item['ten_banh'],
+        'quantity' => (int) $item['quantity'],
+        'price' => (float) $item['price']
+    ];
+}
 $promotions = $conn->query("SELECT p.*, b.ten_banh FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
 $reviews = $conn->query("SELECT * FROM reviews ORDER BY timestamp DESC")->fetch_all(MYSQLI_ASSOC);
 $productImages = $conn->query("SELECT * FROM product_images ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
@@ -646,11 +691,23 @@ foreach ($bestSalesRows as $row) {
 }
 
 // --- LOGIC THỐNG KÊ & BIỂU ĐỒ ---
-// Khởi tạo mảng doanh thu 7 ngày gần nhất = 0
 $chart_data = [];
-for ($i = 6; $i >= 0; $i--) {
-    $date = date('Y-m-d', strtotime("-$i days"));
-    $chart_data[$date] = 0;
+if ($chart_view === 'month') {
+    $days_in_month = cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year);
+    for ($day = 1; $day <= $days_in_month; $day++) {
+        $chart_data[$day] = 0;
+    }
+    $chart_title = "Biểu đồ doanh thu tháng {$selected_month}/{$selected_year}";
+} elseif ($chart_view === 'year') {
+    for ($month = 1; $month <= 12; $month++) {
+        $chart_data[$month] = 0;
+    }
+    $chart_title = "Biểu đồ doanh thu năm {$selected_year}";
+} else {
+    for ($i = 6; $i >= 0; $i--) {
+        $date = date('Y-m-d', strtotime("-$i days"));
+        $chart_data[$date] = 0;
+    }
 }
 
 foreach ($orders as $o) {
@@ -660,10 +717,24 @@ foreach ($orders as $o) {
     if ($is_revenue) {
         $total_revenue += $o['total_amount'];
 
-        // Cộng tiền vào ngày tương ứng
-        $order_date = date('Y-m-d', strtotime($o['created_at']));
-        if (isset($chart_data[$order_date])) {
-            $chart_data[$order_date] += $o['total_amount'];
+        $order_date = strtotime($o['created_at']);
+        $order_year = (int) date('Y', $order_date);
+        $order_month = (int) date('n', $order_date);
+        $order_day = (int) date('j', $order_date);
+
+        if ($chart_view === 'month') {
+            if ($order_year === $selected_year && $order_month === $selected_month) {
+                $chart_data[$order_day] += $o['total_amount'];
+            }
+        } elseif ($chart_view === 'year') {
+            if ($order_year === $selected_year) {
+                $chart_data[$order_month] += $o['total_amount'];
+            }
+        } else {
+            $order_key = date('Y-m-d', $order_date);
+            if (isset($chart_data[$order_key])) {
+                $chart_data[$order_key] += $o['total_amount'];
+            }
         }
     }
     if ($status === 'pending') {
@@ -672,8 +743,73 @@ foreach ($orders as $o) {
 }
 
 // Chuyển dữ liệu sang JSON để JS sử dụng
-$js_dates = json_encode(array_keys($chart_data));
-$js_revenues = json_encode(array_values($chart_data));
+$chart_values = array_values($chart_data);
+if ($chart_view === 'month') {
+    foreach (array_keys($chart_data) as $day) {
+        $chart_labels[] = str_pad((string) $day, 2, '0', STR_PAD_LEFT);
+    }
+} elseif ($chart_view === 'year') {
+    foreach (array_keys($chart_data) as $month) {
+        $chart_labels[] = 'T' . $month;
+    }
+} else {
+    foreach (array_keys($chart_data) as $date) {
+        $chart_labels[] = date('d/m', strtotime($date));
+    }
+}
+
+$js_dates = json_encode($chart_labels);
+$js_revenues = json_encode($chart_values);
+
+$export_query_xlsx = http_build_query([
+    'tab' => 'dashboard',
+    'chart_view' => $chart_view,
+    'month' => $selected_month,
+    'year' => $selected_year,
+    'export_format' => 'xlsx',
+    'export_revenue' => 1
+]);
+
+if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
+    $filename = "revenue_report_{$chart_view}_{$selected_year}";
+    if ($chart_view === 'month') {
+        $filename .= '_' . str_pad((string) $selected_month, 2, '0', STR_PAD_LEFT);
+    }
+    $filename .= '.xlsx';
+
+    $autoload = dirname(__DIR__) . '/vendor/autoload.php';
+    if (!file_exists($autoload)) {
+        http_response_code(500);
+        echo 'Chua cai dat thu vien xuat Excel. Vui long cai PhpSpreadsheet.';
+        exit;
+    }
+    require_once $autoload;
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Doanh thu');
+    $sheet->fromArray(['Ngày', 'Doanh thu (VND)'], null, 'A1');
+    $row = 2;
+    foreach ($chart_labels as $index => $label) {
+        $value = $chart_values[$index] ?? 0;
+        if ($chart_view === 'month') {
+            $dayNumber = (int) $label;
+            $sheet->setCellValue("A{$row}", $dayNumber);
+            $sheet->getStyle("A{$row}")->getNumberFormat()->setFormatCode('00');
+        } else {
+            $sheet->setCellValue("A{$row}", $label);
+        }
+        $sheet->setCellValue("B{$row}", $value);
+        $row++;
+    }
+    $sheet->setCellValue("A{$row}", 'Tong');
+    $sheet->setCellValue("B{$row}", array_sum($chart_values));
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename=' . $filename);
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -852,8 +988,8 @@ $js_revenues = json_encode(array_values($chart_data));
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(44, 24, 20, 0.65);
+            backdrop-filter: blur(6px);
             align-items: center;
             justify-content: center;
             z-index: 3000;
@@ -891,6 +1027,75 @@ $js_revenues = json_encode(array_values($chart_data));
             display: flex;
             gap: 12px;
             justify-content: center;
+        }
+
+        .user-orders-modal-box {
+            text-align: left;
+            max-width: 1200px;
+            max-height: 85vh;
+            overflow: hidden;
+        }
+
+        .user-orders-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 18px;
+            max-height: 58vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+
+        .user-orders-detail {
+            background: #fff7ea;
+            border: 1px solid #f3e0be;
+            border-radius: 16px;
+            padding: 14px;
+            min-height: 220px;
+        }
+
+        .user-orders-detail h6 {
+            margin: 0 0 10px;
+            color: #4a1d1f;
+            font-weight: 700;
+        }
+
+        .user-orders-meta {
+            display: grid;
+            gap: 6px;
+            font-size: 13px;
+            color: #6a2d22;
+        }
+
+        .user-orders-items {
+            margin-top: 10px;
+            border-top: 1px dashed #e8d9c6;
+            padding-top: 10px;
+        }
+
+        .user-orders-items div {
+            font-size: 13px;
+            color: #4a4a4a;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .user-orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .user-orders-table th,
+        .user-orders-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0e6d7;
+            font-size: 14px;
+        }
+
+        .user-orders-empty {
+            margin: 12px 0 0;
+            color: #6b6b6b;
         }
 
         .stat-info h5 {
@@ -1133,8 +1338,29 @@ $js_revenues = json_encode(array_values($chart_data));
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="card border-0 shadow-sm p-3" style="border:1px solid #f3e0be;">
-                            <h5 class="mb-3" style="color:#4a1d1f;"><i class="bi bi-graph-up-arrow"></i> Biểu đồ doanh thu 7 ngày qua
-                            </h5>
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                <h5 class="m-0" style="color:#4a1d1f;"><i class="bi bi-graph-up-arrow"></i> <?= htmlspecialchars($chart_title) ?></h5>
+                                <form method="GET" class="d-flex flex-wrap align-items-center gap-2">
+                                    <input type="hidden" name="tab" value="dashboard">
+                                    <select name="chart_view" class="form-select form-select-sm" id="chartViewSelect" style="min-width: 160px;">
+                                        <option value="7days" <?= $chart_view === '7days' ? 'selected' : '' ?>>7 ngày gần nhất</option>
+                                        <option value="month" <?= $chart_view === 'month' ? 'selected' : '' ?>>Theo tháng</option>
+                                        <option value="year" <?= $chart_view === 'year' ? 'selected' : '' ?>>Theo năm</option>
+                                    </select>
+                                    <select name="month" class="form-select form-select-sm" id="chartMonth" style="min-width: 110px;">
+                                        <?php for ($m = 1; $m <= 12; $m++): ?>
+                                            <option value="<?= $m ?>" <?= $m === $selected_month ? 'selected' : '' ?>>Tháng <?= $m ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                    <select name="year" class="form-select form-select-sm" id="chartYear" style="min-width: 110px;">
+                                        <?php for ($y = $current_year; $y >= $current_year - 5; $y--): ?>
+                                            <option value="<?= $y ?>" <?= $y === $selected_year ? 'selected' : '' ?>><?= $y ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Xem</button>
+                                    <a href="admin.php?<?= $export_query_xlsx ?>" class="btn btn-sm btn-outline-success">Xuất Excel</a>
+                                </form>
+                            </div>
                             <div style="height: 350px;">
                                 <canvas id="revenueChart"></canvas>
                             </div>
@@ -1164,7 +1390,7 @@ $js_revenues = json_encode(array_values($chart_data));
                                         <?php
                                         $statusData = match (strtolower($o['status'])) {
                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
-                                            'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ'],
+                                            'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
                                             'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                             'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                             'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -1258,6 +1484,10 @@ $js_revenues = json_encode(array_values($chart_data));
                                             </select>
                                         </td>
                                         <td>
+                                            <button type="button" class="btn btn-sm btn-outline-primary order-detail-btn"
+                                                data-order-id="<?= $o['id'] ?>">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-outline-danger order-delete-btn"
                                                 data-delete-url="?delete_order_id=<?= $o['id'] ?>"
                                                 data-order-id="<?= $o['id'] ?>">
@@ -1424,6 +1654,11 @@ $js_revenues = json_encode(array_values($chart_data));
                                     <td><?= number_format((float) $u['total_spent']) ?>đ</td>
                                     <td><?= date('d/m/Y H:i', strtotime($u['created_at'])) ?></td>
                                     <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary user-orders-btn"
+                                            data-user-id="<?= $u['id'] ?>"
+                                            data-user-name="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
+                                            <i class="bi bi-receipt"></i>
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-outline-danger user-delete-btn"
                                             data-delete-url="?delete_user_id=<?= $u['id'] ?>"
                                             data-user-name="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
@@ -1602,6 +1837,34 @@ $js_revenues = json_encode(array_values($chart_data));
                     <div class="confirm-modal-actions">
                         <button type="button" class="btn btn-outline-secondary" id="deleteOrderCancel">Hủy</button>
                         <button type="button" class="btn btn-danger" id="deleteOrderConfirm">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adminOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="adminOrderTitle">
+                <div class="confirm-modal-box user-orders-modal-box">
+                    <div class="confirm-modal-title" id="adminOrderTitle">Chi tiết đơn hàng</div>
+                    <p class="confirm-modal-desc" id="adminOrderDesc"></p>
+                    <div class="user-orders-detail" id="adminOrderDetail"></div>
+                    <div class="confirm-modal-actions" style="justify-content: flex-end;">
+                        <button type="button" class="btn btn-outline-secondary" id="adminOrderClose">Đóng</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="userOrdersModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="userOrdersTitle">
+                <div class="confirm-modal-box user-orders-modal-box">
+                    <div class="confirm-modal-title" id="userOrdersTitle">Đơn hàng của khách</div>
+                    <p class="confirm-modal-desc" id="userOrdersDesc"></p>
+                    <div class="user-orders-layout">
+                        <div id="userOrdersBody"></div>
+                        <div class="user-orders-detail" id="userOrdersDetail">
+                            <h6>Chi tiết đơn hàng</h6>
+                            <p class="user-orders-empty">Chọn một đơn để xem chi tiết.</p>
+                        </div>
+                    </div>
+                    <div class="confirm-modal-actions" style="justify-content: flex-end;">
+                        <button type="button" class="btn btn-outline-secondary" id="userOrdersClose">Đóng</button>
                     </div>
                 </div>
             </div>
@@ -1809,6 +2072,187 @@ $js_revenues = json_encode(array_values($chart_data));
                         closeDeleteOrderModal();
                     }
                 });
+
+                const adminOrderModal = document.getElementById('adminOrderModal');
+                const adminOrderDesc = document.getElementById('adminOrderDesc');
+                const adminOrderDetail = document.getElementById('adminOrderDetail');
+                const adminOrderClose = document.getElementById('adminOrderClose');
+
+                function closeAdminOrderModal() {
+                    adminOrderModal.classList.remove('is-open');
+                    adminOrderDesc.textContent = '';
+                    adminOrderDetail.innerHTML = '';
+                }
+
+                function renderAdminOrderDetail(orderId) {
+                    const detail = ordersById[orderId];
+                    if (!detail) {
+                        adminOrderDetail.innerHTML = '<p class="user-orders-empty">Không có dữ liệu đơn hàng.</p>';
+                        return;
+                    }
+                    const items = orderItemsById[orderId] || [];
+                    let itemsHtml = '';
+                    if (items.length === 0) {
+                        itemsHtml = '<p class="user-orders-empty">Không có sản phẩm.</p>';
+                    } else {
+                        itemsHtml = items.map(function (item) {
+                            const total = Number(item.price) * Number(item.quantity);
+                            return '<div><span>' + item.ten_banh + ' x' + item.quantity + '</span><strong>' +
+                                total.toLocaleString('vi-VN') + 'đ</strong></div>';
+                        }).join('');
+                    }
+
+                    adminOrderDetail.innerHTML =
+                        '<h6>Đơn #' + detail.id + '</h6>' +
+                        '<div class="user-orders-meta">' +
+                        '<div><strong>Người nhận:</strong> ' + detail.recipient_name + '</div>' +
+                        '<div><strong>SĐT:</strong> ' + detail.phone + '</div>' +
+                        '<div><strong>Địa chỉ:</strong> ' + detail.address + '</div>' +
+                        (detail.note ? '<div><strong>Ghi chú:</strong> ' + detail.note + '</div>' : '') +
+                        '<div><strong>Phương thức:</strong> ' + detail.payment_method + '</div>' +
+                        '<div><strong>Trạng thái:</strong> ' + formatStatus(detail.status) + '</div>' +
+                        '<div><strong>Ngày đặt:</strong> ' + new Date(detail.created_at).toLocaleString('vi-VN') + '</div>' +
+                        '<div><strong>Tổng tiền:</strong> ' + Number(detail.total_amount).toLocaleString('vi-VN') + 'đ</div>' +
+                        '</div>' +
+                        '<div class="user-orders-items">' + itemsHtml + '</div>';
+                }
+
+                document.querySelectorAll('.order-detail-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const orderId = btn.dataset.orderId;
+                        adminOrderDesc.textContent = 'Chi tiết đơn hàng #' + orderId + '.';
+                        renderAdminOrderDetail(orderId);
+                        adminOrderModal.classList.add('is-open');
+                    });
+                });
+
+                adminOrderClose.addEventListener('click', closeAdminOrderModal);
+                adminOrderModal.addEventListener('click', function (event) {
+                    if (event.target === adminOrderModal) {
+                        closeAdminOrderModal();
+                    }
+                });
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && adminOrderModal.classList.contains('is-open')) {
+                        closeAdminOrderModal();
+                    }
+                });
+
+                const ordersByUser = <?= json_encode($ordersByUser) ?>;
+                const ordersById = <?= json_encode($ordersById) ?>;
+                const orderItemsById = <?= json_encode($orderItemsById) ?>;
+                const userOrdersModal = document.getElementById('userOrdersModal');
+                const userOrdersDesc = document.getElementById('userOrdersDesc');
+                const userOrdersBody = document.getElementById('userOrdersBody');
+                const userOrdersDetail = document.getElementById('userOrdersDetail');
+                const userOrdersClose = document.getElementById('userOrdersClose');
+
+                function closeUserOrdersModal() {
+                    userOrdersModal.classList.remove('is-open');
+                    userOrdersBody.innerHTML = '';
+                    userOrdersDesc.textContent = '';
+                    userOrdersDetail.innerHTML = '<h6>Chi tiết đơn hàng</h6><p class="user-orders-empty">Chọn một đơn để xem chi tiết.</p>';
+                }
+
+                function formatStatus(status) {
+                    const map = {
+                        completed: 'Hoàn tất',
+                        pending: 'Đang chờ xác nhận',
+                        paid: 'Đã thanh toán',
+                        approved: 'Đã xác nhận',
+                        confirmed: 'Đã xác nhận',
+                        delivering: 'Đang giao',
+                        delivered: 'Đã giao',
+                        failed: 'Thanh toán lỗi',
+                        cancelled: 'Đã hủy'
+                    };
+                    const key = (status || '').toLowerCase();
+                    return map[key] || status;
+                }
+
+                function renderOrderDetail(orderId) {
+                    const detail = ordersById[orderId];
+                    if (!detail) {
+                        userOrdersDetail.innerHTML = '<h6>Chi tiết đơn hàng</h6><p class="user-orders-empty">Không có dữ liệu đơn hàng.</p>';
+                        return;
+                    }
+                    const items = orderItemsById[orderId] || [];
+                    let itemsHtml = '';
+                    if (items.length === 0) {
+                        itemsHtml = '<p class="user-orders-empty">Không có sản phẩm.</p>';
+                    } else {
+                        itemsHtml = items.map(function (item) {
+                            const total = Number(item.price) * Number(item.quantity);
+                            return '<div><span>' + item.ten_banh + ' x' + item.quantity + '</span><strong>' +
+                                total.toLocaleString('vi-VN') + 'đ</strong></div>';
+                        }).join('');
+                    }
+
+                    userOrdersDetail.innerHTML =
+                        '<h6>Chi tiết đơn #' + detail.id + '</h6>' +
+                        '<div class="user-orders-meta">' +
+                        '<div><strong>Người nhận:</strong> ' + detail.recipient_name + '</div>' +
+                        '<div><strong>SĐT:</strong> ' + detail.phone + '</div>' +
+                        '<div><strong>Địa chỉ:</strong> ' + detail.address + '</div>' +
+                        (detail.note ? '<div><strong>Ghi chú:</strong> ' + detail.note + '</div>' : '') +
+                        '<div><strong>Phương thức:</strong> ' + detail.payment_method + '</div>' +
+                        '<div><strong>Trạng thái:</strong> ' + formatStatus(detail.status) + '</div>' +
+                        '<div><strong>Ngày đặt:</strong> ' + new Date(detail.created_at).toLocaleString('vi-VN') + '</div>' +
+                        '<div><strong>Tổng tiền:</strong> ' + Number(detail.total_amount).toLocaleString('vi-VN') + 'đ</div>' +
+                        '</div>' +
+                        '<div class="user-orders-items">' + itemsHtml + '</div>';
+                }
+
+                function renderUserOrders(orders) {
+                    if (!orders || orders.length === 0) {
+                        userOrdersBody.innerHTML = '<p class="user-orders-empty">Khách hàng chưa có đơn hàng.</p>';
+                        return;
+                    }
+                    let html = '<table class="user-orders-table"><thead><tr>' +
+                        '<th>Mã ĐH</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th></th>' +
+                        '</tr></thead><tbody>';
+                    orders.forEach(function (order) {
+                        const dateText = new Date(order.created_at).toLocaleString('vi-VN');
+                        html += '<tr>' +
+                            '<td>#' + order.id + '</td>' +
+                            '<td>' + dateText + '</td>' +
+                            '<td>' + Number(order.total_amount).toLocaleString('vi-VN') + 'đ</td>' +
+                            '<td>' + formatStatus(order.status) + '</td>' +
+                            '<td><button type="button" class="btn btn-sm btn-outline-primary user-order-detail-btn" data-order-id="' + order.id + '">Chi tiết</button></td>' +
+                            '</tr>';
+                    });
+                    html += '</tbody></table>';
+                    userOrdersBody.innerHTML = html;
+
+                    userOrdersBody.querySelectorAll('.user-order-detail-btn').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            const orderId = btn.dataset.orderId;
+                            renderOrderDetail(orderId);
+                        });
+                    });
+                }
+
+                document.querySelectorAll('.user-orders-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const userId = btn.dataset.userId;
+                        const userName = btn.dataset.userName || 'Khách hàng';
+                        userOrdersDesc.textContent = 'Danh sách đơn hàng của ' + userName + '.';
+                        renderUserOrders(ordersByUser[userId] || []);
+                        userOrdersModal.classList.add('is-open');
+                    });
+                });
+
+                userOrdersClose.addEventListener('click', closeUserOrdersModal);
+                userOrdersModal.addEventListener('click', function (event) {
+                    if (event.target === userOrdersModal) {
+                        closeUserOrdersModal();
+                    }
+                });
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && userOrdersModal.classList.contains('is-open')) {
+                        closeUserOrdersModal();
+                    }
+                });
             });
         </script>
 
@@ -1897,6 +2341,26 @@ $js_revenues = json_encode(array_values($chart_data));
                         item.checked = selectAll.checked;
                     });
                 });
+
+                const viewSelect = document.getElementById('chartViewSelect');
+                const monthSelect = document.getElementById('chartMonth');
+                const yearSelect = document.getElementById('chartYear');
+                if (viewSelect && monthSelect && yearSelect) {
+                    const toggleRangeFields = function () {
+                        if (viewSelect.value === 'year') {
+                            monthSelect.disabled = true;
+                            yearSelect.disabled = false;
+                        } else if (viewSelect.value === 'month') {
+                            monthSelect.disabled = false;
+                            yearSelect.disabled = false;
+                        } else {
+                            monthSelect.disabled = true;
+                            yearSelect.disabled = true;
+                        }
+                    };
+                    viewSelect.addEventListener('change', toggleRangeFields);
+                    toggleRangeFields();
+                }
             });
 
             // 2. Vẽ biểu đồ Chart.js (Chỉ chạy khi đã login)

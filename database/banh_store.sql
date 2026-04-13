@@ -286,6 +286,7 @@ CREATE TABLE `orders` (
   `recipient_name` varchar(255) NOT NULL,
   `phone` varchar(20) NOT NULL,
   `address` text NOT NULL,
+  `note` text DEFAULT NULL,
   `total_amount` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `payment_method` varchar(50) NOT NULL,

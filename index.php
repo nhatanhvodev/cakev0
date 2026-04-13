@@ -223,13 +223,16 @@ if (isset($_POST['submit_testimonial'])) {
 
 $slides = [
     [
-        'img_noi' => 'assets/uploads/banhkem/banh_69da06e3dd40d8.60291082.jpg',
+        'img_noi' => 'assets/uploads/banhkem/banh_69db2d7a89e889.17640738.jpg',
     ],
     [
-        'img_noi' => 'assets/uploads/banhngot/banh_69d9fb68d5c6f8.29069485.jpg',
+        'img_noi' => 'assets/uploads/banhkem/banh_69db22e6a9f240.21037251.jpg',
     ],
     [
-        'img_noi' => 'assets/uploads/banhngot/banh_69d9fdd7888ac8.02599824.jpg',
+        'img_noi' => 'assets/uploads/banhngot/banh_69dbab0d23b419.90601663.jpg',
+    ],
+    [
+        'img_noi' => 'assets/uploads/banhngot/banh_69dbaa45c851e9.30980417.jpg',
     ]
 ];
 
@@ -734,7 +737,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 
         .testimonial-track {
             position: relative;
-            min-height: 220px;
+            min-height: 150px;
         }
 
         .testimonial-item {
@@ -763,9 +766,9 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
         }
 
         .testimonial-text {
-            font-size: 48px;
-            line-height: 60px;
-            font-weight: 600;
+            font-size: 18px;
+            line-height: 30px;
+            font-weight: 300;
             color: #272727;
             margin: 0;
         }
@@ -780,8 +783,8 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
         }
 
         .testimonial-name {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 300;
         }
 
         .testimonial-rating {
@@ -819,7 +822,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 
         .testimonial-form {
             margin: 32px auto 0;
-            max-width: 640px;
+            max-width: 440px;
             background: #ffffff;
             border-radius: 18px;
             padding: 24px;
@@ -841,7 +844,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             padding: 12px 14px;
             border: 1px solid #e4d4bd;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 10px;
             font-family: 'Poppins', sans-serif;
         }
 
@@ -860,8 +863,8 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             color: #ffffff;
             border-radius: 30px;
             border: none;
-            font-weight: 600;
-            font-size: 16px;
+            font-weight: 300;
+            font-size: 12px;
             cursor: pointer;
         }
 
@@ -869,7 +872,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             display: flex;
             justify-content: center;
             gap: 12px;
-            margin-top: 60px;
+
         }
 
         .testimonial-dots span {
@@ -1024,10 +1027,12 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 <?php
 $heroImage = buildImageUrl($slides[0]['img_noi'] ?? 'assets/uploads/banhkem/banh_69da06e3dd40d8.60291082.jpg');
 $heroStripImages = [
-    'assets/uploads/banhman/banh_69d9fe9a293131.39097090.jpg',
-    'assets/uploads/banhman/banh_69da01b95943c9.32898716.jpg',  
-    'assets/uploads/banhkem/banh_69da06e3dd04c3.21436288.jpg',
-    'assets/uploads/banhkem/banh_69da05c7d16e92.29230616.jpg'
+    'assets/uploads/banhngot/banh_69dbac321327a6.77842905.jpg',
+    'assets/uploads/banhkem/banh_69db2d7a894377.87782327.jpg',  
+    'assets/uploads/banhngot/banh_69dbabeec4c5e4.74925862.jpg',
+    'assets/uploads/banhngot/banh_69dbad194ea3f0.58335265.jpg',
+    'assets/uploads/banhman/banh_69dc5bfa161e54.16618725.jpg',
+    'assets/uploads/banhkem/banh_69dc5c1c6aae10.93189009.jpg'
 ];
 ?>
 
@@ -1121,11 +1126,11 @@ $heroStripImages = [
                 <p class="story-desc">Chúng tôi sử dụng nguyên liệu chất lượng cao được lấy từ các đơn vị cung cấp uy tín. Các nhà đầu tư của chúng tôi đều là những người giàu kinh nghiệm trong lĩnh vực thực phẩm. Vì vậy, các sản phẩm chúng tôi sản xuất được đảm bảo về chất lượng và hương vị. Nó ngon đến mức bạn phải thử ngay!</p>
                 <a class="story-link" href="/Cake/pages/about.php">Đọc thêm <span></span></a>
             </div>
-            <img class="story-image" src="/Cake/assets/uploads/banhngot/banh_69d9eb68d58901.56787194.jpg" alt="Fresh baked">
+            <img class="story-image" src="/Cake/assets/uploads/banhngot/banh_69dbab0d238210.70061934.jpg" alt="Fresh baked">
         </div>
 
         <div class="story-row reverse">
-            <img class="story-image" src="/Cake/assets/uploads/banhngot/banh_69d9ec089b5332.20465960.jpg" alt="Bakery space">
+            <img class="story-image" src="/Cake/assets/uploads/banhkem/banh_69db22e6a95e42.92082359.jpg" alt="Bakery space">
             <div>
                 <h3 class="story-title">Hãy đến và chọn những món bạn yêu thích nhất!</h3>
                 <p class="story-desc">Hãy đến trực tiếp cửa hàng của chúng tôi để thưởng thức hương vị thơm ngon của bánh vừa mới ra lò. Vừa thưởng thức bánh cùng một tách cà phê hoặc trà trong không gian cửa hàng tiện nghi của chúng tôi. Rất thích hợp để trò chuyện, gặp gỡ đồng nghiệp.</p>

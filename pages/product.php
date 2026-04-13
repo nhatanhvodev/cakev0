@@ -318,7 +318,13 @@ body {
 
 .price { margin-bottom: 10px; }
 .price del { color: #bbb; font-size: 13px; margin-right: 4px; }
-.price span { color: #4a1d1f; font-weight: 700; font-size: 16px; }
+.price .current-price { color: #4a1d1f; font-weight: 700; font-size: 16px; }
+.discount-rate {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #b42318;
+}
 
 .add-btn {
     margin-top: auto;
@@ -391,9 +397,13 @@ body {
                             <div class="price">
                                 <?php if ($p['gia_khuyen_mai']): ?>
                                     <del><?= number_format($p['gia']) ?>đ</del>
-                                    <span><?= number_format($p['gia_khuyen_mai']) ?>đ</span>
+                                    <span class="current-price"><?= number_format($p['gia_khuyen_mai']) ?>đ</span>
+                                    <?php if ($p['gia'] > 0): ?>
+                                        <?php $discount = (int) round(100 - (($p['gia_khuyen_mai'] / $p['gia']) * 100)); ?>
+                                        <span class="discount-rate">-<?= $discount ?>%</span>
+                                    <?php endif; ?>
                                 <?php else: ?>
-                                    <span><?= number_format($p['gia']) ?>đ</span>
+                                    <span class="current-price"><?= number_format($p['gia']) ?>đ</span>
                                 <?php endif; ?>
                             </div>
                             <button class="add-btn"

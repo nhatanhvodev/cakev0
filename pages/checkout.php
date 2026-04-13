@@ -6,6 +6,8 @@
 session_start();
 // 1. Kết nối Database
 require_once '../config/connect.php';
+$pageTitle = 'Thanh toán';
+$extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
 // 2. Bảo mật: CSRF Token
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -49,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name    = trim($_POST['recipient_name']);
     $phone   = trim($_POST['phone']);
     $address = trim($_POST['address']);
+    $note    = trim($_POST['note'] ?? '');
     $payment = $_POST['payment_method']; //
 
     if (!$name || !$phone || !$address || !$payment) {
@@ -58,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         try {
             // A. Lưu vào bảng orders
-            $stmt = $conn->prepare("INSERT INTO orders(user_id, recipient_name, phone, address, payment_method, total_amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())");
-            $stmt->bind_param("issssd", $user_id, $name, $phone, $address, $payment, $total);
+            $stmt = $conn->prepare("INSERT INTO orders(user_id, recipient_name, phone, address, note, payment_method, total_amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())");
+            $stmt->bind_param("isssssd", $user_id, $name, $phone, $address, $note, $payment, $total);
             $stmt->execute();
             $order_id = $conn->insert_id;
 
@@ -70,8 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_item->execute();
             }
 
-            // C. Xóa giỏ hàng trong DB sau khi đặt thành công
-            $conn->query("DELETE FROM cart WHERE user_id = $user_id");
+            // C. Chỉ xóa giỏ hàng ngay với COD
+            if ($payment === 'Tiền mặt') {
+                $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+                $stmt_clear->bind_param("i", $user_id);
+                $stmt_clear->execute();
+            }
 
             $conn->commit(); // Xác nhận giao dịch
             
@@ -80,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Thông báo & Chuyển trang
             if ($payment === 'VNPAY') {
-                require_once "../vnpay_php/config.php";
+                require_once "../vnpay/config.php";
 
                 $vnp_TxnRef = $order_id;
                 $vnp_OrderInfo = "Thanh toan don hang Cake #" . $vnp_TxnRef;
@@ -150,102 +157,270 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
-    <title>Thanh toán | Gấu Bakery</title>
+    <title><?= htmlspecialchars($pageTitle) ?> | Gấu Bakery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* [Nguồn 8, 9] Background Pattern */
+        :root {
+            --ink: #272727;
+            --accent: #4a1d1f;
+            --accent-soft: #f3e0be;
+            --cream: #fff7ef;
+            --card: #ffffff;
+            --border: rgba(74, 29, 31, 0.15);
+            --shadow: 0 18px 40px rgba(74, 29, 31, 0.12);
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            background-color: #e8f5f1;
-            background-image:
-                radial-gradient(circle at 10% 15%, rgba(255,255,255,.6) 0 40px, transparent 41px),
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,.5) 0 35px, transparent 36px),
-                url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'160\' height=\'160\' opacity=\'0.15\'><text x=\'10\' y=\'40\' font-size=\'28\'>🍰</text><text x=\'90\' y=\'60\' font-size=\'26\'>🍩</text><text x=\'40\' y=\'110\' font-size=\'26\'>🍬</text><text x=\'100\' y=\'120\' font-size=\'26\'>🍓</text></svg>");
+            background: #ffffff;
+            color: var(--ink);
         }
 
-        /* [Nguồn 10] Layout Grid */
-        .checkout-wrapper { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
-        .checkout-grid { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 30px; }
-        
-        /* [Nguồn 10, 11] Box Styles & Decor */
-        .checkout-box {
-            background: #ffffff; padding: 30px; border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(69,119,98,.1);
-            border: 2px solid #d9efe7; position: relative; overflow: hidden;
-        }
-        .checkout-box h3 { margin-top: 0; margin-bottom: 25px; color: #457762; font-size: 24px; font-weight: 700; border-bottom: 2px dashed #eee; padding-bottom: 15px; }
-        
-        /* Icon trang trí góc */
-        .box-info::before {
-            content: "<i class="fa-regular fa-clipboard" style="color: #8b4513;"></i>"; position: absolute; top: -15px; left: 20px;
-            width: 50px; height: 50px; background: #ffb6c1; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 24px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .checkout-page {
+            background: linear-gradient(180deg, #fff7ef 0%, #ffffff 55%, #fff 100%);
+            padding-top: 28px;
+            padding-bottom: 40px;
         }
 
-        /* [Nguồn 12, 13] Form Inputs */
-        .checkout-box label { font-weight: 600; margin-top: 15px; display: block; color: #355e4f; }
-        .lb-name::before { content: "<i class="fa-regular fa-user" style="color: #8b4513;"></i> "; }
-        .lb-phone::before { content: "📱 "; }
-        .lb-address::before { content: "<i class="fa-solid fa-house-chimney" style="color: #8b4513;"></i> "; }
-        
-        .checkout-box input,
-        .checkout-box textarea {
-            width: 100%; padding: 12px; border-radius: 10px;
-            border: 2px solid #cfe7de; margin-top: 8px; box-sizing: border-box;
-            font-family: inherit; transition: .3s;
+        .checkout-hero {
+            max-width: 1180px;
+            margin: 0 auto 10px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
         }
-        .checkout-box input:focus,
-        .checkout-box textarea:focus { border-color: #457762; outline: none; }
 
-        /* [Nguồn 14] Payment Methods */
-        .payment-method { margin-top: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .checkout-hero .eyebrow {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .checkout-hero h1 {
+            margin: 6px 0 8px;
+            font-size: 34px;
+            color: var(--accent);
+        }
+
+        .checkout-hero p {
+            margin: 0;
+            color: #555;
+            max-width: 520px;
+        }
+
+        .hero-badge {
+            background: var(--accent);
+            color: #fff7ef;
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 12px 25px rgba(74, 29, 31, 0.18);
+        }
+
+        .checkout-wrapper {
+            max-width: 1180px;
+            margin: 20px auto 0;
+            padding: 0 20px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+            gap: 28px;
+        }
+
+        .checkout-card {
+            background: var(--card);
+            padding: 28px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .checkout-card h3 {
+            margin: 0 0 18px;
+            color: var(--accent);
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .checkout-card .section-note {
+            margin: -8px 0 18px;
+            color: #6a2d22;
+            font-size: 13px;
+        }
+
+        .checkout-field label {
+            font-weight: 600;
+            margin-top: 16px;
+            display: block;
+            color: #4a1d1f;
+        }
+
+        .checkout-field input,
+        .checkout-field textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+            background: #fffaf3;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .checkout-field input:focus,
+        .checkout-field textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 29, 31, 0.08);
+        }
+
+        .payment-method {
+            margin-top: 12px;
+            display: grid;
+            gap: 12px;
+        }
+
         .payment-option {
-            display: flex; align-items: center; padding: 12px 16px; 
-            border: 2px solid #cfe7de; border-radius: 12px; cursor: pointer; transition: .2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.2s ease;
+            background: #fffaf3;
         }
-        .payment-option:hover { background: #f0faf6; border-color: #457762; }
-        .payment-option input { width: auto; margin-right: 12px; margin-top: 0; }
 
-        /* [Nguồn 15] Button */
-        .checkout-box .btn-submit {
-            width: 100%; padding: 16px; margin-top: 30px;
-            background: linear-gradient(135deg, #457762, #5fae92);
-            color: #fff; border: none; border-radius: 14px; font-size: 18px; font-weight: 700;
-            cursor: pointer; transition: .3s; box-shadow: 0 10px 25px rgba(69,119,98,.25);
+        .payment-option:hover {
+            border-color: var(--accent);
+            background: #fff1e6;
         }
-        .checkout-box .btn-submit:hover { transform: translateY(-3px); background: linear-gradient(135deg, #ff6b9c, #ff8fb3); }
 
-        /* [Nguồn 16] Order Summary List */
-        .order-list { list-style: none; padding: 0; margin: 0; }
+        .payment-option input {
+            width: auto;
+            margin: 0;
+            accent-color: var(--accent);
+        }
+
+        .checkout-card .btn-submit {
+            width: 100%;
+            padding: 16px;
+            margin-top: 24px;
+            background: var(--accent);
+            color: #fff7ef;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease;
+            box-shadow: 0 12px 28px rgba(74, 29, 31, 0.2);
+        }
+
+        .checkout-card .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 35px rgba(74, 29, 31, 0.25);
+        }
+
+        .order-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 12px;
+        }
+
         .order-item {
-            display: flex; justify-content: space-between; padding: 15px 0;
-            border-bottom: 1px dashed #cfe7de; font-size: 15px;
-        }
-        .order-item span:first-child::before { content: "<i class="fa-solid fa-circle-notch" style="color: #ff6b9c;"></i> "; }
-        .total-row {
-            display: flex; justify-content: space-between; padding-top: 20px;
-            font-size: 20px; color: #457762; font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(74, 29, 31, 0.2);
+            font-size: 15px;
         }
 
-        /* [Nguồn 16, 20] QR Box */
-        .qr-box {
-            display: none; margin-top: 20px; text-align: center;
-            background: #f0faf6; padding: 20px; border-radius: 16px; border: 2px dashed #457762;
+        .order-item span:first-child {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .qr-box img { max-width: 180px; border-radius: 10px; margin-top: 10px; }
+
+        .order-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--accent);
+            display: inline-block;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 18px;
+            font-size: 20px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .total-highlight {
+            color: #c44536;
+        }
+
+        .qr-box {
+            display: none;
+            margin-top: 18px;
+            text-align: center;
+            background: #fff1e6;
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px dashed rgba(74, 29, 31, 0.3);
+        }
+
+        .qr-box img {
+            max-width: 180px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
 
         @media (max-width: 900px) {
-            .checkout-wrapper { margin: 24px auto; }
-            .checkout-grid { grid-template-columns: 1fr; }
+            .checkout-hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 600px) {
-            .checkout-box { padding: 20px; border-radius: 16px; }
-            .checkout-box h3 { font-size: 20px; }
-            .checkout-box .btn-submit { font-size: 16px; padding: 14px; }
+            .checkout-card {
+                padding: 20px;
+                border-radius: 16px;
+            }
+
+            .checkout-hero h1 {
+                font-size: 26px;
+            }
+
+            .checkout-card .btn-submit {
+                font-size: 15px;
+                padding: 14px;
+            }
         }
     </style>
 </head>
@@ -253,25 +428,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include '../includes/header.php'; ?>
 
-<section class="checkout-wrapper">
-    <div class="checkout-grid">
+<section class="checkout-page">
+    <div class="checkout-hero">
+        <div>
+            <h1>Thanh toán</h1>
+            <p>Hoàn tất thông tin giao hàng và chọn phương thức thanh toán phù hợp để nhận bánh nhanh nhất.</p>
+        </div>
+        <div class="hero-badge"><i class="fa-solid fa-shield-heart"></i> Thanh toán an toàn</div>
+    </div>
+
+    <div class="checkout-wrapper">
+        <div class="checkout-grid">
         
         <!-- CỘT 1: FORM THÔNG TIN -->
-        <div class="checkout-box box-info">
+        <div class="checkout-card">
             <h3>Thông tin giao hàng</h3>
+            <p class="section-note">Vui lòng nhập chính xác để đơn hàng được giao đúng địa chỉ.</p>
             <form method="POST" id="checkout-form">
                 <!-- Token CSRF ẩn -->
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 
-                <label class="lb-name">Họ tên người nhận</label>
-                <input type="text" name="recipient_name" required placeholder="Ví dụ: Nguyễn Văn A">
+                <div class="checkout-field">
+                    <label>Họ tên người nhận</label>
+                    <input type="text" name="recipient_name" required placeholder="Ví dụ: Nguyễn Văn A">
+                </div>
                 
-                <label class="lb-phone">Số điện thoại</label>
-                <input type="tel" name="phone" pattern="{10}" required placeholder="09xxxxxxxxx">
+                <div class="checkout-field">
+                    <label>Số điện thoại</label>
+                    <input type="tel" name="phone" pattern="{10}" required placeholder="09xxxxxxxxx">
+                </div>
                 
-                <label class="lb-address">Địa chỉ giao hàng</label>
-                <textarea name="address" rows="3" required placeholder="Số nhà, tên đường, phường/xã..."></textarea>
-                
+                <div class="checkout-field">
+                    <label>Địa chỉ giao hàng</label>
+                    <textarea name="address" rows="3" required placeholder="Số nhà, tên đường, phường/xã..."></textarea>
+                </div>
+
+                <div class="checkout-field">
+                    <label>Ghi chú yêu cầu thêm</label>
+                    <textarea name="note" rows="3" placeholder="Ví dụ: Ghi chữ lên bánh, ngày sinh nhật..."></textarea>
+                </div>
+
                 <label>Hình thức thanh toán</label>
                 <div class="payment-method">
                     <label class="payment-option">
@@ -292,7 +488,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="qr-box" id="qr">
                     <p style="margin:0"><strong>Ngân hàng Vietcombank</strong></p>
                     <p style="margin:5px 0">STK: 0123456789 - Gấu Bakery</p>
-                    <p style="color:#ff6b9c; font-weight:bold;">Số tiền: <?= number_format($total, 0, ',', '.') ?> VNĐ</p>
+                    <p style="color:#c44536; font-weight:bold;">Số tiền: <?= number_format($total, 0, ',', '.') ?> VNĐ</p>
                     <!-- Ảnh QR sinh động từ Google Charts API -->
                     <img id="qr-img" src="" alt="Mã QR thanh toán">
                     <p style="font-size:12px; color:#666; margin-top:8px;">Quét mã để thanh toán nhanh</p>
@@ -303,12 +499,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- CỘT 2: ĐƠN HÀNG -->
-        <div class="checkout-box">
+        <div class="checkout-card">
             <h3>Đơn hàng của bạn</h3>
+            <p class="section-note">Kiểm tra lại món và tổng tiền trước khi xác nhận.</p>
             <ul class="order-list">
                 <?php foreach ($cart as $item): ?>
                 <li class="order-item">
-                    <span><?= htmlspecialchars($item['ten_banh']) ?> <small>x<?= $item['quantity'] ?></small></span>
+                    <span><span class="order-dot"></span><?= htmlspecialchars($item['ten_banh']) ?> <small>x<?= $item['quantity'] ?></small></span>
                     <span><?= number_format($item['gia'] * $item['quantity'], 0, ',', '.') ?>đ</span>
                 </li>
                 <?php endforeach; ?>
@@ -316,10 +513,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="total-row">
                 <span>Tổng cộng:</span>
-                <span style="color:#ff6b9c"><?= number_format($total, 0, ',', '.') ?> VNĐ</span>
+                <span class="total-highlight"><?= number_format($total, 0, ',', '.') ?> VNĐ</span>
             </div>
         </div>
 
+    </div>
     </div>
 </section>
 

@@ -117,6 +117,29 @@ if (isset($_POST['change_password'])) {
     }
 }
 
+// --- LOGIC 3: HỦY ĐƠN HÀNG (CHỈ KHI ĐANG CHỜ) ---
+if (isset($_POST['cancel_order'])) {
+    $orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
+    if ($orderId <= 0) {
+        $_SESSION['success'] = '';
+        $error = 'Đơn hàng không hợp lệ.';
+    } else {
+        $stmt = $conn->prepare(
+            "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND status = 'pending'"
+        );
+        $stmt->bind_param('ii', $orderId, $user_id);
+        $stmt->execute();
+        if ($stmt->affected_rows > 0) {
+            $_SESSION['success'] = 'Đã hủy đơn hàng thành công.';
+        } else {
+            $error = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';
+        }
+        $stmt->close();
+    }
+    header('Location: account.php');
+    exit;
+}
+
 /* =================================================================================
    PHẦN 3: LẤY DỮ LIỆU HIỂN THỊ (GET REQUESTS)
    ================================================================================= */
@@ -398,6 +421,51 @@ foreach ($orders as $order) {
             color: #fff;
         }
 
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .confirm-modal.is-open {
+            display: flex;
+        }
+
+        .confirm-modal-box {
+            background: #fff;
+            width: 92%;
+            max-width: 420px;
+            border-radius: 22px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+            animation: fadeUp 0.25s ease;
+        }
+
+        .confirm-modal-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            color: var(--brown-800);
+            font-weight: 700;
+        }
+
+        .confirm-modal-desc {
+            margin: 0 0 20px;
+            color: #6b6b6b;
+            font-size: 14px;
+        }
+
+        .confirm-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
         @media (max-width: 992px) {
             .account-grid {
                 grid-template-columns: 1fr;
@@ -534,7 +602,7 @@ foreach ($orders as $order) {
                                                         <?php
                                                         $statusData = match (strtolower($o['status'])) {
                                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
-                                                            'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ'],
+                                                            'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
                                                             'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                                             'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                                             'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -551,6 +619,13 @@ foreach ($orders as $order) {
                                                     <td>
                                                         <a href="/Cake/pages/order-detail.php?id=<?= $o['id'] ?>"
                                                             class="btn btn-sm btn-outline-primary">Xem</a>
+                                                        <?php if (strtolower($o['status']) === 'pending'): ?>
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-outline-danger cancel-order-btn"
+                                                                data-order-id="<?= $o['id'] ?>">
+                                                                Hủy dơn
+                                                            </button>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -563,6 +638,20 @@ foreach ($orders as $order) {
                                     <p>Bạn chưa có đơn hàng nào.</p>
                                 </div>
                             <?php endif; ?>
+
+                            <div id="cancelOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancelOrderTitle">
+                                <div class="confirm-modal-box">
+                                    <div class="confirm-modal-title" id="cancelOrderTitle">Hủy đơn hàng?</div>
+                                    <p class="confirm-modal-desc" id="cancelOrderDesc">Đơn hàng sẽ được chuyển sang trạng thái đã hủy.</p>
+                                    <div class="confirm-modal-actions">
+                                        <button type="button" class="btn btn-outline-secondary" id="cancelOrderCancel">Hủy đơn</button>
+                                        <form method="POST" id="cancelOrderForm">
+                                            <input type="hidden" name="order_id" id="cancelOrderId" value="">
+                                            <button type="submit" name="cancel_order" class="btn btn-danger">Xác nhận hủy đơn</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- TAB 3: CÀI ĐẶT -->
@@ -634,6 +723,41 @@ foreach ($orders as $order) {
     </div>
 
     <?php include '../includes/footer.html'; ?>
+
+    <script>
+        const cancelOrderModal = document.getElementById('cancelOrderModal');
+        const cancelOrderCancel = document.getElementById('cancelOrderCancel');
+        const cancelOrderId = document.getElementById('cancelOrderId');
+        const cancelOrderDesc = document.getElementById('cancelOrderDesc');
+
+        function closeCancelOrderModal() {
+            cancelOrderModal.classList.remove('is-open');
+            cancelOrderId.value = '';
+        }
+
+        document.querySelectorAll('.cancel-order-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const id = btn.dataset.orderId || '';
+                cancelOrderId.value = id;
+                cancelOrderDesc.textContent = 'Đơn hàng #' + id + ' sẽ được chuyển sang trạng thái đã hủy.';
+                cancelOrderModal.classList.add('is-open');
+            });
+        });
+
+        cancelOrderCancel.addEventListener('click', closeCancelOrderModal);
+
+        cancelOrderModal.addEventListener('click', function (event) {
+            if (event.target === cancelOrderModal) {
+                closeCancelOrderModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && cancelOrderModal.classList.contains('is-open')) {
+                closeCancelOrderModal();
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

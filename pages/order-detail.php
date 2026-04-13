@@ -82,6 +82,23 @@ $statusLabel = match ($status) {
 
 $allowedReviewStatuses = ['completed'];
 
+// --- HỦY ĐƠN HÀNG (CHỈ KHI ĐANG CHỜ) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order'])) {
+    $stmt = $conn->prepare(
+        "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND status = 'pending'"
+    );
+    $stmt->bind_param('ii', $order_id, $user_id);
+    $stmt->execute();
+    if ($stmt->affected_rows > 0) {
+        $_SESSION['review_flash'] = 'Đã hủy đơn hàng thành công.';
+    } else {
+        $_SESSION['review_flash'] = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';
+    }
+    $stmt->close();
+    header("Location: order-detail.php?id={$order_id}");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_product_review'])) {
     if (!in_array($status, $allowedReviewStatuses, true)) {
         $_SESSION['review_flash'] = 'Đơn hàng chưa đủ điều kiện để đánh giá.';
@@ -291,6 +308,51 @@ body {
     font-weight: 600;
 }
 
+.confirm-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.confirm-modal.is-open {
+    display: flex;
+}
+
+.confirm-modal-box {
+    background: #fff;
+    width: 92%;
+    max-width: 420px;
+    border-radius: 22px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    animation: zoomIn .25s ease;
+}
+
+.confirm-modal-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #4a1d1f;
+    font-weight: 700;
+}
+
+.confirm-modal-desc {
+    margin: 0 0 20px;
+    color: #6b6b6b;
+    font-size: 14px;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -377,6 +439,11 @@ body {
             <button class="btn btn-outline-primary btn-pill" onclick="openBill()"><i class="fa-regular fa-eye"></i> Xem nhanh</button>
             <button class="btn btn-outline-success btn-pill" onclick="window.print()"><i class="fa-solid fa-print"></i> In</button>
             <button class="btn btn-outline-danger btn-pill" onclick="exportPDF()"><i class="fa-regular fa-file-lines"></i> PDF</button>
+            <?php if ($status === 'pending'): ?>
+                <button type="button" id="cancelOrderBtn" class="btn btn-outline-danger btn-pill">
+                    <i class="fa-regular fa-circle-xmark"></i> Hủy đơn
+                </button>
+            <?php endif; ?>
             <a href="/Cake/pages/account.php" class="btn btn-secondary btn-pill">Quay lại</a>
         </div>
     </div>
@@ -401,6 +468,9 @@ body {
                 <div><span>Trạng thái:</span> <?= $statusLabel ?></div>
                 <div><span>Mã đơn:</span> #<?= $order_id ?></div>
                 <div><span>Ngày đặt:</span> <?= date("d/m/Y H:i", strtotime($order['created_at'])) ?></div>
+                <?php if (!empty($order['note'])): ?>
+                    <div><span>Ghi chú:</span> <?= htmlspecialchars($order['note']) ?></div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -517,9 +587,50 @@ body {
 
 <?php include '../includes/footer.html'; ?>
 
+<div id="cancelOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancelOrderTitle">
+    <div class="confirm-modal-box">
+        <div class="confirm-modal-title" id="cancelOrderTitle">Hủy đơn hàng?</div>
+        <p class="confirm-modal-desc">Đơn hàng sẽ được chuyển sang trạng thái đã hủy.</p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="btn btn-outline-secondary" id="cancelOrderCancel">Hủy</button>
+            <form method="POST">
+                <button type="submit" name="cancel_order" class="btn btn-danger">Xác nhận hủy</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function openBill(){ document.getElementById('billModal').classList.add('show'); }
 function closeBill(){ document.getElementById('billModal').classList.remove('show'); }
+
+const cancelOrderModal = document.getElementById('cancelOrderModal');
+const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+const cancelOrderCancel = document.getElementById('cancelOrderCancel');
+
+function closeCancelModal() {
+    cancelOrderModal.classList.remove('is-open');
+}
+
+if (cancelOrderBtn) {
+    cancelOrderBtn.addEventListener('click', function () {
+        cancelOrderModal.classList.add('is-open');
+    });
+}
+
+cancelOrderCancel.addEventListener('click', closeCancelModal);
+
+cancelOrderModal.addEventListener('click', function (event) {
+    if (event.target === cancelOrderModal) {
+        closeCancelModal();
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && cancelOrderModal.classList.contains('is-open')) {
+        closeCancelModal();
+    }
+});
 
 function exportPDF(){
     const { jsPDF } = window.jspdf;

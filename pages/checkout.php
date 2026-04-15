@@ -526,11 +526,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ---
 
-### PHẦN 3: JAVASCRIPT (Chỉ xử lý sự kiện UI)
-
-Logic JS đã được rút gọn, chỉ tập trung vào việc hiển thị QR Code, loại bỏ hoàn toàn việc can thiệp vào tính toán tiền bạc (để PHP lo).
-
-```html
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {

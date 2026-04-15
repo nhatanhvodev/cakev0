@@ -51,27 +51,44 @@ if ($search !== '') {
     ];
 
     $whereParts = [];
+    $categoryParts = [];
+    $nameParts = [];
+    $categoryParams = [];
+    $nameParams = [];
     $params = [$today, $today];
     $types = 'ss';
+    $termCount = count($terms);
 
     foreach ($normalizedTerms as $index => $term) {
-        if (isset($categoryMap[$term])) {
-            $whereParts[] = "b.loai = ?";
-            $params[] = $categoryMap[$term];
-            $types .= 's';
+        if ($termCount === 1 && isset($categoryMap[$term])) {
+            $categoryParts[] = "b.loai = ?";
+            $categoryParams[] = $categoryMap[$term];
         }
         if (!empty($terms[$index])) {
-            $whereParts[] = "b.ten_banh LIKE ?";
-            $params[] = '%' . $terms[$index] . '%';
-            $types .= 's';
+            $nameParts[] = "b.ten_banh COLLATE utf8mb4_unicode_ci LIKE ?";
+            $nameParams[] = '%' . $terms[$index] . '%';
         }
+    }
+
+    if (count($nameParts) > 1) {
+        $whereParts[] = '(' . implode(' AND ', $nameParts) . ')';
+        $params = array_merge($params, $nameParams);
+    } elseif (count($nameParts) === 1) {
+        $whereParts[] = $nameParts[0];
+        $params = array_merge($params, $nameParams);
+    }
+
+    if ($termCount === 1 && !empty($categoryParts)) {
+        $whereParts = array_merge($whereParts, $categoryParts);
+        $params = array_merge($params, $categoryParams);
     }
 
     if (empty($whereParts)) {
-        $whereParts[] = "b.ten_banh LIKE ?";
+        $whereParts[] = "b.ten_banh COLLATE utf8mb4_unicode_ci LIKE ?";
         $params[] = '%' . $search . '%';
-        $types .= 's';
     }
+
+    $types .= str_repeat('s', count($params) - 2);
 
     $sql = "SELECT b.*, p.gia_khuyen_mai
             FROM banh b
@@ -82,7 +99,7 @@ if ($search !== '') {
     $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $san_pham['search'] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $ten_loai['search'] = "Kết quả: \"$search\"";
+    $ten_loai['search'] = "Kết quả tìm kiếm:";
     $loai_active = 'search';
 } else {
     $sql = "SELECT b.*, p.gia_khuyen_mai
@@ -175,71 +192,6 @@ body {
 
 @media(max-width: 900px) {
     .products-wrap { grid-template-columns: 1fr; }
-}
-
-.product-menu {
-    background: #fbedcd;
-    padding: 12px 16px;
-    border-radius: 16px;
-    border: 1px solid #f3e0be;
-    box-shadow: 0 16px 32px rgba(74, 29, 31, 0.08);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-}
-
-.product-menu .menu-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #000000;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.product-menu button,
-.product-menu .clear-search {
-    width: auto;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 14px;
-    background: #4a1d1f;
-    margin: 0;
-    text-align: center;
-    font-weight: 600;
-    font-size: 13px;
-    color: #fbedcd;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    text-decoration: none;
-}
-
-.product-menu button.active,
-.product-menu button:hover {
-    background: #ffffff;
-    color: #4a1d1f;
-    box-shadow: inset 0 0 0 1px #4a1d1f;
-}
-
-.product-menu .clear-search {
-    background: #ffffff;
-    color: #4a1d1f;
-    box-shadow: inset 0 0 0 1px #4a1d1f;
-}
-
-.product-menu .clear-search:hover {
-    background: #4a1d1f;
-    color: #fbedcd;
 }
 
 .product-content {
@@ -397,33 +349,6 @@ body {
 <main class="page-content">
 <div class="products-wrap">
     <section class="product-content">
-        <div class="product-menu">
-            <span class="menu-label"><i class="fa-solid fa-layer-group"></i> Danh mục</span>
-            <?php
-            $menuIcons = [
-                'ngot'   => 'fa-cookie-bite',
-                'man'    => 'fa-bread-slice',
-                'mi'     => 'fa-wheat-awn',
-                'kem'    => 'fa-ice-cream',
-                'khuyenmai' => 'fa-tag',
-                'search' => 'fa-magnifying-glass',
-            ];
-            $menuKeys = array_keys($san_pham);
-            foreach ($menuKeys as $k):
-                $v = $ten_loai[$k] ?? $k;
-            ?>
-                <button class="<?= $k == $loai_active ? 'active' : '' ?>"
-                        onclick="showCat('<?= $k ?>', this)">
-                    <i class="fa-solid <?= $menuIcons[$k] ?? 'fa-circle' ?>"></i>
-                    <?= $v ?>
-                </button>
-            <?php endforeach; ?>
-            <?php if (!empty($search)): ?>
-                <a class="clear-search" href="/Cake/pages/product.php" aria-label="Bỏ tìm kiếm">
-                    <i class="fa-solid fa-xmark"></i>
-                </a>
-            <?php endif; ?>
-        </div>
         <?php foreach ($san_pham as $k => $ds): ?>
             <div id="<?= $k ?>" class="cat <?= $k == $loai_active ? '' : 'hidden' ?>">
                 <h2 style="color:#4a1d1f; margin-bottom:18px;"><?= $ten_loai[$k] ?></h2>
@@ -469,16 +394,6 @@ body {
 <button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
 
 <script>
-function showCat(id, btn) {
-    document.querySelectorAll('.cat').forEach(c => c.classList.add('hidden'));
-    document.querySelectorAll('.product-menu button').forEach(b => b.classList.remove('active'));
-    const target = document.getElementById(id);
-    if (!target) return;
-    target.classList.remove('hidden');
-    if (btn) btn.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
 function addCartQuick(productId) {
     fetch('/Cake/pages/cart.php', {
         method: 'POST',

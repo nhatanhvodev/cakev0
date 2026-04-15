@@ -110,27 +110,44 @@ if (isset($_POST['search_products'])) {
     ];
 
     $whereParts = [];
+    $categoryParts = [];
+    $nameParts = [];
+    $categoryParams = [];
+    $nameParams = [];
     $params = [];
     $types = '';
+    $termCount = count($terms);
 
     foreach ($normalized as $index => $term) {
-        if (isset($categoryMap[$term])) {
-            $whereParts[] = 'b.loai = ?';
-            $params[] = $categoryMap[$term];
-            $types .= 's';
+        if ($termCount === 1 && isset($categoryMap[$term])) {
+            $categoryParts[] = 'b.loai = ?';
+            $categoryParams[] = $categoryMap[$term];
         }
         if (!empty($terms[$index])) {
-            $whereParts[] = 'b.ten_banh LIKE ?';
-            $params[] = '%' . $terms[$index] . '%';
-            $types .= 's';
+            $nameParts[] = 'b.ten_banh COLLATE utf8mb4_unicode_ci LIKE ?';
+            $nameParams[] = '%' . $terms[$index] . '%';
         }
+    }
+
+    if (count($nameParts) > 1) {
+        $whereParts[] = '(' . implode(' AND ', $nameParts) . ')';
+        $params = array_merge($params, $nameParams);
+    } elseif (count($nameParts) === 1) {
+        $whereParts[] = $nameParts[0];
+        $params = array_merge($params, $nameParams);
+    }
+
+    if ($termCount === 1 && !empty($categoryParts)) {
+        $whereParts = array_merge($whereParts, $categoryParts);
+        $params = array_merge($params, $categoryParams);
     }
 
     if (empty($whereParts)) {
-        $whereParts[] = 'b.ten_banh LIKE ?';
+        $whereParts[] = 'b.ten_banh COLLATE utf8mb4_unicode_ci LIKE ?';
         $params[] = '%' . $kw . '%';
-        $types .= 's';
     }
+
+    $types .= str_repeat('s', count($params));
 
     $sql = "SELECT b.id, b.ten_banh, b.gia, b.hinh_anh, b.slug
             FROM banh b

@@ -34,6 +34,11 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     --header-text: #272727;
     --header-accent: #4a1d1f;
     --header-border: rgba(86, 178, 128, 0.2);
+    --menu-bg: #fbedcd;
+    --menu-surface: #ffffff;
+    --menu-text: #2f3a37;
+    --menu-soft: #ffffff;
+    --header-sticky-offset: 75px;
   }
 
   #site-header {
@@ -84,10 +89,10 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   #main-nav {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   #main-nav ul {
@@ -96,8 +101,203 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 46px;
+    gap: 0;
     white-space: nowrap;
+  }
+
+  .menu-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    min-width: auto;
+    min-height: auto;
+    border: 1px solid rgba(74, 29, 31, 0.22);
+    border-radius: 999px;
+    background: var(--menu-surface);
+    color: var(--header-accent);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(74, 29, 31, 0.08);
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .menu-toggle-btn i {
+    font-size: 18px;
+  }
+
+  .menu-toggle-btn:hover {
+    background: var(--header-accent);
+    border-color: var(--header-accent);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .menu-container {
+    width: 100%;
+    background: #ffffff;
+    border-bottom: 1px solid var(--header-border);
+    position: sticky;
+    top: var(--header-sticky-offset);
+    z-index: 990;
+  }
+
+  .menu-container #main-nav {
+    width: min(1200px, calc(100% - 104px));
+    margin: 0 auto;
+    padding: 10px 0;
+  }
+
+  .menu-tag-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .menu-tag-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-search-tag {
+    border: 1px solid rgba(74, 29, 31, 0.2);
+    background: #fff;
+    color: var(--header-accent);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .menu-search-tag:hover {
+    background: var(--header-accent);
+    color: #fff;
+    border-color: var(--header-accent);
+  }
+
+  .catePanelJs {
+    display: none;
+    color: #fff;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: calc(var(--header-sticky-offset) + 51px);
+    z-index: 989;
+    margin-top: -1px;
+  }
+
+  .catePanelJs.open {
+    display: block;
+    background: var(--menu-bg);
+    color: var(--header-text);
+    border-top: 1px solid var(--header-border);
+    border-bottom: 1px solid var(--header-border);
+  }
+
+  .cate-panel-inner {
+    width: min(1200px, calc(100% - 104px));
+    margin: 0 auto;
+    padding: 24px 0;
+    display: grid;
+    grid-template-columns: 260px 1fr 220px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .cate-panel-col {
+    min-width: 0;
+  }
+
+  .cate-panel-col + .cate-panel-col {
+    border-left: 1px solid rgba(74, 29, 31, 0.16);
+    padding-left: 24px;
+  }
+
+  .cate-panel-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+
+  .cate-panel-links a {
+    color: var(--header-accent);
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.35;
+    transition: color 0.2s ease;
+  }
+
+  .cate-panel-links a:hover {
+    color: var(--header-text);
+  }
+
+  .cate-panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    opacity: 0.95;
+    color: var(--header-accent);
+  }
+
+  .cate-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 22px;
+  }
+
+  .cate-panel-grid a {
+    color: var(--header-text);
+    text-decoration: none;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  .cate-panel-grid a:hover {
+    color: var(--header-accent);
+  }
+
+  .cate-panel-social {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+  }
+
+  .cate-panel-social-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cate-panel-social-links a {
+    color: #fff;
+    background: var(--header-accent);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 8px 16px rgba(74, 29, 31, 0.12);
+    transition: background 0.2s ease;
+  }
+
+  .cate-panel-social-links a:hover {
+    background: var(--header-text);
   }
 
   #main-nav a {
@@ -125,21 +325,22 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     display: flex;
     align-items: center;
     gap: 12px;
-    flex-shrink: 0;
+    flex: 1;
   }
 
   .search-box {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    flex: 1;
   }
 
   .search-box input {
     padding: 0 52px 0 16px;
-    border-radius: 0;
+    border-radius: 24px;
     border: 0.5px solid var(--header-accent);
     outline: none;
-    width: 251px;
+    width: 100%;
     height: 45px;
     font-size: 16px;
     color: var(--header-text);
@@ -161,7 +362,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     color: #fbedcd;
     width: 45px;
     height: 45px;
-    border-radius: 0;
+    border-radius: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -232,6 +433,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
   #user-actions a {
@@ -267,6 +470,10 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   @media (max-width: 900px) {
+    :root {
+      --header-sticky-offset: 68px;
+    }
+
     .header-inner {
       width: calc(100% - 32px);
       height: auto;
@@ -301,6 +508,37 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
+    }
+
+    .menu-toggle-btn {
+      font-size: 14px;
+    }
+
+    .cate-panel-inner {
+      width: calc(100% - 32px);
+      grid-template-columns: 1fr;
+      gap: 18px;
+      padding: 18px 0;
+    }
+
+    .cate-panel-col + .cate-panel-col {
+      border-left: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.35);
+      padding-left: 0;
+      padding-top: 16px;
+    }
+
+    .cate-panel-links a {
+      font-size: 18px;
+    }
+
+    .cate-panel-grid {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .cate-panel-grid a {
+      font-size: 15px;
     }
 
     #main-nav ul::-webkit-scrollbar {
@@ -340,6 +578,10 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   @media (max-width: 600px) {
+    :root {
+      --header-sticky-offset: 64px;
+    }
+
     #main-nav a {
       font-size: 14px;
     }
@@ -348,8 +590,28 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       font-size: 20px;
     }
 
-    .search-box input {
-      width: 200px;
+    .cate-panel-links a {
+      font-size: 16px;
+    }
+
+    .menu-container #main-nav {
+      width: calc(100% - 32px);
+      padding: 8px 0;
+    }
+
+    .menu-toggle-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .menu-tag-list {
+      margin-left: 8px;
+      gap: 6px;
+    }
+
+    .menu-search-tag {
+      font-size: 12px;
+      padding: 6px 10px;
     }
   }
 
@@ -363,51 +625,41 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
 </style>
 
+
 <header id="site-header">
   <div class="header-inner">
     <div class="header-top">
       <div class="logo">
         <a href="<?= BASE_URL ?>index.php">Gấu Bakery</a>
       </div>
-
-      <nav id="main-nav">
-        <ul>
-          <li><a href="<?= BASE_URL ?>index.php">Trang chủ</a></li>
-          <li><a href="<?= BASE_URL ?>pages/product.php">Menu Bánh</a></li>
-          <li><a href="<?= BASE_URL ?>pages/about.php">Về chúng tôi</a></li>
-          <li><a href="<?= BASE_URL ?>pages/contact.php">Liên hệ với chúng tôi</a></li>
-        </ul>
-      </nav>
-
       <div class="header-actions">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Tìm kiếm">
-        <button type="button" id="searchBtn">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-        <div class="search-result" id="searchResult"></div>
-      </div>
-
-      <div id="user-actions">
-        <a href="<?= BASE_URL ?>pages/account.php"><i class="fa-regular fa-user"></i></a>
-        <a href="<?= BASE_URL ?>pages/cart.php" class="cart-wrapper">
-          <i class="fa-solid fa-cart-shopping"></i>
-          <span id="header-cart-badge" class="cart-badge"
-            style="<?= $cartItemCount > 0 ? '' : 'display:none;' ?>"><?= $cartItemCount ?></span>
-        </a>
-
-        <div class="notify-box">
-          <i class="fa-solid fa-bell" onclick="toggleNotify()"></i>
-          <div class="notify-list" id="notifyList">
-            <?php if ($role === 'admin'): ?>
-              <div><i class="fa-solid fa-box-open" style="color: #8b4513;"></i> Có đơn hàng mới</div>
-            <?php elseif ($role === 'user'): ?>
-              <div><i class="fa-solid fa-truck-fast" style="color: #8b4513;"></i> Đơn hàng đang giao</div>
-            <?php else: ?>
-              <div class="notification-item" onclick="goToEvent()">
-                <i class="fa-solid fa-champagne-glasses" style="color: #ffb703;"></i> Có sự kiện mới
-              </div>
-            <?php endif; ?>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Bạn muốn tìm bánh gì...">
+          <button type="button" id="searchBtn">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+          <div class="search-result" id="searchResult"></div>
+        </div>
+        <div id="user-actions">
+          <a href="<?= BASE_URL ?>pages/account.php"><i class="fa-regular fa-user"></i></a>
+          <a href="<?= BASE_URL ?>pages/cart.php" class="cart-wrapper">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="header-cart-badge" class="cart-badge"
+              style="<?= $cartItemCount > 0 ? '' : 'display:none;' ?>"><?= $cartItemCount ?></span>
+          </a>
+          <div class="notify-box">
+            <i class="fa-solid fa-bell" onclick="toggleNotify()"></i>
+            <div class="notify-list" id="notifyList">
+              <?php if ($role === 'admin'): ?>
+                <div><i class="fa-solid fa-box-open" style="color: #8b4513;"></i> Có đơn hàng mới</div>
+              <?php elseif ($role === 'user'): ?>
+                <div><i class="fa-solid fa-truck-fast" style="color: #8b4513;"></i> Đơn hàng đang giao</div>
+              <?php else: ?>
+                <div class="notification-item" onclick="goToEvent()">
+                  <i class="fa-solid fa-champagne-glasses" style="color: #ffb703;"></i> Có sự kiện mới
+                </div>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
       </div>
@@ -415,8 +667,101 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   </div>
 </header>
 
+<div class="menu-container">
+  <nav id="main-nav">
+    <ul>
+      <li>
+        <button type="button" class="menu-toggle-btn" id="menuToggleBtn" aria-expanded="false" aria-controls="catePanelJs">
+          <i class="fa-solid fa-bars"></i>
+          <span>Menu</span>
+        </button>
+      </li>
+      <li class="menu-tag-list" aria-label="Danh mục tìm kiếm nhanh">
+        <button type="button" class="menu-search-tag" data-search-keyword="Bánh Kem">Bánh Kem</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Bánh Bắp">Bánh Bắp</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Cheese Cake">CheeseCake</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Rau Câu">Rau Câu</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Bánh Cưới">Bánh Cưới</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Tea Break">Tea Break</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Bánh Nướng">Bánh Nướng</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Gateaux">Gateaux</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Muffin">Muffin</button>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<section class="catePanelJs" id="catePanelJs" aria-hidden="true">
+  <div class="cate-panel-inner">
+    <div class="cate-panel-col">
+      <ul class="cate-panel-links">
+        <li><a href="<?= BASE_URL ?>index.php">Trang chủ</a></li>
+        <li><a href="<?= BASE_URL ?>pages/product.php">Sản phẩm</a></li>
+        <li><a href="<?= BASE_URL ?>pages/about.php">Giới thiệu</a></li>
+        <li><a href="<?= BASE_URL ?>pages/contact.php">Liên hệ</a></li>
+      </ul>
+    </div>
+
+    <div class="cate-panel-col">
+      <div class="cate-panel-title"><i class="fa-solid fa-cake-candles"></i> Danh mục nổi bật</div>
+      <div class="cate-panel-grid">
+        <a href="<?= BASE_URL ?>pages/product.php?loai=kem">Bánh Kem</a>
+        <a href="<?= BASE_URL ?>pages/product.php?loai=ngot">Bánh Ngọt</a>
+        <a href="<?= BASE_URL ?>pages/product.php?loai=man">Bánh Mặn</a>
+        <a href="<?= BASE_URL ?>pages/product.php?loai=mi">Bánh Mì</a>
+        <a href="<?= BASE_URL ?>pages/product.php?loai=khuyenmai">Bánh đang khuyến mãi</a>
+      </div>
+    </div>
+
+    <div class="cate-panel-col cate-panel-social">
+      <div class="cate-panel-title">Liên hệ với chúng tôi</div>
+      <div class="cate-panel-social-links">
+        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a>
+        <a href="#" aria-label="Tiktok"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+  (function () {
+    const menuBtn = document.getElementById('menuToggleBtn');
+    const panel = document.getElementById('catePanelJs');
+    if (!menuBtn || !panel) return;
+
+    function closePanel() {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function togglePanel() {
+      const isOpen = panel.classList.toggle('open');
+      panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    menuBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      togglePanel();
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!panel.contains(e.target) && e.target !== menuBtn) {
+        closePanel();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closePanel();
+      }
+    });
+  })();
+
   $(document).ready(function () {
     function doAutocomplete() {
       let keyword = $("#searchInput").val().trim();
@@ -454,8 +799,13 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       });
     }
 
-    function submitSearch() {
-      let keyword = $("#searchInput").val().trim();
+    function submitSearch(keywordOverride) {
+      let keyword = '';
+      if (typeof keywordOverride === 'string') {
+        keyword = keywordOverride.trim();
+      } else {
+        keyword = ($("#searchInput").val() || '').trim();
+      }
       if (!keyword) return;
       window.location.href = "<?= BASE_URL ?>pages/product.php?search=" + encodeURIComponent(keyword);
     }
@@ -469,7 +819,17 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       doAutocomplete();
     });
 
-    $("#searchBtn").on("click", submitSearch);
+    $("#searchBtn").on("click", function (e) {
+      e.preventDefault();
+      submitSearch();
+    });
+
+    $(document).on("click", ".menu-search-tag", function () {
+      const keyword = ($(this).data("search-keyword") || "").toString().trim();
+      if (!keyword) return;
+      $("#searchInput").val(keyword);
+      submitSearch(keyword);
+    });
 
     $(document).on("click", function (e) {
       if (!$(e.target).closest(".search-box").length) {

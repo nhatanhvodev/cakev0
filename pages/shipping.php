@@ -1,4 +1,9 @@
 <?php
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
+}
+?>
+<?php
 $pageTitle = 'Chính sách vận chuyển';
 ?>
 

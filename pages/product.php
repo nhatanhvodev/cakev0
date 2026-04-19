@@ -1,5 +1,9 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
+}
+?>
+<?php
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 require_once '../config/connect.php';
 

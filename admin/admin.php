@@ -479,7 +479,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         $updated = 0;
 
         foreach ($selected as $id) {
-            $id = (int)$id;
+            $id = (int) $id;
             $status = $order_statuses[$id] ?? '';
             if ($id > 0 && in_array($status, $allowed_statuses, true)) {
                 $stmt->bind_param("si", $status, $id);
@@ -883,7 +883,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.tiny.cloud/1/8ewsj6abyahhsoqf0ygrqyejbeo3wacxyil67w9581kjxt80/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/8ewsj6abyahhsoqf0ygrqyejbeo3wacxyil67w9581kjxt80/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
     <style>
         :root {
             --brown-900: #3c1819;
@@ -1356,26 +1357,36 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
         <!-- 1. SIDEBAR -->
         <div class="sidebar">
             <h2>
-                <img src="/cakev0/assets/img/logo.png" alt="Gấu Bakery" style="width:28px;height:28px;object-fit:contain;margin-right:8px;">
+                <img src="/cakev0/assets/img/logo.png" alt="Gấu Bakery"
+                    style="width:28px;height:28px;object-fit:contain;margin-right:8px;">
                 Gấu Bakery
             </h2>
             <nav class="nav flex-column">
-                <a class="nav-link active" href="admin.php?tab=dashboard#dashboard" data-tab="dashboard" onclick="showTab(event, 'dashboard')"><i class="bi bi-speedometer2"></i>
+                <a class="nav-link active" href="admin.php?tab=dashboard#dashboard" data-tab="dashboard"
+                    onclick="showTab(event, 'dashboard')"><i class="bi bi-speedometer2"></i>
                     Dashboard</a>
-                <a class="nav-link" href="admin.php?tab=orders#orders" data-tab="orders" onclick="showTab(event, 'orders')"><i class="bi bi-cart-check"></i> Đơn hàng</a>
-                <a class="nav-link" href="admin.php?tab=products#products" data-tab="products" onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
-                <a class="nav-link" href="admin.php?tab=best-selling#best-selling" data-tab="best-selling" onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Best Selling</a>
-                <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials" onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
-                <a class="nav-link" href="/cakev0/pages/admin-password-requests.php"><i class="bi bi-shield-lock"></i> Duyệt đổi mật khẩu</a>
-                <a class="nav-link" href="admin.php?tab=users#users" data-tab="users" onclick="showTab(event, 'users')"><i class="bi bi-people"></i> Khách hàng</a>
-                <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions" onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
+                <a class="nav-link" href="admin.php?tab=orders#orders" data-tab="orders"
+                    onclick="showTab(event, 'orders')"><i class="bi bi-cart-check"></i> Đơn hàng</a>
+                <a class="nav-link" href="admin.php?tab=products#products" data-tab="products"
+                    onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
+                <a class="nav-link" href="admin.php?tab=best-selling#best-selling" data-tab="best-selling"
+                    onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Best Selling</a>
+                <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials"
+                    onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
+                <a class="nav-link" href="/cakev0/pages/admin-password-requests.php"><i class="bi bi-shield-lock"></i> Duyệt
+                    đổi mật khẩu</a>
+                <a class="nav-link" href="admin.php?tab=users#users" data-tab="users" onclick="showTab(event, 'users')"><i
+                        class="bi bi-people"></i> Khách hàng</a>
+                <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions"
+                    onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
             </nav>
         </div>
 
         <!-- 2. MAIN CONTENT -->
         <div class="main-content">
             <!-- Top Bar -->
-            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm" style="border:1px solid #f3e0be;">
+            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm"
+                style="border:1px solid #f3e0be;">
                 <h3 class="m-0 fw-bold" style="color:#4a1d1f;">Quản Trị Hệ Thống</h3>
                 <a href="?logout=1" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng
                     xuất</a>
@@ -1428,26 +1439,35 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     <div class="col-md-12">
                         <div class="card border-0 shadow-sm p-3" style="border:1px solid #f3e0be;">
                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                                <h5 class="m-0" style="color:#4a1d1f;"><i class="bi bi-graph-up-arrow"></i> <?= htmlspecialchars($chart_title) ?></h5>
+                                <h5 class="m-0" style="color:#4a1d1f;"><i class="bi bi-graph-up-arrow"></i>
+                                    <?= htmlspecialchars($chart_title) ?></h5>
                                 <form method="GET" class="d-flex flex-wrap align-items-center gap-2">
                                     <input type="hidden" name="tab" value="dashboard">
-                                    <select name="chart_view" class="form-select form-select-sm" id="chartViewSelect" style="min-width: 160px;">
-                                        <option value="7days" <?= $chart_view === '7days' ? 'selected' : '' ?>>7 ngày gần nhất</option>
-                                        <option value="month" <?= $chart_view === 'month' ? 'selected' : '' ?>>Theo tháng</option>
+                                    <select name="chart_view" class="form-select form-select-sm" id="chartViewSelect"
+                                        style="min-width: 160px;">
+                                        <option value="7days" <?= $chart_view === '7days' ? 'selected' : '' ?>>7 ngày gần nhất
+                                        </option>
+                                        <option value="month" <?= $chart_view === 'month' ? 'selected' : '' ?>>Theo tháng
+                                        </option>
                                         <option value="year" <?= $chart_view === 'year' ? 'selected' : '' ?>>Theo năm</option>
                                     </select>
-                                    <select name="month" class="form-select form-select-sm" id="chartMonth" style="min-width: 110px;">
+                                    <select name="month" class="form-select form-select-sm" id="chartMonth"
+                                        style="min-width: 110px;">
                                         <?php for ($m = 1; $m <= 12; $m++): ?>
-                                            <option value="<?= $m ?>" <?= $m === $selected_month ? 'selected' : '' ?>>Tháng <?= $m ?></option>
+                                            <option value="<?= $m ?>" <?= $m === $selected_month ? 'selected' : '' ?>>Tháng
+                                                <?= $m ?></option>
                                         <?php endfor; ?>
                                     </select>
-                                    <select name="year" class="form-select form-select-sm" id="chartYear" style="min-width: 110px;">
+                                    <select name="year" class="form-select form-select-sm" id="chartYear"
+                                        style="min-width: 110px;">
                                         <?php for ($y = $current_year; $y >= $current_year - 5; $y--): ?>
-                                            <option value="<?= $y ?>" <?= $y === $selected_year ? 'selected' : '' ?>><?= $y ?></option>
+                                            <option value="<?= $y ?>" <?= $y === $selected_year ? 'selected' : '' ?>><?= $y ?>
+                                            </option>
                                         <?php endfor; ?>
                                     </select>
                                     <button type="submit" class="btn btn-sm btn-primary">Xem</button>
-                                    <a href="admin.php?<?= $export_query_xlsx ?>" class="btn btn-sm btn-outline-success">Xuất Excel</a>
+                                    <a href="admin.php?<?= $export_query_xlsx ?>"
+                                        class="btn btn-sm btn-outline-success">Xuất Excel</a>
                                 </form>
                             </div>
                             <div style="height: 350px;">
@@ -1521,7 +1541,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                 <?php foreach ($orders as $o): ?>
                                     <tr>
                                         <td>
-                                            <input type="checkbox" name="selected_orders[]" value="<?= $o['id'] ?>" class="order-select">
+                                            <input type="checkbox" name="selected_orders[]" value="<?= $o['id'] ?>"
+                                                class="order-select">
                                         </td>
                                         <td>#<?= $o['id'] ?></td>
                                         <td>
@@ -1531,7 +1552,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                         <td>
                                             <?php foreach ($order_items as $i):
                                                 if ($i['order_id'] == $o['id']): ?>
-                                                    <div class="small">- <?= htmlspecialchars($i['ten_banh']) ?> (x<?= $i['quantity'] ?>)
+                                                    <div class="small">- <?= htmlspecialchars($i['ten_banh']) ?>
+                                                        (x<?= $i['quantity'] ?>)
                                                     </div>
                                                 <?php endif; endforeach; ?>
                                         </td>
@@ -1550,10 +1572,12 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                 default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
                                             };
                                             ?>
-                                            <span class="badge bg-<?= $statusData['badge'] ?>"><?= $statusData['label'] ?></span>
+                                            <span
+                                                class="badge bg-<?= $statusData['badge'] ?>"><?= $statusData['label'] ?></span>
                                         </td>
                                         <td>
-                                            <select name="order_status[<?= $o['id'] ?>]" class="form-select form-select-sm" style="min-width: 160px;">
+                                            <select name="order_status[<?= $o['id'] ?>]" class="form-select form-select-sm"
+                                                style="min-width: 160px;">
                                                 <?php
                                                 $statusOptions = [
                                                     'pending' => 'Đang chờ',
@@ -1567,7 +1591,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                 ];
                                                 foreach ($statusOptions as $value => $label):
                                                     $selected = (strtolower($o['status']) === $value) ? 'selected' : '';
-                                                ?>
+                                                    ?>
                                                     <option value="<?= $value ?>" <?= $selected ?>><?= $label ?></option>
                                                 <?php endforeach; ?>
                                             </select>
@@ -1623,7 +1647,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Mô tả</label>
-                            <textarea name="mo_ta" id="productDesc" class="form-control editor" rows="6" placeholder="Mô tả ngắn về sản phẩm"></textarea>
+                            <textarea name="mo_ta" id="productDesc" class="form-control editor" rows="6"
+                                placeholder="Mô tả ngắn về sản phẩm"></textarea>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Hình ảnh (ảnh đầu là ảnh chính)</label>
@@ -1679,13 +1704,17 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             <div class="d-flex flex-wrap gap-2 mt-2">
                                                 <?php foreach ($productImageMap[(int) $p['id']] as $gallery):
                                                     $galleryUrl = buildImageUrl($gallery['image_path']);
-                                                ?>
+                                                    ?>
                                                     <div class="position-relative" style="width:40px;height:40px;">
-                                                        <img src="<?= $galleryUrl['url'] ?>" width="40" height="40" style="object-fit:cover;border-radius:8px;">
+                                                        <img src="<?= $galleryUrl['url'] ?>" width="40" height="40"
+                                                            style="object-fit:cover;border-radius:8px;">
                                                         <form method="POST" class="position-absolute" style="top:-6px;right:-6px;">
-                                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                                            <input type="hidden" name="delete_product_image" value="<?= (int) $gallery['id'] ?>">
-                                                            <button class="btn btn-sm btn-outline-danger" style="padding:0 4px;line-height:1;">
+                                                            <input type="hidden" name="csrf_token"
+                                                                value="<?= $_SESSION['csrf_token'] ?>">
+                                                            <input type="hidden" name="delete_product_image"
+                                                                value="<?= (int) $gallery['id'] ?>">
+                                                            <button class="btn btn-sm btn-outline-danger"
+                                                                style="padding:0 4px;line-height:1;">
                                                                 <i class="bi bi-x"></i>
                                                             </button>
                                                         </form>
@@ -1783,17 +1812,21 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                 <?php foreach ($products as $p):
                                     $img = buildImageUrl($p['hinh_anh']);
                                     $soldQty = $bestSalesMap[(int) $p['id']] ?? 0;
-                                ?>
+                                    ?>
                                     <tr>
-                                        <td><img src="<?= $img['url'] ?>" width="46" height="46" style="object-fit:cover" class="rounded"></td>
+                                        <td><img src="<?= $img['url'] ?>" width="46" height="46" style="object-fit:cover"
+                                                class="rounded"></td>
                                         <td><?= htmlspecialchars($p['ten_banh']) ?></td>
                                         <td><?= $soldQty ?></td>
                                         <td>
                                             <input type="hidden" name="product_ids[]" value="<?= $p['id'] ?>">
-                                            <input class="form-check-input" type="checkbox" name="manual_best[<?= $p['id'] ?>]" <?= !empty($p['is_best_manual']) ? 'checked' : '' ?>>
+                                            <input class="form-check-input" type="checkbox" name="manual_best[<?= $p['id'] ?>]"
+                                                <?= !empty($p['is_best_manual']) ? 'checked' : '' ?>>
                                         </td>
                                         <td style="width: 120px;">
-                                            <input type="number" min="0" name="best_rank[<?= $p['id'] ?>]" class="form-control form-control-sm" value="<?= (int) ($p['best_rank'] ?? 0) ?>">
+                                            <input type="number" min="0" name="best_rank[<?= $p['id'] ?>]"
+                                                class="form-control form-control-sm"
+                                                value="<?= (int) ($p['best_rank'] ?? 0) ?>">
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -1857,7 +1890,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                                 <input type="hidden" name="review_id" value="<?= $r['id'] ?>">
                                                 <input type="hidden" name="review_status" value="rejected">
-                                                <button name="update_review_status" class="btn btn-sm btn-outline-danger" title="Từ chối">
+                                                <button name="update_review_status" class="btn btn-sm btn-outline-danger"
+                                                    title="Từ chối">
                                                     <i class="bi bi-x-lg"></i>
                                                 </button>
                                             </form>
@@ -1880,12 +1914,15 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     <div class="col-md-3">
                         <select name="banh_id" id="promotionProductSelect" class="form-select">
                             <?php foreach ($products as $p): ?>
-                                <option value="<?= $p['id'] ?>" data-price="<?= (float) $p['gia'] ?>"><?= htmlspecialchars($p['ten_banh']) ?></option>
+                                <option value="<?= $p['id'] ?>" data-price="<?= (float) $p['gia'] ?>">
+                                    <?= htmlspecialchars($p['ten_banh']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <input type="text" id="promotionCurrentPrice" class="form-control" value="<?= !empty($products) ? number_format((float) $products[0]['gia'], 0, ',', '.') . 'đ' : '0đ' ?>" readonly>
+                        <input type="text" id="promotionCurrentPrice" class="form-control"
+                            value="<?= !empty($products) ? number_format((float) $products[0]['gia'], 0, ',', '.') . 'đ' : '0đ' ?>"
+                            readonly>
                     </div>
                     <div class="col-md-2"><input type="number" name="gia_khuyen_mai" class="form-control"
                             placeholder="Giá KM" required></div>
@@ -1915,10 +1952,9 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                         <?= date('d/m', strtotime($promo['ngay_ket_thuc'])) ?>
                                     </td>
                                     <td>
-                                        <a href="?delete_promotion_id=<?= $promo['id'] ?>"
-                                           class="text-danger promo-delete-btn"
-                                           data-delete-url="?delete_promotion_id=<?= $promo['id'] ?>"
-                                           data-promo-name="<?= htmlspecialchars($promo['ten_banh']) ?>">
+                                        <a href="?delete_promotion_id=<?= $promo['id'] ?>" class="text-danger promo-delete-btn"
+                                            data-delete-url="?delete_promotion_id=<?= $promo['id'] ?>"
+                                            data-promo-name="<?= htmlspecialchars($promo['ten_banh']) ?>">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </td>
@@ -1929,10 +1965,12 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
-            <div id="deleteProductModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteProductTitle">
+            <div id="deleteProductModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="deleteProductTitle">
                 <div class="confirm-modal-box">
                     <div class="confirm-modal-title" id="deleteProductTitle">Xóa sản phẩm?</div>
-                    <p class="confirm-modal-desc" id="deleteProductDesc">Sản phẩm sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <p class="confirm-modal-desc" id="deleteProductDesc">Sản phẩm sẽ bị xóa vĩnh viễn và không thể khôi
+                        phục.</p>
                     <div class="confirm-modal-actions">
                         <button type="button" class="btn btn-outline-secondary" id="deleteProductCancel">Hủy</button>
                         <button type="button" class="btn btn-danger" id="deleteProductConfirm">Xác nhận xóa</button>
@@ -1940,10 +1978,12 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
-            <div id="deleteUserModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteUserTitle">
+            <div id="deleteUserModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="deleteUserTitle">
                 <div class="confirm-modal-box">
                     <div class="confirm-modal-title" id="deleteUserTitle">Xóa khách hàng?</div>
-                    <p class="confirm-modal-desc" id="deleteUserDesc">Khách hàng sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <p class="confirm-modal-desc" id="deleteUserDesc">Khách hàng sẽ bị xóa vĩnh viễn và không thể khôi phục.
+                    </p>
                     <div class="confirm-modal-actions">
                         <button type="button" class="btn btn-outline-secondary" id="deleteUserCancel">Hủy</button>
                         <button type="button" class="btn btn-danger" id="deleteUserConfirm">Xác nhận xóa</button>
@@ -1951,10 +1991,12 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
-            <div id="deleteOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deleteOrderTitle">
+            <div id="deleteOrderModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="deleteOrderTitle">
                 <div class="confirm-modal-box">
                     <div class="confirm-modal-title" id="deleteOrderTitle">Xóa đơn hàng?</div>
-                    <p class="confirm-modal-desc" id="deleteOrderDesc">Đơn hàng sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <p class="confirm-modal-desc" id="deleteOrderDesc">Đơn hàng sẽ bị xóa vĩnh viễn và không thể khôi phục.
+                    </p>
                     <div class="confirm-modal-actions">
                         <button type="button" class="btn btn-outline-secondary" id="deleteOrderCancel">Hủy</button>
                         <button type="button" class="btn btn-danger" id="deleteOrderConfirm">Xác nhận xóa</button>
@@ -1962,10 +2004,12 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
-            <div id="deletePromotionModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="deletePromotionTitle">
+            <div id="deletePromotionModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="deletePromotionTitle">
                 <div class="confirm-modal-box">
                     <div class="confirm-modal-title" id="deletePromotionTitle">Xóa khuyến mãi?</div>
-                    <p class="confirm-modal-desc" id="deletePromotionDesc">Khuyến mãi sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <p class="confirm-modal-desc" id="deletePromotionDesc">Khuyến mãi sẽ bị xóa vĩnh viễn và không thể khôi
+                        phục.</p>
                     <div class="confirm-modal-actions">
                         <button type="button" class="btn btn-outline-secondary" id="deletePromotionCancel">Hủy</button>
                         <button type="button" class="btn btn-danger" id="deletePromotionConfirm">Xác nhận xóa</button>
@@ -1973,7 +2017,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
-            <div id="adminOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="adminOrderTitle">
+            <div id="adminOrderModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="adminOrderTitle">
                 <div class="confirm-modal-box user-orders-modal-box">
                     <div class="confirm-modal-title" id="adminOrderTitle">Chi tiết đơn hàng</div>
                     <p class="confirm-modal-desc" id="adminOrderDesc"></p>
@@ -1984,7 +2029,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
-            <div id="userOrdersModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="userOrdersTitle">
+            <div id="userOrdersModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="userOrdersTitle">
                 <div class="confirm-modal-box user-orders-modal-box">
                     <div class="confirm-modal-title" id="userOrdersTitle">Đơn hàng của khách</div>
                     <p class="confirm-modal-desc" id="userOrdersDesc"></p>

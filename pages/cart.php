@@ -176,11 +176,11 @@ function buildImageUrl($path) {
 
     $cakePos = stripos($path, '/cakev0/');
     if ($cakePos !== false) {
-        $path = substr($path, $cakePos + 6);
+        $path = substr($path, $cakePos + 8);
     } else {
         $cakePos = stripos($path, 'cakev0/');
         if ($cakePos !== false) {
-            $path = substr($path, $cakePos + 5);
+            $path = substr($path, $cakePos + 7);
         }
     }
 

@@ -131,9 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $exp   = date('Y-m-d H:i:s', strtotime('+30 days'));
                 
                 $stmt = $conn->prepare("INSERT INTO login_tokens(user_id, token, expiry) VALUES (?, ?, ?)");
-                $stmt->bind_param("iss", $user['id'], $token, $exp);
-                $stmt->execute();
-                $stmt->close();
+                if ($stmt) {
+                    $stmt->bind_param("iss", $user['id'], $token, $exp);
+                    $stmt->execute();
+                    $stmt->close();
+                }
 
                 // Lưu cookie trong 30 ngày
                 setcookie('login_token', $token, time() + 30 * 86400, '/', '', false, true); 
@@ -141,9 +143,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Ghi log đăng nhập
             $stmt = $conn->prepare("INSERT INTO login_logs(user_id, login_time, ip_address, status) VALUES (?, NOW(), ?, 'success')");
-            $stmt->bind_param("is", $user['id'], $ip);
-            $stmt->execute();
-            $stmt->close(); //
+            if ($stmt) {
+                $stmt->bind_param("is", $user['id'], $ip);
+                $stmt->execute();
+                $stmt->close(); //
+            }
 
             // Chuyển hướng theo quyền hạn
             if ($user['role'] === 'admin') {
@@ -601,10 +605,6 @@ $conn->close();
         }
 
         async function initClerk() {
-            if (typeof window.Clerk === 'undefined') {
-                return;
-            }
-
             await window.Clerk.load();
 
             if (window.Clerk.session) {
@@ -624,9 +624,16 @@ $conn->close();
             });
         }
 
-        initClerk().catch(function () {
-            window.showToast('Không thể khởi tạo Clerk.', 'error');
-        });
+        function tryInitClerk() {
+            if (typeof window.Clerk !== 'undefined') {
+                initClerk().catch(function () {
+                    window.showToast('Không thể khởi tạo Clerk.', 'error');
+                });
+            } else {
+                setTimeout(tryInitClerk, 50);
+            }
+        }
+        tryInitClerk();
     })();
 </script>
 <?php endif; ?>

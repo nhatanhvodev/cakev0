@@ -29,9 +29,6 @@ services:
       - VNPAY_RETURN_URL=http://localhost:8080/cakev0/vnpay/vnpay_return.php
       - VNPAY_MERCHANT_URL=http://sandbox.vnpayment.vn/merchant_webapi/merchant.html
       - VNPAY_TRANSACTION_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
-      - CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_Y3VycmVudC1pZ3VhbmEtMC5jbGVyay5hY2NvdW50cy5kZXYk}
-      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-sk_test_QJpWhvL7DBSeXGbdjMHllgsYcd7l8wU4vZ9I3GYLs7}
-      - CLERK_AUTHORIZED_PARTIES=http://localhost:8080
       - UPLOADTHING_TOKEN=${UPLOADTHING_TOKEN:-eyJhcGlLZXkiOiJza19saXZlXzY1ODEwZTRlOWZjYWUxMmEyM2MyZGRiYWQ0NWVjNzAyNGQxY2RiY2I4MDJiZTg3MmVlOGE5ZjQzM2VjN2FkZjciLCJhcHBJZCI6Ingyanp1eTUzbnYiLCJyZWdpb25zIjpbInNlYTEiXX0=}
       - UPLOADTHING_APP_ID=${UPLOADTHING_APP_ID:-x2jzuy53nv}
     depends_on:

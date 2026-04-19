@@ -11,10 +11,6 @@ require_once '../config/config.php';
 // 1. Kết nối cơ sở dữ liệu
 require_once '../config/connect.php';
 
-$appBaseUrl = rtrim(BASE_URL, '/');
-$clerkPublishableKey = (string) env_value('CLERK_PUBLISHABLE_KEY', '');
-$clerkEnabled = $clerkPublishableKey !== '';
-
 // 2. Khởi tạo biến & CSRF Token
 $error_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -357,41 +353,6 @@ $conn->close();
             box-shadow: 0 10px 20px rgba(74, 29, 31, 0.22);
         }
 
-        .clerk-shell {
-            background: #ffffff;
-            border: 1px solid #e5d6bf;
-            border-radius: 16px;
-            padding: 12px;
-        }
-
-        .clerk-divider {
-            text-align: center;
-            margin: 14px 0 18px;
-            position: relative;
-            color: #7a6b59;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-        }
-
-        .clerk-divider::before,
-        .clerk-divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 33%;
-            border-top: 1px solid #e7dac6;
-        }
-
-        .clerk-divider::before {
-            left: 0;
-        }
-
-        .clerk-divider::after {
-            right: 0;
-        }
-
         .links a {
             text-decoration: none;
             color: var(--brown-800);
@@ -468,13 +429,6 @@ $conn->close();
                         <i class="fa-solid fa-circle-exclamation"></i> <?= htmlspecialchars($error_message) ?>
                     </div>
                 <?php endif; ?> <!-- -->
-
-                <?php if ($clerkEnabled): ?>
-                    <div class="clerk-shell">
-                        <div id="clerkSignIn"></div>
-                    </div>
-                    <div class="clerk-divider"><span>hoặc dùng tài khoản nội bộ</span></div>
-                <?php endif; ?>
 
                 <form method="POST" action="">
                     <!-- CSRF Token (Bảo mật) -->
@@ -560,81 +514,4 @@ $conn->close();
         window.showToast(<?= json_encode($error_message) ?>, 'error');
     <?php endif; ?>
 </script>
-<?php if ($clerkEnabled): ?>
-<script async crossorigin="anonymous" data-clerk-publishable-key="<?= htmlspecialchars($clerkPublishableKey, ENT_QUOTES) ?>" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
-<script>
-    (function () {
-        const root = document.getElementById('clerkSignIn');
-        if (!root) {
-            return;
-        }
-
-        const appBase = <?= json_encode($appBaseUrl) ?>;
-        const exchangeUrl = appBase + '/pages/clerk-session.php';
-        let isExchanging = false;
-
-        async function exchangeSession(session) {
-            if (!session || isExchanging) {
-                return;
-            }
-
-            isExchanging = true;
-
-            try {
-                const token = await session.getToken();
-                const response = await fetch(exchangeUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({ token: token })
-                });
-
-                const data = await response.json().catch(function () {
-                    return {};
-                });
-
-                if (!response.ok || !data.ok) {
-                    throw new Error(data.message || 'Không thể đồng bộ phiên đăng nhập Clerk.');
-                }
-
-                window.location.href = data.redirect || (appBase + '/index.php');
-            } catch (error) {
-                isExchanging = false;
-                window.showToast(error && error.message ? error.message : 'Đăng nhập Clerk thất bại.', 'error');
-            }
-        }
-
-        async function initClerk() {
-            await window.Clerk.load();
-
-            if (window.Clerk.session) {
-                await exchangeSession(window.Clerk.session);
-                return;
-            }
-
-            window.Clerk.mountSignIn(root, {
-                signUpUrl: appBase + '/pages/register.php',
-                afterSignInUrl: appBase + '/pages/login.php'
-            });
-
-            window.Clerk.addListener(function (state) {
-                if (state && state.session) {
-                    exchangeSession(state.session);
-                }
-            });
-        }
-
-        function tryInitClerk() {
-            if (typeof window.Clerk !== 'undefined') {
-                initClerk().catch(function () {
-                    window.showToast('Không thể khởi tạo Clerk.', 'error');
-                });
-            } else {
-                setTimeout(tryInitClerk, 50);
-            }
-        }
-        tryInitClerk();
-    })();
-</script>
-<?php endif; ?>
 </html>

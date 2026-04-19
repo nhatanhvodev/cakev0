@@ -1,9 +1,0 @@
-# AdjustOrganizationBillingCreditBalanceRequest
-
-
-## Fields
-
-| Field                                                                                          | Type                                                                                           | Required                                                                                       | Description                                                                                    |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `organizationId`                                                                               | *string*                                                                                       | :heavy_check_mark:                                                                             | The ID of the organization whose credit balance to adjust                                      |
-| `adjustCreditBalanceRequest`                                                                   | [Components\AdjustCreditBalanceRequest](../../Models/Components/AdjustCreditBalanceRequest.md) | :heavy_check_mark:                                                                             | Parameters for the credit balance adjustment                                                   |

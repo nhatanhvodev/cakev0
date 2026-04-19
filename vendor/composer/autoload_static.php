@@ -10,27 +10,16 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
-        'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        'p' => 
-        array (
-            'phpseclib3\\' => 11,
-            'phpDocumentor\\Reflection\\' => 25,
-        ),
         'Z' => 
         array (
             'ZipStream\\' => 10,
         ),
         'U' => 
         array (
-            'Utilities\\' => 10,
             'UploadThing\\' => 12,
-        ),
-        'S' => 
-        array (
-            'Speakeasy\\Serializer\\' => 21,
         ),
         'P' => 
         array (
@@ -39,17 +28,10 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'PhpOffice\\PhpSpreadsheet\\' => 25,
-            'ParagonIE\\ConstantTime\\' => 23,
-            'PHPStan\\PhpDocParser\\' => 21,
         ),
         'M' => 
         array (
-            'Metadata\\' => 9,
             'Matrix\\' => 7,
-        ),
-        'J' => 
-        array (
-            'JsonPath\\' => 9,
         ),
         'G' => 
         array (
@@ -57,54 +39,21 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
         ),
-        'F' => 
-        array (
-            'Firebase\\JWT\\' => 13,
-        ),
-        'D' => 
-        array (
-            'Doctrine\\Instantiator\\' => 22,
-            'Doctrine\\Deprecations\\' => 22,
-            'Doctrine\\Common\\Lexer\\' => 22,
-        ),
         'C' => 
         array (
             'Composer\\Pcre\\' => 14,
             'Complex\\' => 8,
-            'Clerk\\Backend\\' => 14,
-        ),
-        'B' => 
-        array (
-            'Brick\\Math\\' => 11,
-            'Brick\\DateTime\\' => 15,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'phpseclib3\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
-        ),
-        'phpDocumentor\\Reflection\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
-            1 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
-        ),
         'ZipStream\\' => 
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
         ),
-        'Utilities\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/galbar/jsonpath/src/Galbar/Utilities',
-        ),
         'UploadThing\\' => 
         array (
             0 => __DIR__ . '/..' . '/hernol/uploadthing-php/src',
-        ),
-        'Speakeasy\\Serializer\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/speakeasy/serializer/src',
         ),
         'Psr\\SimpleCache\\' => 
         array (
@@ -127,25 +76,9 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
         ),
-        'ParagonIE\\ConstantTime\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/paragonie/constant_time_encoding/src',
-        ),
-        'PHPStan\\PhpDocParser\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phpstan/phpdoc-parser/src',
-        ),
-        'Metadata\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/jms/metadata/src',
-        ),
         'Matrix\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
-        ),
-        'JsonPath\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/galbar/jsonpath/src/Galbar/JsonPath',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -159,22 +92,6 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
-        'Firebase\\JWT\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
-        ),
-        'Doctrine\\Instantiator\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator',
-        ),
-        'Doctrine\\Deprecations\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/deprecations/src',
-        ),
-        'Doctrine\\Common\\Lexer\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/lexer/src',
-        ),
         'Composer\\Pcre\\' => 
         array (
             0 => __DIR__ . '/..' . '/composer/pcre/src',
@@ -182,18 +99,6 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         'Complex\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/complex/classes/src',
-        ),
-        'Clerk\\Backend\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/clerkinc/backend-php/src',
-        ),
-        'Brick\\Math\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/brick/math/src',
-        ),
-        'Brick\\DateTime\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/brick/date-time/src',
         ),
     );
 

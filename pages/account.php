@@ -12,9 +12,6 @@ require_once '../config/connect.php';
 //
 $conn->set_charset("utf8mb4"); //
 
-$clerkPublishableKey = (string) env_value('CLERK_PUBLISHABLE_KEY', '');
-$clerkEnabled = $clerkPublishableKey !== '';
-
 if ($conn->connect_error) {
     die("Lỗi kết nối DB: " . $conn->connect_error); //
 }
@@ -952,42 +949,6 @@ foreach ($orders as $order) {
             });
         });
     </script>
-
-    <?php if ($clerkEnabled): ?>
-    <script async crossorigin="anonymous" data-clerk-publishable-key="<?= htmlspecialchars($clerkPublishableKey, ENT_QUOTES) ?>" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const logoutForm = document.getElementById('logoutForm');
-            if (!logoutForm) {
-                return;
-            }
-
-            let isSubmitting = false;
-
-            logoutForm.addEventListener('submit', async function (event) {
-                if (isSubmitting) {
-                    return;
-                }
-
-                event.preventDefault();
-
-                try {
-                    if (typeof window.Clerk !== 'undefined') {
-                        await window.Clerk.load();
-                        if (window.Clerk.session) {
-                            await window.Clerk.signOut();
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Clerk signOut failed, continue local logout.', error);
-                }
-
-                isSubmitting = true;
-                logoutForm.submit();
-            });
-        });
-    </script>
-    <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

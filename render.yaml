@@ -16,12 +16,6 @@ services:
         value: /cakev0
       - key: APP_ORIGIN
         sync: false
-      - key: CLERK_PUBLISHABLE_KEY
-        sync: false
-      - key: CLERK_SECRET_KEY
-        sync: false
-      - key: CLERK_AUTHORIZED_PARTIES
-        sync: false
       - key: DB_HOST
         sync: false
       - key: DB_PORT

@@ -63,11 +63,11 @@ function buildImageUrl(string $relativePath): array
 
     $cakePos = stripos($relativePath, '/cakev0/');
     if ($cakePos !== false) {
-        $relativePath = substr($relativePath, $cakePos + 6);
+        $relativePath = substr($relativePath, $cakePos + 8);
     } else {
         $cakePos = stripos($relativePath, 'cakev0/');
         if ($cakePos !== false) {
-            $relativePath = substr($relativePath, $cakePos + 5);
+            $relativePath = substr($relativePath, $cakePos + 7);
         }
     }
 
@@ -86,11 +86,8 @@ function buildImageUrl(string $relativePath): array
 
 function project_local_path(string $relativePath): string
 {
-    $docRoot = rtrim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), '/\\');
-    $basePath = APP_BASE_PATH === '' ? '' : APP_BASE_PATH;
-    $basePath = rtrim(str_replace('\\', '/', $basePath), '/');
-
-    return $docRoot . $basePath . '/' . ltrim(str_replace('\\', '/', $relativePath), '/');
+    $projectRoot = dirname(__DIR__);
+    return $projectRoot . '/' . ltrim(str_replace('\\', '/', $relativePath), '/');
 }
 
 function storeProductImageUpload(string $tmpName, string $originalName, string $loai): ?string
@@ -883,8 +880,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.tiny.cloud/1/8ewsj6abyahhsoqf0ygrqyejbeo3wacxyil67w9581kjxt80/tinymce/6/tinymce.min.js"
-        referrerpolicy="origin"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         :root {
             --brown-900: #3c1819;

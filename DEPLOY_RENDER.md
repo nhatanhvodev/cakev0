@@ -4,7 +4,7 @@
 
 1. Copy `.env.example` to `.env` for local testing.
 2. Fill values for DB, VNPAY, Clerk and UploadThing.
-3. Keep `APP_BASE_PATH=/Cake` for current code compatibility.
+3. Keep `APP_BASE_PATH=/cakev0` for current code compatibility.
 4. Run DB migration for Clerk mapping column:
 
 ```sql
@@ -40,6 +40,7 @@ Open: `http://localhost:8080/cakev0/`
 
 ## 5. Notes
 
-- Current app still contains many hardcoded `/cakev0/` links. This sprint keeps compatibility by serving app under `/Cake` path.
+- Current app still contains many hardcoded `/cakev0/` links. This sprint keeps compatibility by serving app under `/cakev0` path.
+- Apache vhost keeps both `/cakev0` and `/Cake` aliases, but `/cakev0` is the primary path on Render.
 - Clerk auth bridge is now active via `pages/clerk-session.php` and requires `users.clerk_user_id`.
 - Product/avatar uploads now try UploadThing first and fallback to local storage if UploadThing is not configured or unavailable.

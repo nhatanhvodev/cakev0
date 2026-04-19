@@ -18,10 +18,10 @@ if (!function_exists('normalize_base_path')) {
 	}
 }
 
-$defaultBasePath = '/Cake';
+$defaultBasePath = '/cakev0';
 $scriptName = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
 
-if ($scriptName !== '' && preg_match('#^(.*/Cake)(?:/|$)#i', str_replace('\\', '/', $scriptName), $matches)) {
+if ($scriptName !== '' && preg_match('#^(.*/(?:cakev0|Cake))(?:/|$)#i', str_replace('\\', '/', $scriptName), $matches)) {
 	$defaultBasePath = $matches[1];
 }
 

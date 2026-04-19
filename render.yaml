@@ -13,7 +13,7 @@ services:
       - key: APP_TIMEZONE
         value: Asia/Ho_Chi_Minh
       - key: APP_BASE_PATH
-        value: /Cake
+        value: /cakev0
       - key: APP_ORIGIN
         sync: false
       - key: CLERK_PUBLISHABLE_KEY

@@ -4,7 +4,7 @@ date_default_timezone_set('Asia/Ho_Chi_Minh');
 require_once '../config/connect.php';
 
 if (!isset($_SESSION['admin_logged_in']) && !isset($_SESSION['admin_id'])) {
-    header("Location: /Cake/admin/admin.php");
+    header("Location: /cakev0/admin/admin.php");
     exit;
 }
 
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password_reque
             'msg' => 'Yêu cầu không hợp lệ (CSRF).',
             'type' => 'danger'
         ];
-        header('Location: /Cake/pages/admin-password-requests.php');
+        header('Location: /cakev0/pages/admin-password-requests.php');
         exit;
     }
 
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password_reque
             'msg' => 'Thao tác không hợp lệ.',
             'type' => 'danger'
         ];
-        header('Location: /Cake/pages/admin-password-requests.php');
+        header('Location: /cakev0/pages/admin-password-requests.php');
         exit;
     }
 
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password_reque
         }
     }
 
-    header('Location: /Cake/pages/admin-password-requests.php');
+    header('Location: /cakev0/pages/admin-password-requests.php');
     exit;
 }
 
@@ -120,7 +120,7 @@ $statusLabels = [
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title>Quản lý yêu cầu đặt lại mật khẩu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -148,7 +148,7 @@ $statusLabels = [
 
     <div class="head-row">
         <h2>Danh sách yêu cầu đặt lại mật khẩu</h2>
-        <a class="back-link" href="/Cake/admin/admin.php?tab=dashboard#dashboard">Quay lại Admin</a>
+        <a class="back-link" href="/cakev0/admin/admin.php?tab=dashboard#dashboard">Quay lại Admin</a>
     </div>
 
     <?php if ($flashMsg !== ''): ?>

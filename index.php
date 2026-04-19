@@ -1,4 +1,3 @@
-
 <?php
 
 session_start();
@@ -22,14 +21,33 @@ if (isset($_SESSION['user_id'])) {
 }
 
 function buildImageUrl(?string $path): string {
-    if (!$path) return '/Cake/assets/img/no-image.jpg';
-    if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
-        return '/Cake/' . ltrim($path, '/');
+    $fallback = '/cakev0/assets/img/no-image.jpg';
+    if (!$path) return $fallback;
+
+    $path = trim((string) $path);
+    if ($path === '') return $fallback;
+
+    $path = str_replace('\\', '/', $path);
+    if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:image/')) {
+        return $path;
     }
-    if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
-        $path = str_replace('img/', 'assets/img/', $path);
+
+    $cakePos = stripos($path, '/cakev0/');
+    if ($cakePos !== false) {
+        $path = substr($path, $cakePos + 6);
+    } else {
+        $cakePos = stripos($path, 'cakev0/');
+        if ($cakePos !== false) {
+            $path = substr($path, $cakePos + 5);
+        }
     }
-    return '/Cake/' . ltrim($path, '/');
+
+    $path = ltrim($path, '/');
+    if (strpos($path, 'img/') === 0 || strpos($path, 'uploads/') === 0) {
+        $path = 'assets/' . $path;
+    }
+
+    return '/cakev0/' . $path;
 }
 
 function safeTransliterate(string $value): string {
@@ -214,7 +232,7 @@ if (isset($_POST['submit_testimonial'])) {
     if ($name === '' || $text === '' || $rating < 1 || $rating > 5) {
         $_SESSION['testimonial_flash'] = 'Vui lòng nhập đầy đủ thông tin đánh giá.';
         $_SESSION['testimonial_flash_type'] = 'error';
-        header('Location: /Cake/index.php#testimonial');
+        header('Location: /cakev0/index.php#testimonial');
         exit;
     }
 
@@ -234,7 +252,7 @@ if (isset($_POST['submit_testimonial'])) {
         $_SESSION['testimonial_flash_type'] = 'error';
     }
 
-    header('Location: /Cake/index.php#testimonial');
+    header('Location: /cakev0/index.php#testimonial');
     exit;
 }
 
@@ -311,7 +329,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gấu Bakery - Trang Chủ</title>
@@ -1098,8 +1116,8 @@ $heroStripImages = [
                 <h1 class="hero-title">Mang đến cho bạn niềm hạnh phúc<br>qua một miếng bánh</h1>
                 <p class="hero-desc">Chúng tôi làm nhiều loại bánh khác nhau, bánh sô cô la, bánh quy mềm, bánh phô mai hoặc bất cứ thứ gì bạn muốn.</p>
                 <div class="hero-actions">
-                    <a class="btn-primary" href="/Cake/pages/product.php">Đặt ngay</a>
-                    <a class="btn-outline" href="/Cake/pages/product.php">Xem tất cả</a>
+                    <a class="btn-primary" href="/cakev0/pages/product.php">Đặt ngay</a>
+                    <a class="btn-outline" href="/cakev0/pages/product.php">Xem tất cả</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -1159,7 +1177,7 @@ $heroStripImages = [
             <?php foreach ($bestList as $p): ?>
                 <div class="best-card">
                     <?php $slug = !empty($p['slug']) ? $p['slug'] : slugify($p['ten_banh'], (int) $p['id']); ?>
-                    <a href="/Cake/product/<?= urlencode($slug) ?>" class="best-link">
+                    <a href="/cakev0/product/<?= urlencode($slug) ?>" class="best-link">
                         <img src="<?= buildImageUrl($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
                         <div class="best-name"><?= htmlspecialchars($p['ten_banh']) ?> </div>
                     </a>
@@ -1168,7 +1186,7 @@ $heroStripImages = [
         </div>
 
         <div style="text-align:center;">
-            <a class="section-btn" href="/Cake/pages/product.php">Xem thêm <span></span></a>
+            <a class="section-btn" href="/cakev0/pages/product.php">Xem thêm <span></span></a>
         </div>
     </section>
 
@@ -1177,17 +1195,17 @@ $heroStripImages = [
             <div>
                 <h3 class="story-title">Chúng tôi nướng bánh cho bạn thưởng thức.    Bánh mới ra lò mỗi ngày!</h3>
                 <p class="story-desc">Chúng tôi sử dụng nguyên liệu chất lượng cao được lấy từ các đơn vị cung cấp uy tín. Các nhà đầu tư của chúng tôi đều là những người giàu kinh nghiệm trong lĩnh vực thực phẩm. Vì vậy, các sản phẩm chúng tôi sản xuất được đảm bảo về chất lượng và hương vị. Nó ngon đến mức bạn phải thử ngay!</p>
-                <a class="story-link" href="/Cake/pages/about.php">Đọc thêm <span></span></a>
+                <a class="story-link" href="/cakev0/pages/about.php">Đọc thêm <span></span></a>
             </div>
-            <img class="story-image" src="/Cake/assets/uploads/banhngot/banh_69dbab0d238210.70061934.jpg" alt="Fresh baked">
+            <img class="story-image" src="/cakev0/assets/uploads/banhngot/banh_69dbab0d238210.70061934.jpg" alt="Fresh baked">
         </div>
 
         <div class="story-row reverse">
-            <img class="story-image" src="/Cake/assets/uploads/banhkem/banh_69db22e6a95e42.92082359.jpg" alt="Bakery space">
+            <img class="story-image" src="/cakev0/assets/uploads/banhkem/banh_69db22e6a95e42.92082359.jpg" alt="Bakery space">
             <div>
                 <h3 class="story-title">Hãy đến và chọn những món bạn yêu thích nhất!</h3>
                 <p class="story-desc">Hãy đến trực tiếp cửa hàng của chúng tôi để thưởng thức hương vị thơm ngon của bánh vừa mới ra lò. Vừa thưởng thức bánh cùng một tách cà phê hoặc trà trong không gian cửa hàng tiện nghi của chúng tôi. Rất thích hợp để trò chuyện, gặp gỡ đồng nghiệp.</p>
-                <a class="story-link" href="/Cake/pages/contact.php">Đọc thêm <span></span></a>
+                <a class="story-link" href="/cakev0/pages/contact.php">Đọc thêm <span></span></a>
             </div>
         </div>
     </section>
@@ -1196,7 +1214,7 @@ $heroStripImages = [
         <div class="cta-inner">
             <h3 class="cta-title">Đối với các đơn đặt bánh Sự kiện lớn</h3>
             <p class="cta-desc">Vui lòng ghé thăm cửa hàng gần nhất của chúng tôi hoặc gọi điện cho chúng tôi theo số 0901 234 567 (08 giờ sáng đến 21 giờ tối tất cả các ngày trong tuần) để đặt hàng.</p>
-            <a class="cta-btn" href="/Cake/pages/contact.php">Liên hệ với chúng tôi ngay</a>
+            <a class="cta-btn" href="/cakev0/pages/contact.php">Liên hệ với chúng tôi ngay</a>
         </div>
     </section>
 
@@ -1257,7 +1275,7 @@ $heroStripImages = [
                 <?php unset($_SESSION['testimonial_flash'], $_SESSION['testimonial_flash_type']); ?>
             <?php endif; ?>
 
-            <form class="testimonial-form" method="POST" action="/Cake/index.php#testimonial">
+            <form class="testimonial-form" method="POST" action="/cakev0/index.php#testimonial">
                 <input type="hidden" name="submit_testimonial" value="1">
                 <div class="testimonial-fields">
                     <input class="testimonial-input" type="text" name="review_name" placeholder="Tên của bạn" required>

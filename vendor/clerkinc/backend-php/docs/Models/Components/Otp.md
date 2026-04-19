@@ -1,0 +1,13 @@
+# Otp
+
+
+## Fields
+
+| Field                                                                           | Type                                                                            | Required                                                                        | Description                                                                     |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `object`                                                                        | [?Components\VerificationObject](../../Models/Components/VerificationObject.md) | :heavy_minus_sign:                                                              | N/A                                                                             |
+| `status`                                                                        | [Components\VerificationStatus](../../Models/Components/VerificationStatus.md)  | :heavy_check_mark:                                                              | N/A                                                                             |
+| `strategy`                                                                      | [Components\Strategy](../../Models/Components/Strategy.md)                      | :heavy_check_mark:                                                              | N/A                                                                             |
+| `attempts`                                                                      | *int*                                                                           | :heavy_check_mark:                                                              | N/A                                                                             |
+| `expireAt`                                                                      | *int*                                                                           | :heavy_check_mark:                                                              | N/A                                                                             |
+| `verifiedAtClient`                                                              | *?string*                                                                       | :heavy_minus_sign:                                                              | N/A                                                                             |

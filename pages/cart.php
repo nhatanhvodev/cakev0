@@ -14,6 +14,47 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = (int)$_SESSION['user_id'];
 
+function ensureCartCouponsTable(mysqli $conn): void {
+    $sql = "CREATE TABLE IF NOT EXISTS cart_coupons (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        code VARCHAR(50) NOT NULL,
+        discount_percent DECIMAL(5,2) NOT NULL,
+        min_subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        starts_at DATE DEFAULT NULL,
+        ends_at DATE DEFAULT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uniq_cart_coupon_code (code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+    $conn->query($sql);
+}
+
+function findCartCoupon(mysqli $conn, string $couponCode, string $today): ?array {
+    $stmt = $conn->prepare(
+        "SELECT code, discount_percent, min_subtotal
+         FROM cart_coupons
+         WHERE UPPER(code) = UPPER(?)
+         AND is_active = 1
+         AND (starts_at IS NULL OR starts_at <= ?)
+         AND (ends_at IS NULL OR ends_at >= ?)
+         LIMIT 1"
+    );
+
+    if (!$stmt) {
+        return null;
+    }
+
+    $stmt->bind_param('sss', $couponCode, $today, $today);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return $row ?: null;
+}
+
+ensureCartCouponsTable($conn);
+
 if (isset($_POST['action'])) {
     ob_clean();
     header('Content-Type: application/json');
@@ -123,14 +164,33 @@ if ($action === 'add_custom') {
 }
 
 function buildImageUrl($path) {
-    if (!$path) return '/Cake/assets/img/no-image.jpg';
-    if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
-        return '/Cake/' . ltrim($path, '/');
+    $fallback = '/cakev0/assets/img/no-image.jpg';
+    if (!$path) return $fallback;
+
+    $path = trim((string) $path);
+    if ($path === '') return $fallback;
+
+    $path = str_replace('\\', '/', $path);
+    if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:image/')) {
+        return $path;
     }
-    if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
-        $path = str_replace('img/', 'assets/img/', $path);
+
+    $cakePos = stripos($path, '/cakev0/');
+    if ($cakePos !== false) {
+        $path = substr($path, $cakePos + 6);
+    } else {
+        $cakePos = stripos($path, 'cakev0/');
+        if ($cakePos !== false) {
+            $path = substr($path, $cakePos + 5);
+        }
     }
-    return '/Cake/' . ltrim($path, '/');
+
+    $path = ltrim($path, '/');
+    if (strpos($path, 'img/') === 0 || strpos($path, 'uploads/') === 0) {
+        $path = 'assets/' . $path;
+    }
+
+    return '/cakev0/' . $path;
 }
 
 $sql = "SELECT c.id AS cart_id, c.quantity, b.ten_banh, b.hinh_anh, b.gia 
@@ -146,12 +206,46 @@ $subtotal = 0;
 foreach ($cartItems as $item) {
     $subtotal += $item['gia'] * $item['quantity'];
 }
+
+$couponInput = strtoupper(trim((string)($_GET['coupon'] ?? '')));
+$appliedCoupon = null;
+$couponError = '';
+$couponSuccess = '';
+$discountAmount = 0.0;
+$discountPercentApplied = 0.0;
+$grandTotal = (float)$subtotal;
+
+if (!empty($cartItems) && $couponInput !== '') {
+    if (!preg_match('/^[A-Z0-9_-]{3,30}$/', $couponInput)) {
+        $couponError = 'Mã giảm giá không hợp lệ.';
+    } else {
+        $coupon = findCartCoupon($conn, $couponInput, date('Y-m-d'));
+        if (!$coupon) {
+            $couponError = 'Mã giảm giá không tồn tại hoặc đã hết hạn.';
+        } else {
+            $minSubtotal = (float)($coupon['min_subtotal'] ?? 0);
+            $discountPercent = (float)($coupon['discount_percent'] ?? 0);
+
+            if ($subtotal < $minSubtotal) {
+                $couponError = 'Đơn hàng tối thiểu ' . number_format($minSubtotal, 0, ',', '.') . ' VNĐ để dùng mã này.';
+            } elseif ($discountPercent <= 0) {
+                $couponError = 'Mã giảm giá chưa được cấu hình hợp lệ.';
+            } else {
+                $discountPercentApplied = min(100, $discountPercent);
+                $discountAmount = round($subtotal * ($discountPercentApplied / 100));
+                $grandTotal = max(0, $subtotal - $discountAmount);
+                $appliedCoupon = $coupon;
+                $couponSuccess = 'Áp dụng mã ' . $coupon['code'] . ' thành công.';
+            }
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title><?= $pageTitle ?></title>
     
@@ -356,10 +450,32 @@ foreach ($cartItems as $item) {
             <?php if (!empty($cartItems)): ?>
             <div class="row mt-4">
                 <div class="col-md-6">
-                    <div class="input-group mb-4">
-                        <input type="text" class="form-control" placeholder="Nhập mã giảm giá">
-                        <button class="btn btn-outline-secondary">Áp dụng</button>
-                    </div>
+                    <form method="get" class="mb-2">
+                        <div class="input-group">
+                            <input
+                                type="text"
+                                name="coupon"
+                                class="form-control text-uppercase"
+                                placeholder="Nhập mã giảm giá"
+                                value="<?= htmlspecialchars($couponInput) ?>"
+                                maxlength="30"
+                            >
+                            <button class="btn btn-outline-secondary" type="submit">Áp dụng</button>
+                            <?php if ($couponInput !== ''): ?>
+                                <a class="btn btn-outline-danger" href="/cakev0/pages/cart.php">Xóa mã</a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+
+                    <?php if ($couponSuccess !== ''): ?>
+                        <div class="alert alert-success py-2 mb-4" role="alert">
+                            <?= htmlspecialchars($couponSuccess) ?>
+                        </div>
+                    <?php elseif ($couponError !== ''): ?>
+                        <div class="alert alert-warning py-2 mb-4" role="alert">
+                            <?= htmlspecialchars($couponError) ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="col-md-6">
                     <div class="summary-box">
@@ -369,14 +485,28 @@ foreach ($cartItems as $item) {
                                 <td>Tạm tính</td>
                                 <td class="text-end"><?= number_format($subtotal, 0, ',', '.') ?> VNĐ</td>
                             </tr>
+                            <?php if ($discountAmount > 0 && $appliedCoupon): ?>
+                                <tr>
+                                    <td>
+                                        Giảm giá (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= rtrim(rtrim(number_format($discountPercentApplied, 2, '.', ''), '0'), '.') ?>%)
+                                    </td>
+                                    <td class="text-end text-success">-<?= number_format($discountAmount, 0, ',', '.') ?> VNĐ</td>
+                                </tr>
+                            <?php endif; ?>
                             <tr class="fw-bold">
                                 <td>Tổng cộng</td>
-                                <td class="text-end text-danger"><?= number_format($subtotal, 0, ',', '.') ?> VNĐ</td>
+                                <td class="text-end text-danger"><?= number_format($grandTotal, 0, ',', '.') ?> VNĐ</td>
                             </tr>
                         </table>
                         <div class="d-flex justify-content-between">
                             <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i> Cập nhật</button>
-                            <a href="/Cake/pages/checkout.php" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toán</a>
+                            <?php
+                                $checkoutUrl = '/cakev0/pages/checkout.php';
+                                if ($appliedCoupon) {
+                                    $checkoutUrl .= '?coupon=' . urlencode((string) $appliedCoupon['code']);
+                                }
+                            ?>
+                            <a href="<?= htmlspecialchars($checkoutUrl) ?>" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toán</a>
                         </div>
                     </div>
                 </div>

@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="vi">
 
 <head>
-  <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+  <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
   <meta charset="UTF-8">
   <title>Quên mật khẩu | Gấu Bakery</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -384,8 +384,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="links">
-          <a href="/Cake/pages/login.php">Quay lại đăng nhập</a>
-          <a href="/Cake/pages/register.php">Tạo tài khoản mới</a>
+          <a href="/cakev0/pages/login.php">Quay lại đăng nhập</a>
+          <a href="/cakev0/pages/register.php">Tạo tài khoản mới</a>
         </div>
       </div>
     </section>

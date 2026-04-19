@@ -21,7 +21,7 @@ $stmt->close();
 if (!$order) die("Không có quyền xem đơn này");
 
 function imgPath($path) {
-    $fallback = '/Cake/assets/img/no-image.jpg';
+    $fallback = '/cakev0/assets/img/no-image.jpg';
     if (!$path) return $fallback;
 
     $path = trim((string) $path);
@@ -33,11 +33,11 @@ function imgPath($path) {
     }
 
     // Keep only project-relative path when SQL stores absolute machine path.
-    $cakePos = stripos($path, '/Cake/');
+    $cakePos = stripos($path, '/cakev0/');
     if ($cakePos !== false) {
         $path = substr($path, $cakePos + 6);
     } else {
-        $cakePos = stripos($path, 'Cake/');
+        $cakePos = stripos($path, 'cakev0/');
         if ($cakePos !== false) {
             $path = substr($path, $cakePos + 5);
         }
@@ -48,7 +48,7 @@ function imgPath($path) {
         $path = 'assets/' . $path;
     }
 
-    return '/Cake/' . $path;
+    return '/cakev0/' . $path;
 }
 
 function safeTransliterate(string $value): string {
@@ -239,7 +239,7 @@ foreach ($reviewRows as $row) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
 <meta charset="UTF-8">
 <title>Chi tiết đơn hàng #<?= $order_id ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -566,7 +566,7 @@ body {
                     <i class="fa-regular fa-circle-xmark"></i> Hủy đơn
                 </button>
             <?php endif; ?>
-            <a href="/Cake/pages/account.php" class="btn btn-secondary btn-pill">Quay lại</a>
+            <a href="/cakev0/pages/account.php" class="btn btn-secondary btn-pill">Quay lại</a>
         </div>
     </div>
 
@@ -651,7 +651,7 @@ body {
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="<?= imgPath($it['hinh_anh']) ?>" alt="<?= htmlspecialchars($it['ten_banh']) ?>" width="50" height="50" style="object-fit:cover;border-radius:10px;">
-                                    <a href="/Cake/product/<?= urlencode($productSlug) ?>" class="text-decoration-none">
+                                    <a href="/cakev0/product/<?= urlencode($productSlug) ?>" class="text-decoration-none">
                                         <?= htmlspecialchars($it['ten_banh']) ?>
                                     </a>
                                 </div>

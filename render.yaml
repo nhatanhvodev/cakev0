@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: gau-bakery
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /cakev0/
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_TIMEZONE
+        value: Asia/Ho_Chi_Minh
+      - key: APP_BASE_PATH
+        value: /Cake
+      - key: APP_ORIGIN
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_AUTHORIZED_PARTIES
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_CHARSET
+        value: utf8mb4
+      - key: VNPAY_TMN_CODE
+        sync: false
+      - key: VNPAY_HASH_SECRET
+        sync: false
+      - key: VNPAY_URL
+        value: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      - key: VNPAY_RETURN_URL
+        sync: false
+      - key: VNPAY_MERCHANT_URL
+        value: http://sandbox.vnpayment.vn/merchant_webapi/merchant.html
+      - key: VNPAY_TRANSACTION_API_URL
+        value: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+      - key: UPLOADTHING_API_KEY
+        sync: false
+      - key: UPLOADTHING_TOKEN
+        sync: false
+      - key: UPLOADTHING_APP_ID
+        sync: false

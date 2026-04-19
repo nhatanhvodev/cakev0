@@ -7,6 +7,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 } //
 
+require_once '../config/config.php';
+
+$appBaseUrl = rtrim(BASE_URL, '/');
+$clerkPublishableKey = (string) env_value('CLERK_PUBLISHABLE_KEY', '');
+$clerkEnabled = $clerkPublishableKey !== '';
+
 $error_message = '';
 
 // Kiểm tra khi người dùng nhấn nút Đăng ký
@@ -43,7 +49,7 @@ $conn->set_charset("utf8mb4"); //
                 $_SESSION['user_id'] = $conn->insert_id;
                 $_SESSION['username'] = $username;
                 $_SESSION['toast'] = ['msg' => 'Đăng ký thành công! Chào mừng bạn đến với Gấu Bakery.', 'type' => 'success'];
-                header("Location: /Cake/index.php");
+                header("Location: " . base_url('index.php'));
                 exit; //
             } else {
                 $error_message = "Lỗi đăng ký!";
@@ -59,7 +65,7 @@ $conn->set_charset("utf8mb4"); //
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title>Đăng ký tài khoản</title> <!-- -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -184,6 +190,42 @@ $conn->set_charset("utf8mb4"); //
         }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(74, 29, 31, .22); } /* */
 
+        .clerk-shell {
+            background: #ffffff;
+            border: 1px solid #e5d6bf;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .clerk-divider {
+            text-align: center;
+            margin: 8px 0 16px;
+            position: relative;
+            color: #7a6b59;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .clerk-divider::before,
+        .clerk-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 33%;
+            border-top: 1px solid #e7dac6;
+        }
+
+        .clerk-divider::before {
+            left: 0;
+        }
+
+        .clerk-divider::after {
+            right: 0;
+        }
+
         /* Link chuyển trang */
         .login-right a { color: var(--brown-700); transition: .3s; text-decoration: none; }
         .login-right a:hover { color: var(--brown-800); } /* */
@@ -286,16 +328,16 @@ $conn->set_charset("utf8mb4"); //
                     </p>
 
                     <div class="visual-stack">
-                        <img src="/Cake/assets/img/banner1.jpg" alt="Bánh ngon mỗi ngày">
+                        <img src="/cakev0/assets/img/banner1.jpg" alt="Bánh ngon mỗi ngày">
                         <div class="float-card float-one">
-                            <img src="/Cake/assets/uploads/banhngot/banh_69dbab0d239db7.73922554.jpg" alt="Bánh ngọt">
+                            <img src="/cakev0/assets/uploads/banhngot/banh_69dbab0d239db7.73922554.jpg" alt="Bánh ngọt">
                             <div>
                                 <div style="font-size:12px; font-weight:600;">Bánh mới</div>
                                 <div style="font-size:11px; opacity:.7;">Mỗi ngày</div>
                             </div>
                         </div>
                         <div class="float-card float-two">
-                            <img src="/Cake/assets/uploads/banhngot/banh_69dbac321327a6.77842905.jpg" alt="Bánh kem">
+                            <img src="/cakev0/assets/uploads/banhngot/banh_69dbac321327a6.77842905.jpg" alt="Bánh kem">
                             <div>
                                 <div style="font-size:12px; font-weight:600;">Đặc sắc</div>
                                 <div style="font-size:11px; opacity:.7;">Yêu thích</div>
@@ -321,6 +363,13 @@ $conn->set_charset("utf8mb4"); //
                         <div class="alert alert-danger text-center p-2 mb-3">
                             <?= htmlspecialchars($error_message) ?> <!-- -->
                         </div>
+                    <?php endif; ?>
+
+                    <?php if ($clerkEnabled): ?>
+                        <div class="clerk-shell">
+                            <div id="clerkSignUp"></div>
+                        </div>
+                        <div class="clerk-divider"><span>hoặc tạo tài khoản nội bộ</span></div>
                     <?php endif; ?>
 
                     <form method="POST">
@@ -350,7 +399,7 @@ $conn->set_charset("utf8mb4"); //
 
                     <!-- Footer chuyển sang đăng nhập -->
                     <div class="text-center mt-4">
-                        Đã có tài khoản? <a href="/Cake/pages/login.php" style="font-weight: bold;">Đăng nhập ngay</a> <!-- -->
+                        Đã có tài khoản? <a href="/cakev0/pages/login.php" style="font-weight: bold;">Đăng nhập ngay</a> <!-- -->
                     </div>
                 </div>
 
@@ -393,4 +442,78 @@ $conn->set_charset("utf8mb4"); //
         window.showToast(<?= json_encode($error_message) ?>, 'error');
     <?php endif; ?>
 </script>
+<?php if ($clerkEnabled): ?>
+<script async crossorigin="anonymous" data-clerk-publishable-key="<?= htmlspecialchars($clerkPublishableKey, ENT_QUOTES) ?>" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+<script>
+    (function () {
+        const root = document.getElementById('clerkSignUp');
+        if (!root) {
+            return;
+        }
+
+        const appBase = <?= json_encode($appBaseUrl) ?>;
+        const exchangeUrl = appBase + '/pages/clerk-session.php';
+        let isExchanging = false;
+
+        async function exchangeSession(session) {
+            if (!session || isExchanging) {
+                return;
+            }
+
+            isExchanging = true;
+
+            try {
+                const token = await session.getToken();
+                const response = await fetch(exchangeUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ token: token })
+                });
+
+                const data = await response.json().catch(function () {
+                    return {};
+                });
+
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.message || 'Không thể đồng bộ phiên đăng nhập Clerk.');
+                }
+
+                window.location.href = data.redirect || (appBase + '/index.php');
+            } catch (error) {
+                isExchanging = false;
+                window.showToast(error && error.message ? error.message : 'Đăng ký Clerk thất bại.', 'error');
+            }
+        }
+
+        async function initClerk() {
+            if (typeof window.Clerk === 'undefined') {
+                return;
+            }
+
+            await window.Clerk.load();
+
+            if (window.Clerk.session) {
+                await exchangeSession(window.Clerk.session);
+                return;
+            }
+
+            window.Clerk.mountSignUp(root, {
+                signInUrl: appBase + '/pages/login.php',
+                afterSignUpUrl: appBase + '/pages/register.php'
+            });
+
+            window.Clerk.addListener(function (state) {
+                if (state && state.session) {
+                    exchangeSession(state.session);
+                }
+            });
+        }
+
+        initClerk().catch(function () {
+            window.showToast('Không thể khởi tạo Clerk.', 'error');
+        });
+    })();
+</script>
+<?php endif; ?>
 </html>

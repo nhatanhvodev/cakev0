@@ -1,0 +1,63 @@
+configVersion: 2.0.0
+generation:
+  sdkClassName: ClerkBackend
+  maintainOpenAPIOrder: true
+  usageSnippets:
+    optionalPropertyRendering: withExample
+    sdkInitStyle: constructor
+  useClassNamesForArrayFields: true
+  fixes:
+    nameResolutionDec2023: true
+    nameResolutionFeb2025: false
+    parameterOrderingFeb2024: true
+    requestResponseComponentNamesFeb2024: true
+    securityFeb2025: false
+    sharedErrorComponentsApr2025: false
+    sharedNestedComponentsJan2026: false
+    nameOverrideFeb2026: false
+  auth:
+    oAuth2ClientCredentialsEnabled: false
+    oAuth2PasswordEnabled: false
+    hoistGlobalSecurity: true
+  schemas:
+    allOfMergeStrategy: shallowMerge
+  requestBodyFieldName: ""
+  versioningStrategy: automatic
+  persistentEdits: {}
+  tests:
+    generateTests: true
+    generateNewTests: false
+    skipResponseBodyAssertions: false
+php:
+  version: 0.7.0
+  additionalDependencies:
+    autoload: {}
+    autoload-dev:
+      Clerk\Backend\Tests\: Tests/
+    require:
+      firebase/php-jwt: ^7.0
+      phpseclib/phpseclib: ^3.0
+    require-dev: {}
+  baseErrorName: ClerkBackendException
+  clientServerStatusCodesAsErrors: true
+  defaultErrorName: SDKException
+  flattenGlobalSecurity: true
+  imports:
+    option: openapi
+    paths:
+      callbacks: Models/Callbacks
+      errors: Models/Errors
+      operations: Models/Operations
+      shared: Models/Components
+      webhooks: Models/Webhooks
+  inferUnionDiscriminators: false
+  inputModelSuffix: input
+  laravelServiceProvider:
+    enabled: false
+    svcName: openapi
+  maxMethodParams: 4
+  methodArguments: infer-optional-args
+  multipartArrayFormat: legacy
+  namespace: Clerk\Backend
+  outputModelSuffix: output
+  packageName: clerkinc/backend-php

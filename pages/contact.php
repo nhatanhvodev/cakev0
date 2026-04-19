@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= !empty($pageTitle) ? htmlspecialchars($pageTitle) . ' | Gấu Bakery' : 'Gấu Bakery' ?></title>
@@ -276,7 +276,7 @@ body {
             <h4>Giờ mở cửa</h4>
             <p>08:00 - 21:00 (Thứ 2 - Chủ nhật)</p>
         </div>
-        <img class="contact-banner" src="/Cake/assets/img/banner.jpg" alt="Liên hệ Gấu Bakery">
+        <img class="contact-banner" src="/cakev0/assets/img/banner.jpg" alt="Liên hệ Gấu Bakery">
         <iframe
             class="contact-map"
             src="https://www.google.com/maps?q=59%20M%E1%BA%A1c%20%C4%90%C4%A9nh%20Chi%2C%20%C4%90a%20Kao%2C%20T%C3%A2n%20%C4%90%E1%BB%8Bnh%2C%20H%E1%BB%93%20Ch%C3%AD%20Minh%2071007%2C%20Vi%E1%BB%87t%20Nam&output=embed"

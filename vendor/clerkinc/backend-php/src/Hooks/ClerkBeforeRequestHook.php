@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Clerk\Backend\Hooks;
+
+use Psr\Http\Message\RequestInterface;
+
+class ClerkBeforeRequestHook implements BeforeRequestHook
+{
+    public function beforeRequest(BeforeRequestContext $context, RequestInterface $request): RequestInterface
+    {
+        return $request->withHeader(
+            'Clerk-API-Version',
+            '2025-11-10'
+        );
+    }
+}

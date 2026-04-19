@@ -7,7 +7,7 @@ session_start();
 // 1. Kết nối Database
 require_once '../config/connect.php';
 $pageTitle = 'Thanh toán';
-$extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
+$extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 // 2. Bảo mật: CSRF Token
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -20,6 +20,47 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
+function ensureCartCouponsTable(mysqli $conn): void {
+    $sql = "CREATE TABLE IF NOT EXISTS cart_coupons (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        code VARCHAR(50) NOT NULL,
+        discount_percent DECIMAL(5,2) NOT NULL,
+        min_subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        starts_at DATE DEFAULT NULL,
+        ends_at DATE DEFAULT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uniq_cart_coupon_code (code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+    $conn->query($sql);
+}
+
+function findCartCoupon(mysqli $conn, string $couponCode, string $today): ?array {
+    $stmt = $conn->prepare(
+        "SELECT code, discount_percent, min_subtotal
+         FROM cart_coupons
+         WHERE UPPER(code) = UPPER(?)
+         AND is_active = 1
+         AND (starts_at IS NULL OR starts_at <= ?)
+         AND (ends_at IS NULL OR ends_at >= ?)
+         LIMIT 1"
+    );
+
+    if (!$stmt) {
+        return null;
+    }
+
+    $stmt->bind_param('sss', $couponCode, $today, $today);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return $row ?: null;
+}
+
+ensureCartCouponsTable($conn);
+
 // 4. Lấy giỏ hàng từ Database (Ưu tiên Source thay vì LocalStorage)
 $sql = "SELECT c.banh_id, b.ten_banh, b.gia, c.quantity 
         FROM cart c JOIN banh b ON c.banh_id = b.id 
@@ -31,14 +72,52 @@ $cart = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Nếu giỏ hàng trống
 if (empty($cart)) {
-    echo "<script>window.showToast('Giỏ hàng trống! Hãy mua thêm bánh nhé.', 'success'); location='/Cake/index.php';</script>";
+    echo "<script>window.showToast('Giỏ hàng trống! Hãy mua thêm bánh nhé.', 'success'); location='/cakev0/index.php';</script>";
     exit;
 }
 
 // 5. Tính tổng tiền (Server Side Calculation)
-$total = 0;
+$subtotal = 0;
 foreach ($cart as $item) {
-    $total += $item['gia'] * $item['quantity'];
+    $subtotal += $item['gia'] * $item['quantity'];
+}
+
+$couponInputRaw = $_SERVER['REQUEST_METHOD'] === 'POST'
+    ? ($_POST['coupon'] ?? '')
+    : ($_GET['coupon'] ?? '');
+$couponInput = strtoupper(trim((string) $couponInputRaw));
+$appliedCoupon = null;
+$couponError = '';
+$couponSuccess = '';
+$discountAmount = 0.0;
+$discountPercentApplied = 0.0;
+$total = (float) $subtotal;
+$today = date('Y-m-d');
+
+if ($couponInput !== '') {
+    if (!preg_match('/^[A-Z0-9_-]{3,30}$/', $couponInput)) {
+        $couponError = 'Mã giảm giá không hợp lệ.';
+    } else {
+        $coupon = findCartCoupon($conn, $couponInput, $today);
+        if (!$coupon) {
+            $couponError = 'Mã giảm giá không tồn tại hoặc đã hết hạn.';
+        } else {
+            $minSubtotal = (float) ($coupon['min_subtotal'] ?? 0);
+            $discountPercent = (float) ($coupon['discount_percent'] ?? 0);
+
+            if ($subtotal < $minSubtotal) {
+                $couponError = 'Đơn hàng tối thiểu ' . number_format($minSubtotal, 0, ',', '.') . ' VNĐ để dùng mã này.';
+            } elseif ($discountPercent <= 0) {
+                $couponError = 'Mã giảm giá chưa được cấu hình hợp lệ.';
+            } else {
+                $discountPercentApplied = min(100, $discountPercent);
+                $discountAmount = round($subtotal * ($discountPercentApplied / 100));
+                $total = max(0, $subtotal - $discountAmount);
+                $appliedCoupon = $coupon;
+                $couponSuccess = 'Áp dụng mã ' . $coupon['code'] . ' thành công.';
+            }
+        }
+    }
 }
 
 // 6. XỬ LÝ KHI NGƯỜI DÙNG BẤM "THANH TOÁN" (POST)
@@ -139,14 +218,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ? "Đặt hàng thành công! Vui lòng chuyển khoản để hoàn tất. Mã đơn: #$order_id"
                     : "Đặt hàng thành công! Mã đơn: #$order_id";
                 $_SESSION['toast'] = ['msg' => $toastMsg, 'type' => 'success'];
-                header("Location: /Cake/index.php");
+                header("Location: /cakev0/index.php");
                 exit;
             }
 
         } catch (Exception $e) {
             $conn->rollback(); // Hoàn tác nếu lỗi
             $_SESSION['toast'] = ['msg' => 'Lỗi hệ thống, vui lòng thử lại!', 'type' => 'error'];
-            header("Location: /Cake/pages/checkout.php");
+            $redirectUrl = '/cakev0/pages/checkout.php';
+            if ($couponInput !== '') {
+                $redirectUrl .= '?coupon=' . urlencode($couponInput);
+            }
+            header('Location: ' . $redirectUrl);
             exit;
         }
     }
@@ -155,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($pageTitle) ?> | Gấu Bakery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -447,6 +530,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" id="checkout-form">
                 <!-- Token CSRF ẩn -->
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <?php if ($couponInput !== ''): ?>
+                    <input type="hidden" name="coupon" value="<?= htmlspecialchars($couponInput) ?>">
+                <?php endif; ?>
                 
                 <div class="checkout-field">
                     <label>Họ tên người nhận</label>
@@ -502,6 +588,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="checkout-card">
             <h3>Đơn hàng của bạn</h3>
             <p class="section-note">Kiểm tra lại món và tổng tiền trước khi xác nhận.</p>
+            <?php if ($couponSuccess !== ''): ?>
+                <div style="margin-bottom: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid #b6e2c7; background: #edf9f2; color: #17653a; font-size: 13px;">
+                    <?= htmlspecialchars($couponSuccess) ?>
+                </div>
+            <?php elseif ($couponError !== ''): ?>
+                <div style="margin-bottom: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid #f1d29a; background: #fff7e8; color: #8a5a00; font-size: 13px;">
+                    <?= htmlspecialchars($couponError) ?>
+                </div>
+            <?php endif; ?>
             <ul class="order-list">
                 <?php foreach ($cart as $item): ?>
                 <li class="order-item">
@@ -510,6 +605,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </li>
                 <?php endforeach; ?>
             </ul>
+
+            <div style="display:flex; justify-content:space-between; margin-top: 14px; font-size: 14px; color: #4a1d1f;">
+                <span>Tạm tính:</span>
+                <span><?= number_format($subtotal, 0, ',', '.') ?> VNĐ</span>
+            </div>
+            <?php if ($discountAmount > 0 && $appliedCoupon): ?>
+                <div style="display:flex; justify-content:space-between; margin-top: 8px; font-size: 14px; color: #2f7a43;">
+                    <span>Giảm giá (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= rtrim(rtrim(number_format($discountPercentApplied, 2, '.', ''), '0'), '.') ?>%):</span>
+                    <span>-<?= number_format($discountAmount, 0, ',', '.') ?> VNĐ</span>
+                </div>
+            <?php endif; ?>
             
             <div class="total-row">
                 <span>Tổng cộng:</span>

@@ -262,7 +262,7 @@ function updateCart() {
           <i class="bi bi-x-lg"></i>
         </button>
       </td>
-      <td><img src="${item.image || '/Cake/img/no-image.jpg'}" alt="${item.name}" width="100" height="100"></td>
+      <td><img src="${item.image || '/cakev0/img/no-image.jpg'}" alt="${item.name}" width="100" height="100"></td>
       <td>${item.name}</td>
       <td>${item.price.toLocaleString('vi-VN')} VNĐ</td>
       <td>
@@ -707,7 +707,7 @@ function displayCart() {
       total += itemTotal;
       const li = document.createElement('li');
       li.innerHTML = `
-        <img src="${item.image || '/Cake/img/no-image.jpg'}" alt="${item.name}" width="50" height="50">
+        <img src="${item.image || '/cakev0/img/no-image.jpg'}" alt="${item.name}" width="50" height="50">
         ${item.name} - ${item.quantity} x ${item.price.toLocaleString('vi-VN')} VNĐ = ${itemTotal.toLocaleString('vi-VN')} VNĐ
       `;
       cartList.appendChild(li);

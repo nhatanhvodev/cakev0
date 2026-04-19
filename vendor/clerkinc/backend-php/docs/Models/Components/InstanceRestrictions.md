@@ -1,0 +1,15 @@
+# InstanceRestrictions
+
+Success
+
+
+## Fields
+
+| Field                                                                                          | Type                                                                                           | Required                                                                                       | Description                                                                                    |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `object`                                                                                       | [Components\InstanceRestrictionsObject](../../Models/Components/InstanceRestrictionsObject.md) | :heavy_check_mark:                                                                             | String representing the object's type. Objects of the same type share the same value.          |
+| `allowlist`                                                                                    | *bool*                                                                                         | :heavy_check_mark:                                                                             | N/A                                                                                            |
+| `blocklist`                                                                                    | *bool*                                                                                         | :heavy_check_mark:                                                                             | N/A                                                                                            |
+| `allowlistBlocklistDisabledOnSignIn`                                                           | *bool*                                                                                         | :heavy_check_mark:                                                                             | N/A                                                                                            |
+| `blockEmailSubaddresses`                                                                       | *bool*                                                                                         | :heavy_check_mark:                                                                             | N/A                                                                                            |
+| `blockDisposableEmailDomains`                                                                  | *bool*                                                                                         | :heavy_check_mark:                                                                             | N/A                                                                                            |

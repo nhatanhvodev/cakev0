@@ -4,11 +4,15 @@
  */
 
 // 1. KẾT NỐI VÀ CẤU HÌNH
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
-// Kết nối Database (Nhúng trực tiếp để đảm bảo hoạt động)
+require_once '../config/config.php';
+require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
+
 // Hàm tạo lại CSRF Token
 function regenerateCsrfToken()
 {
@@ -34,30 +38,95 @@ function redirectToTab(string $tab): void
 // Hàm xử lý đường dẫn ảnh (Kết hợp logic từ nguồn)
 function buildImageUrl(string $relativePath): array
 {
-    $defaultImage = '/Cake/assets/img/no-image.jpg';
+    $defaultImage = base_url('assets/img/no-image.jpg');
     $result = ['url' => $defaultImage];
 
     if (empty($relativePath))
         return $result;
 
-    if (strpos($relativePath, 'admin/img/') === 0 || strpos($relativePath, 'admin/') === 0) {
-        $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($relativePath, '/');
-        if (file_exists($fullPath)) {
-            $result['url'] = '/Cake/' . ltrim($relativePath, '/');
-        }
+    $relativePath = trim(str_replace('\\', '/', $relativePath));
+    if ($relativePath === '') {
         return $result;
     }
 
-    // Handle assets/ prefix if it's stored as img/ in the DB
+    if (is_remote_media_url($relativePath)) {
+        $result['url'] = $relativePath;
+        return $result;
+    }
+
     if (strpos($relativePath, 'assets/') === false && strpos($relativePath, 'img/') === 0) {
         $relativePath = 'assets/' . $relativePath;
     }
-
-    $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($relativePath, '/');
-    if (file_exists($fullPath)) {
-        $result['url'] = '/Cake/' . ltrim($relativePath, '/');
+    if (strpos($relativePath, 'uploads/') === 0) {
+        $relativePath = 'assets/' . $relativePath;
     }
+
+    $cakePos = stripos($relativePath, '/cakev0/');
+    if ($cakePos !== false) {
+        $relativePath = substr($relativePath, $cakePos + 6);
+    } else {
+        $cakePos = stripos($relativePath, 'cakev0/');
+        if ($cakePos !== false) {
+            $relativePath = substr($relativePath, $cakePos + 5);
+        }
+    }
+
+    $relativePath = ltrim($relativePath, '/');
+    if ($relativePath === '') {
+        return $result;
+    }
+
+    $fullPath = project_local_path($relativePath);
+    if (is_file($fullPath)) {
+        $result['url'] = base_url($relativePath);
+    }
+
     return $result;
+}
+
+function project_local_path(string $relativePath): string
+{
+    $docRoot = rtrim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), '/\\');
+    $basePath = APP_BASE_PATH === '' ? '' : APP_BASE_PATH;
+    $basePath = rtrim(str_replace('\\', '/', $basePath), '/');
+
+    return $docRoot . $basePath . '/' . ltrim(str_replace('\\', '/', $relativePath), '/');
+}
+
+function storeProductImageUpload(string $tmpName, string $originalName, string $loai): ?string
+{
+    if ($tmpName === '' || !is_file($tmpName)) {
+        return null;
+    }
+
+    $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    $allow = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!in_array($ext, $allow, true)) {
+        return null;
+    }
+
+    $fileName = uniqid('banh_', true) . '.' . $ext;
+    $mimeType = function_exists('mime_content_type') ? mime_content_type($tmpName) : null;
+    $mimeType = is_string($mimeType) ? $mimeType : null;
+
+    if (uploadthing_enabled()) {
+        $uploadedUrl = uploadthing_upload_file($tmpName, $fileName, $mimeType);
+        if ($uploadedUrl !== null) {
+            return $uploadedUrl;
+        }
+    }
+
+    $uploadDir = project_local_path("assets/uploads/banh{$loai}");
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+        return null;
+    }
+
+    $targetPath = rtrim($uploadDir, '/\\') . '/' . $fileName;
+    if (!move_uploaded_file($tmpName, $targetPath)) {
+        return null;
+    }
+
+    return "assets/uploads/banh{$loai}/" . $fileName;
 }
 
 function safeTransliterate(string $value): string
@@ -165,10 +234,6 @@ if (isset($_SESSION['admin_logged_in'])) {
 
         /* ===== UPLOAD HÌNH ẢNH ===== */
         $hinh_anh = '';
-        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/assets/uploads/banh{$loai}/";
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
 
         $uploadedImages = $_FILES['product_images'] ?? null;
         if (!$uploadedImages || empty($uploadedImages['name'][0])) {
@@ -176,21 +241,18 @@ if (isset($_SESSION['admin_logged_in'])) {
             redirectToTab('products');
         }
 
-        $allow = ['jpg', 'jpeg', 'png', 'webp'];
         $uploadedPaths = [];
         foreach ($uploadedImages['name'] as $index => $name) {
             if ($uploadedImages['error'][$index] !== 0) {
                 continue;
             }
-            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            if (!in_array($ext, $allow)) {
-                continue;
-            }
-            $fileName = uniqid('banh_', true) . '.' . $ext;
-            $targetPath = $upload_dir . $fileName;
-            $relativePath = "assets/uploads/banh{$loai}/" . $fileName;
-            if (move_uploaded_file($uploadedImages['tmp_name'][$index], $targetPath)) {
-                $uploadedPaths[] = $relativePath;
+            $storedPath = storeProductImageUpload(
+                (string) ($uploadedImages['tmp_name'][$index] ?? ''),
+                (string) $name,
+                $loai
+            );
+            if ($storedPath !== null) {
+                $uploadedPaths[] = $storedPath;
             }
         }
 
@@ -253,10 +315,6 @@ if (isset($_SESSION['admin_logged_in'])) {
         $gia = isset($_POST['gia']) ? (float) $_POST['gia'] : 0;
         $mo_ta = trim($_POST['mo_ta'] ?? '');
         $currentImage = $_POST['current_image'] ?? '';
-        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/Cake/assets/uploads/banh{$loai}/";
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
 
         if ($productId <= 0 || $ten_banh === '' || $loai === '' || $gia <= 0) {
             setAdminToast("Dữ liệu cập nhật không hợp lệ", "error");
@@ -267,20 +325,17 @@ if (isset($_SESSION['admin_logged_in'])) {
         $uploadedImages = $_FILES['product_images'] ?? null;
         $uploadedPaths = [];
         if ($uploadedImages && !empty($uploadedImages['name'][0])) {
-            $allow = ['jpg', 'jpeg', 'png', 'webp'];
             foreach ($uploadedImages['name'] as $index => $name) {
                 if ($uploadedImages['error'][$index] !== 0) {
                     continue;
                 }
-                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                if (!in_array($ext, $allow)) {
-                    continue;
-                }
-                $fileName = uniqid('banh_', true) . '.' . $ext;
-                $targetPath = $upload_dir . $fileName;
-                $relativePath = "assets/uploads/banh{$loai}/" . $fileName;
-                if (move_uploaded_file($uploadedImages['tmp_name'][$index], $targetPath)) {
-                    $uploadedPaths[] = $relativePath;
+                $storedPath = storeProductImageUpload(
+                    (string) ($uploadedImages['tmp_name'][$index] ?? ''),
+                    (string) $name,
+                    $loai
+                );
+                if ($storedPath !== null) {
+                    $uploadedPaths[] = $storedPath;
                 }
             }
         }
@@ -289,8 +344,8 @@ if (isset($_SESSION['admin_logged_in'])) {
         if (!empty($uploadedPaths)) {
             $hinh_anh = $uploadedPaths[0];
             $galleryPaths = array_slice($uploadedPaths, 1);
-            if ($currentImage && $currentImage !== $hinh_anh) {
-                $oldPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($currentImage, '/');
+            if ($currentImage && $currentImage !== $hinh_anh && !is_remote_media_url($currentImage)) {
+                $oldPath = project_local_path($currentImage);
                 if (is_file($oldPath)) {
                     unlink($oldPath);
                 }
@@ -335,8 +390,8 @@ if (isset($_SESSION['admin_logged_in'])) {
             $row = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
-            if (!empty($row['image_path'])) {
-                $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/Cake/' . ltrim($row['image_path'], '/');
+            if (!empty($row['image_path']) && !is_remote_media_url($row['image_path'])) {
+                $fullPath = project_local_path($row['image_path']);
                 if (is_file($fullPath)) {
                     unlink($fullPath);
                 }
@@ -668,7 +723,7 @@ foreach ($order_items as $item) {
         'price' => (float) $item['price']
     ];
 }
-$promotions = $conn->query("SELECT p.*, b.ten_banh FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
+$promotions = $conn->query("SELECT p.*, b.ten_banh, b.gia AS gia_hien_tai FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
 $reviews = $conn->query("SELECT * FROM reviews ORDER BY timestamp DESC")->fetch_all(MYSQLI_ASSOC);
 $productImages = $conn->query("SELECT * FROM product_images ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
 
@@ -816,7 +871,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 <html lang="vi">
 
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Gấu Bakery</title>
@@ -1301,7 +1356,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
         <!-- 1. SIDEBAR -->
         <div class="sidebar">
             <h2>
-                <img src="/Cake/assets/img/logo.png" alt="Gấu Bakery" style="width:28px;height:28px;object-fit:contain;margin-right:8px;">
+                <img src="/cakev0/assets/img/logo.png" alt="Gấu Bakery" style="width:28px;height:28px;object-fit:contain;margin-right:8px;">
                 Gấu Bakery
             </h2>
             <nav class="nav flex-column">
@@ -1311,7 +1366,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 <a class="nav-link" href="admin.php?tab=products#products" data-tab="products" onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
                 <a class="nav-link" href="admin.php?tab=best-selling#best-selling" data-tab="best-selling" onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Best Selling</a>
                 <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials" onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
-                <a class="nav-link" href="/Cake/pages/admin-password-requests.php"><i class="bi bi-shield-lock"></i> Duyệt đổi mật khẩu</a>
+                <a class="nav-link" href="/cakev0/pages/admin-password-requests.php"><i class="bi bi-shield-lock"></i> Duyệt đổi mật khẩu</a>
                 <a class="nav-link" href="admin.php?tab=users#users" data-tab="users" onclick="showTab(event, 'users')"><i class="bi bi-people"></i> Khách hàng</a>
                 <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions" onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
             </nav>
@@ -1822,14 +1877,17 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 <h3 class="mb-4" style="color:#4a1d1f;">Chương Trình Khuyến Mãi</h3>
                 <form method="POST" class="card p-3 border-0 shadow-sm mb-3 row g-2">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                    <div class="col-md-4">
-                        <select name="banh_id" class="form-select">
+                    <div class="col-md-3">
+                        <select name="banh_id" id="promotionProductSelect" class="form-select">
                             <?php foreach ($products as $p): ?>
-                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['ten_banh']) ?></option>
+                                <option value="<?= $p['id'] ?>" data-price="<?= (float) $p['gia'] ?>"><?= htmlspecialchars($p['ten_banh']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-3"><input type="number" name="gia_khuyen_mai" class="form-control"
+                    <div class="col-md-2">
+                        <input type="text" id="promotionCurrentPrice" class="form-control" value="<?= !empty($products) ? number_format((float) $products[0]['gia'], 0, ',', '.') . 'đ' : '0đ' ?>" readonly>
+                    </div>
+                    <div class="col-md-2"><input type="number" name="gia_khuyen_mai" class="form-control"
                             placeholder="Giá KM" required></div>
                     <div class="col-md-2"><input type="date" name="ngay_bat_dau" class="form-control" required></div>
                     <div class="col-md-2"><input type="date" name="ngay_ket_thuc" class="form-control" required></div>
@@ -1841,6 +1899,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <thead>
                             <tr>
                                 <th>Sản phẩm</th>
+                                <th>Giá hiện tại</th>
                                 <th>Giá KM</th>
                                 <th>Thời gian</th>
                                 <th>Hành động</th>
@@ -1850,6 +1909,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             <?php foreach ($promotions as $promo): ?>
                                 <tr>
                                     <td><?= htmlspecialchars($promo['ten_banh']) ?></td>
+                                    <td><?= number_format((float) ($promo['gia_hien_tai'] ?? 0), 0, ',', '.') ?>đ</td>
                                     <td><?= number_format($promo['gia_khuyen_mai']) ?>đ</td>
                                     <td><?= date('d/m', strtotime($promo['ngay_bat_dau'])) ?> ->
                                         <?= date('d/m', strtotime($promo['ngay_ket_thuc'])) ?>
@@ -1974,6 +2034,27 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 const descInput = document.getElementById('productDesc');
                 const searchInput = document.getElementById('productSearchInput');
                 const productTableBody = document.querySelector('#products .custom-table tbody');
+                const promotionProductSelect = document.getElementById('promotionProductSelect');
+                const promotionCurrentPrice = document.getElementById('promotionCurrentPrice');
+
+                function formatVnd(value) {
+                    const amount = Number(value || 0);
+                    return amount.toLocaleString('vi-VN') + 'đ';
+                }
+
+                function syncPromotionCurrentPrice() {
+                    if (!promotionProductSelect || !promotionCurrentPrice) {
+                        return;
+                    }
+                    const selectedOption = promotionProductSelect.options[promotionProductSelect.selectedIndex];
+                    const selectedPrice = selectedOption ? selectedOption.dataset.price : 0;
+                    promotionCurrentPrice.value = formatVnd(selectedPrice);
+                }
+
+                if (promotionProductSelect && promotionCurrentPrice) {
+                    promotionProductSelect.addEventListener('change', syncPromotionCurrentPrice);
+                    syncPromotionCurrentPrice();
+                }
 
                 function setEditorValue(value) {
                     const editor = tinymce.get('productDesc');

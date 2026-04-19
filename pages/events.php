@@ -62,14 +62,33 @@ $sql = "
 $promotions = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
 
 function buildImageUrl(?string $path): string {
-  if (!$path) return '/Cake/assets/img/no-image.jpg';
-  if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
-    return '/Cake/' . ltrim($path, '/');
+  $fallback = '/cakev0/assets/img/no-image.jpg';
+  if (!$path) return $fallback;
+
+  $path = trim((string) $path);
+  if ($path === '') return $fallback;
+
+  $path = str_replace('\\', '/', $path);
+  if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:image/')) {
+    return $path;
   }
-  if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
-    $path = str_replace('img/', 'assets/img/', $path);
+
+  $cakePos = stripos($path, '/cakev0/');
+  if ($cakePos !== false) {
+    $path = substr($path, $cakePos + 6);
+  } else {
+    $cakePos = stripos($path, 'cakev0/');
+    if ($cakePos !== false) {
+      $path = substr($path, $cakePos + 5);
+    }
   }
-  return '/Cake/' . ltrim($path, '/');
+
+  $path = ltrim($path, '/');
+  if (strpos($path, 'img/') === 0 || strpos($path, 'uploads/') === 0) {
+    $path = 'assets/' . $path;
+  }
+
+  return '/cakev0/' . $path;
 }
 
 /* ================== TRẠNG THÁI LOGIN ================== */
@@ -80,7 +99,7 @@ $loggedInUser = $_SESSION['username'] ?? null;
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+  <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
 <meta charset="UTF-8">
 <title>Sự kiện & Khuyến mãi | Gấu Bakery</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

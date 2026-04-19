@@ -1,0 +1,19 @@
+# JWTTemplate
+
+List of JWT templates
+
+
+## Fields
+
+| Field                                                                        | Type                                                                         | Required                                                                     | Description                                                                  |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `object`                                                                     | [Components\JWTTemplateObject](../../Models/Components/JWTTemplateObject.md) | :heavy_check_mark:                                                           | N/A                                                                          |
+| `id`                                                                         | *string*                                                                     | :heavy_check_mark:                                                           | N/A                                                                          |
+| `name`                                                                       | *string*                                                                     | :heavy_check_mark:                                                           | N/A                                                                          |
+| `claims`                                                                     | [Components\Claims](../../Models/Components/Claims.md)                       | :heavy_check_mark:                                                           | N/A                                                                          |
+| `lifetime`                                                                   | *int*                                                                        | :heavy_check_mark:                                                           | N/A                                                                          |
+| `allowedClockSkew`                                                           | *int*                                                                        | :heavy_check_mark:                                                           | N/A                                                                          |
+| `customSigningKey`                                                           | *bool*                                                                       | :heavy_check_mark:                                                           | N/A                                                                          |
+| `signingAlgorithm`                                                           | *string*                                                                     | :heavy_check_mark:                                                           | N/A                                                                          |
+| `createdAt`                                                                  | *int*                                                                        | :heavy_check_mark:                                                           | Unix timestamp of creation.<br/>                                             |
+| `updatedAt`                                                                  | *int*                                                                        | :heavy_check_mark:                                                           | Unix timestamp of last update.<br/>                                          |

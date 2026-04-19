@@ -27,16 +27,37 @@ function ensureFavoritesTable(mysqli $conn): void {
 }
 
 function buildImageUrl(?string $path): string {
+    $fallback = '/cakev0/assets/img/no-image.jpg';
     if (!$path) {
-        return '/Cake/assets/img/no-image.jpg';
+        return $fallback;
     }
-    if (strpos($path, 'admin/img/') === 0 || strpos($path, 'admin/') === 0) {
-        return '/Cake/' . ltrim($path, '/');
+
+    $path = trim((string) $path);
+    if ($path === '') {
+        return $fallback;
     }
-    if (strpos($path, 'assets/') === false && strpos($path, 'img/') === 0) {
-        $path = str_replace('img/', 'assets/img/', $path);
+
+    $path = str_replace('\\', '/', $path);
+    if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:image/')) {
+        return $path;
     }
-    return '/Cake/' . ltrim($path, '/');
+
+    $cakePos = stripos($path, '/cakev0/');
+    if ($cakePos !== false) {
+        $path = substr($path, $cakePos + 6);
+    } else {
+        $cakePos = stripos($path, 'cakev0/');
+        if ($cakePos !== false) {
+            $path = substr($path, $cakePos + 5);
+        }
+    }
+
+    $path = ltrim($path, '/');
+    if (strpos($path, 'img/') === 0 || strpos($path, 'uploads/') === 0) {
+        $path = 'assets/' . $path;
+    }
+
+    return '/cakev0/' . $path;
 }
 
 function safeTransliterate(string $value): string {
@@ -173,7 +194,7 @@ if (!$isLoggedIn) {
         'msg' => 'Vui lòng đăng nhập để xem sản phẩm đã lưu.',
         'type' => 'warning'
     ];
-    header('Location: /Cake/pages/login.php');
+    header('Location: /cakev0/pages/login.php');
     exit;
 }
 
@@ -194,13 +215,13 @@ if ($stmt) {
     $stmt->close();
 }
 
-$extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
+$extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?> | Gấu Bakery</title>
@@ -320,6 +341,13 @@ body {
     font-size: 17px;
 }
 
+.favorite-price .discount-rate {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #b42318;
+}
+
 .favorite-actions {
     margin-top: auto;
     display: flex;
@@ -423,7 +451,7 @@ body {
                 <h1 class="favorites-title">Sản phẩm đã lưu</h1>
                 <p class="favorites-sub">Bạn đang lưu <?= count($favoriteItems) ?> sản phẩm yêu thích.</p>
             </div>
-            <a href="/Cake/pages/product.php" class="head-link">Tiếp tục mua sắm</a>
+            <a href="/cakev0/pages/product.php" class="head-link">Tiếp tục mua sắm</a>
         </div>
 
         <div id="favoriteGrid" class="favorites-grid">
@@ -431,13 +459,17 @@ body {
                 <?php
                     $slug = !empty($item['slug']) ? $item['slug'] : slugify($item['ten_banh'], (int) $item['id']);
                     $price = (float) ($item['gia_khuyen_mai'] ?: $item['gia']);
+                    $discountPercent = null;
+                    if (!empty($item['gia_khuyen_mai']) && (float) $item['gia'] > 0 && (float) $item['gia_khuyen_mai'] < (float) $item['gia']) {
+                        $discountPercent = (int) round(100 - (((float) $item['gia_khuyen_mai'] / (float) $item['gia']) * 100));
+                    }
                 ?>
                 <article class="favorite-card" data-product-id="<?= (int) $item['id'] ?>">
-                    <a class="card-link" href="/Cake/product/<?= urlencode($slug) ?>">
+                    <a class="card-link" href="/cakev0/product/<?= urlencode($slug) ?>">
                         <img src="<?= buildImageUrl($item['hinh_anh']) ?>" alt="<?= htmlspecialchars($item['ten_banh']) ?>">
                     </a>
                     <div class="favorite-card-body">
-                        <a class="card-link" href="/Cake/product/<?= urlencode($slug) ?>">
+                        <a class="card-link" href="/cakev0/product/<?= urlencode($slug) ?>">
                             <h3 class="favorite-name"><?= htmlspecialchars($item['ten_banh']) ?></h3>
                         </a>
                         <p class="favorite-price">
@@ -445,6 +477,9 @@ body {
                                 <del><?= number_format($item['gia'], 0, ',', '.') ?>đ</del>
                             <?php endif; ?>
                             <span class="current"><?= number_format($price, 0, ',', '.') ?>đ</span>
+                            <?php if ($discountPercent !== null): ?>
+                                <span class="discount-rate">-<?= $discountPercent ?>%</span>
+                            <?php endif; ?>
                         </p>
                         <div class="favorite-actions">
                             <button type="button" class="btn-primary-soft" onclick="addCartQuick(<?= (int) $item['id'] ?>)">Thêm vào giỏ</button>
@@ -459,7 +494,7 @@ body {
             <i class="fa-regular fa-heart"></i>
             <h3>Bạn chưa lưu sản phẩm nào</h3>
             <p>Nhấn vào biểu tượng tim ở trang sản phẩm để lưu lại món bánh bạn thích.</p>
-            <a href="/Cake/pages/product.php">Khám phá sản phẩm</a>
+            <a href="/cakev0/pages/product.php">Khám phá sản phẩm</a>
         </div>
     </section>
 </main>
@@ -468,7 +503,7 @@ body {
 
 <script>
 function addCartQuick(productId) {
-    fetch('/Cake/pages/cart.php', {
+    fetch('/cakev0/pages/cart.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=add&banh_id=${productId}&qty=1`
@@ -491,7 +526,7 @@ function removeFavorite(button) {
     const productId = parseInt(button.dataset.productId || '0', 10);
     if (!productId) return;
 
-    fetch('/Cake/pages/favorites.php', {
+    fetch('/cakev0/pages/favorites.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=remove&banh_id=${productId}`
@@ -501,7 +536,7 @@ function removeFavorite(button) {
         if (!d.success) {
             window.showToast(d.message || 'Không thể bỏ lưu sản phẩm.', 'error');
             if (d.require_login) {
-                window.location.href = '/Cake/pages/login.php';
+                window.location.href = '/cakev0/pages/login.php';
             }
             return;
         }

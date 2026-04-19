@@ -5,7 +5,7 @@ $pageTitle = 'Về chúng tôi';
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= !empty($pageTitle) ? htmlspecialchars($pageTitle) . ' | Gấu Bakery' : 'Gấu Bakery' ?></title>
@@ -76,7 +76,7 @@ body {
 .about-hero p {
     margin: 0 0 16px;
     line-height: 1.7;
-    color: #4a4a4a;
+    color: #000000;
 }
 
 .hero-actions {
@@ -152,7 +152,7 @@ body {
 
 .value-card p {
     margin: 0;
-    color: #4a4a4a;
+    color: #000000;
     line-height: 1.6;
     font-size: 14px;
 }
@@ -190,7 +190,7 @@ body {
 .story-panel ul {
     padding-left: 18px;
     margin: 0;
-    color: #4a4a4a;
+    color: #000000;
     line-height: 1.7;
 }
 
@@ -281,16 +281,16 @@ body {
             </div>
         </div>
         <div class="hero-visual">
-            <img src="/Cake/assets/img/banner3.jpg" alt="Không gian Gấu Bakery">
+            <img src="/cakev0/assets/img/banner3.jpg" alt="Không gian Gấu Bakery">
             <div class="hero-float float-top">
-                <img src="/Cake/assets/uploads/banhngot/banh_69dbaa8ed143d0.52774630.jpg" alt="Bánh ngọt">
+                <img src="/cakev0/assets/uploads/banhngot/banh_69dbaa8ed143d0.52774630.jpg" alt="Bánh ngọt">
                 <div>
                     <div style="font-size:12px; font-weight:600;">Bánh mới</div>
                     <div style="font-size:11px; opacity:.7;">Mỗi sáng</div>
                 </div>
             </div>
             <div class="hero-float float-bottom">
-                <img src="/Cake/assets/uploads/banhman/banh_69dbad2d994fc7.78344166.jpg" alt="Bánh mặn">
+                <img src="/cakev0/assets/uploads/banhman/banh_69dbad2d994fc7.78344166.jpg" alt="Bánh mặn">
                 <div>
                     <div style="font-size:12px; font-weight:600;">Signature</div>
                     <div style="font-size:11px; opacity:.7;">Bán chạy</div>
@@ -315,7 +315,7 @@ body {
     </section>
 
     <section class="about-story">
-        <img class="story-image" src="/Cake/assets/img/banner1.jpg" alt="Bánh mới mỗi ngày">
+        <img class="story-image" src="/cakev0/assets/img/banner1.jpg" alt="Bánh mới mỗi ngày">
         <div class="story-panel">
             <h2>Hành trình vị ngọt</h2>
             <ul>

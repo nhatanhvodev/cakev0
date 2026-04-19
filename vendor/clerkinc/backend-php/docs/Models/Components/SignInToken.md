@@ -1,0 +1,17 @@
+# SignInToken
+
+Success
+
+
+## Fields
+
+| Field                                                                        | Type                                                                         | Required                                                                     | Description                                                                  |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `object`                                                                     | [Components\SignInTokenObject](../../Models/Components/SignInTokenObject.md) | :heavy_check_mark:                                                           | N/A                                                                          |
+| `id`                                                                         | *string*                                                                     | :heavy_check_mark:                                                           | N/A                                                                          |
+| `status`                                                                     | [Components\SignInTokenStatus](../../Models/Components/SignInTokenStatus.md) | :heavy_check_mark:                                                           | N/A                                                                          |
+| `userId`                                                                     | *string*                                                                     | :heavy_check_mark:                                                           | N/A                                                                          |
+| `token`                                                                      | *?string*                                                                    | :heavy_minus_sign:                                                           | N/A                                                                          |
+| `url`                                                                        | *?string*                                                                    | :heavy_minus_sign:                                                           | N/A                                                                          |
+| `createdAt`                                                                  | *int*                                                                        | :heavy_check_mark:                                                           | Unix timestamp of creation.<br/>                                             |
+| `updatedAt`                                                                  | *int*                                                                        | :heavy_check_mark:                                                           | Unix timestamp of last update.<br/>                                          |

@@ -11,7 +11,7 @@ $isFavorite = false;
 $favoritesTableReady = false;
 
 function imgPath($path) {
-    $fallback = '/Cake/assets/img/no-image.jpg';
+    $fallback = '/cakev0/assets/img/no-image.jpg';
     if (!$path) return $fallback;
 
     $path = trim((string) $path);
@@ -23,11 +23,11 @@ function imgPath($path) {
     }
 
     // Keep only project-relative path when SQL stores absolute machine path.
-    $cakePos = stripos($path, '/Cake/');
+    $cakePos = stripos($path, '/cakev0/');
     if ($cakePos !== false) {
         $path = substr($path, $cakePos + 6);
     } else {
-        $cakePos = stripos($path, 'Cake/');
+        $cakePos = stripos($path, 'cakev0/');
         if ($cakePos !== false) {
             $path = substr($path, $cakePos + 5);
         }
@@ -38,7 +38,7 @@ function imgPath($path) {
         $path = 'assets/' . $path;
     }
 
-    return '/Cake/' . $path;
+    return '/cakev0/' . $path;
 }
 
 function safeTransliterate(string $value): string {
@@ -167,7 +167,7 @@ if ($currentSlug === '') {
 }
 
 if ($currentSlug !== $slugParam) {
-    header('Location: /Cake/product/' . urlencode($currentSlug), true, 301);
+    header('Location: /cakev0/product/' . urlencode($currentSlug), true, 301);
     exit;
 }
 
@@ -276,13 +276,13 @@ $stmt->execute();
 $reviews = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$extraLinks = '<link rel="stylesheet" href="/Cake/assets/css/style.css">';
+$extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($selected['ten_banh']) ?> | Gấu Bakery</title>
@@ -727,7 +727,7 @@ body {
                 <?php foreach ($related as $item):
                     $relatedSlug = !empty($item['slug']) ? $item['slug'] : slugify($item['ten_banh'], (int) $item['id']);
                 ?>
-                    <a class="related-card" href="/Cake/product/<?= urlencode($relatedSlug) ?>">
+                    <a class="related-card" href="/cakev0/product/<?= urlencode($relatedSlug) ?>">
                         <img src="<?= imgPath($item['hinh_anh']) ?>" alt="<?= htmlspecialchars($item['ten_banh']) ?>">
                         <div class="related-name"><?= htmlspecialchars($item['ten_banh']) ?></div>
                     </a>
@@ -860,7 +860,7 @@ filterButtons.forEach((btn) => {
 
 function addDetailToCart(id, name, price, imgUrl) {
     const qty = Math.max(1, parseInt(document.getElementById('detailQty').value || '1'));
-    fetch('/Cake/pages/cart.php', {
+    fetch('/cakev0/pages/cart.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=add&banh_id=${id}&qty=${qty}`
@@ -891,7 +891,7 @@ function toggleDetailFavorite(button) {
     const productId = parseInt(button.dataset.productId || '0', 10);
     if (!productId) return;
 
-    fetch('/Cake/pages/favorites.php', {
+    fetch('/cakev0/pages/favorites.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=toggle&banh_id=${productId}`
@@ -903,7 +903,7 @@ function toggleDetailFavorite(button) {
                 window.showToast(d.message || 'Không thể cập nhật danh sách yêu thích.', 'error');
             }
             if (d.require_login) {
-                window.location.href = '/Cake/pages/login.php';
+                window.location.href = '/cakev0/pages/login.php';
             }
             return;
         }

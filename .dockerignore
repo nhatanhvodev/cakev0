@@ -1,0 +1,12 @@
+.git
+.gitignore
+
+.venv
+.vs
+
+cakev0/.agent
+
+*.log
+*.tmp
+.env
+.env.local

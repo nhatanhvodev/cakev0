@@ -1,12 +1,19 @@
 <?php
-session_start(); //
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 /* =================================================================================
    PHẦN 1: KẾT NỐI DB & KHỞI TẠO
    ================================================================================= */
+require_once '../config/config.php';
+require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
 //
 $conn->set_charset("utf8mb4"); //
+
+$clerkPublishableKey = (string) env_value('CLERK_PUBLISHABLE_KEY', '');
+$clerkEnabled = $clerkPublishableKey !== '';
 
 if ($conn->connect_error) {
     die("Lỗi kết nối DB: " . $conn->connect_error); //
@@ -26,6 +33,76 @@ $success = '';
 if (isset($_SESSION['success'])) {
     $success = $_SESSION['success'];
     unset($_SESSION['success']); //
+}
+
+function resolveAvatarUrl(?string $avatar): string
+{
+    $fallback = base_url('pages/uploads/default.png');
+    if ($avatar === null) {
+        return $fallback;
+    }
+
+    $avatar = trim(str_replace('\\', '/', $avatar));
+    if ($avatar === '') {
+        return $fallback;
+    }
+
+    if (is_remote_media_url($avatar)) {
+        return $avatar;
+    }
+
+    $cakePos = stripos($avatar, '/cakev0/');
+    if ($cakePos !== false) {
+        $avatar = substr($avatar, $cakePos + 6);
+    } elseif (stripos($avatar, 'cakev0/') === 0) {
+        $avatar = substr($avatar, 5);
+    }
+
+    $avatar = ltrim($avatar, '/');
+    if ($avatar === '') {
+        return $fallback;
+    }
+
+    if (strpos($avatar, 'uploads/') === 0) {
+        return base_url('pages/' . $avatar);
+    }
+    if (strpos($avatar, 'pages/uploads/') === 0 || strpos($avatar, 'assets/') === 0) {
+        return base_url($avatar);
+    }
+    if (strpos($avatar, '/') === false) {
+        return base_url('pages/uploads/' . $avatar);
+    }
+
+    return base_url($avatar);
+}
+
+function resolveAvatarLocalPath(?string $avatar): ?string
+{
+    if ($avatar === null || is_remote_media_url($avatar)) {
+        return null;
+    }
+
+    $normalized = trim(str_replace('\\', '/', $avatar));
+    if ($normalized === '') {
+        return null;
+    }
+
+    $normalized = ltrim($normalized, '/');
+
+    if (strpos($normalized, 'uploads/') === 0) {
+        return __DIR__ . '/' . $normalized;
+    }
+    if (strpos($normalized, 'pages/uploads/') === 0) {
+        return dirname(__DIR__) . '/' . $normalized;
+    }
+    if (strpos($normalized, 'assets/') === 0) {
+        return dirname(__DIR__) . '/' . $normalized;
+    }
+    if (strpos($normalized, '/') === false) {
+        return __DIR__ . '/uploads/' . $normalized;
+    }
+
+    return dirname(__DIR__) . '/' . $normalized;
 }
 
 /* =================================================================================
@@ -55,15 +132,35 @@ if (isset($_POST['update_profile'])) {
         $allow = ['jpg', 'jpeg', 'png', 'webp'];
 
         if (in_array($ext, $allow)) { //
-            $new_name = time() . '_' . $user_id . '.' . $ext;
-            $upload_dir = "uploads/";
-            if (!is_dir($upload_dir))
-                mkdir($upload_dir, 0777, true); //
+            $oldAvatar = $avatar_name;
+            $new_name = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
 
-            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $upload_dir . $new_name)) {
-                $avatar_name = $new_name; //
+            $uploadedUrl = uploadthing_upload_file(
+                (string) ($_FILES['avatar']['tmp_name'] ?? ''),
+                $new_name,
+                (string) ($_FILES['avatar']['type'] ?? '')
+            );
+
+            if ($uploadedUrl !== null) {
+                $avatar_name = $uploadedUrl;
             } else {
-                $error = "Không thể lưu file ảnh.";
+                $upload_dir = 'uploads/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $upload_dir . $new_name)) {
+                    $avatar_name = $new_name;
+                } else {
+                    $error = 'Không thể lưu file ảnh.';
+                }
+            }
+
+            if (empty($error) && $oldAvatar !== $avatar_name) {
+                $oldAvatarPath = resolveAvatarLocalPath($oldAvatar);
+                if ($oldAvatarPath !== null && is_file($oldAvatarPath)) {
+                    @unlink($oldAvatarPath);
+                }
             }
         } else {
             $error = "Định dạng ảnh không hợp lệ (Chỉ nhận JPG, PNG, WEBP)."; //
@@ -205,7 +302,7 @@ foreach ($orders as $order) {
 <html lang="vi">
 
 <head>
-    <link rel="icon" href="/Cake/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang cá nhân - <?= htmlspecialchars($user['username']) ?></title> <!-- -->
@@ -602,15 +699,15 @@ foreach ($orders as $order) {
                 <p>Quản lý đơn hàng, cập nhật hồ sơ và bảo mật tài khoản của bạn.</p>
             </div>
             <div class="hero-actions">
-                <a href="/Cake/pages/product.php" class="btn-outline"><i class="fa-solid fa-cookie"></i> Mua thêm</a>
-                <a href="/Cake/pages/favorites.php" class="btn-soft"><i class="fa-regular fa-heart"></i> Sản phẩm đã lưu</a>
+                <a href="/cakev0/pages/product.php" class="btn-outline"><i class="fa-solid fa-cookie"></i> Mua thêm</a>
+                <a href="/cakev0/pages/favorites.php" class="btn-soft"><i class="fa-regular fa-heart"></i> Sản phẩm đã lưu</a>
             </div>
         </div>
 
         <div class="account-grid">
             <div class="profile-card">
                 <div class="profile-header">
-                    <img src="uploads/<?= !empty($user['avatar']) ? $user['avatar'] : 'default.png' ?>"
+                    <img src="<?= htmlspecialchars(resolveAvatarUrl($user['avatar'] ?? null), ENT_QUOTES) ?>"
                         class="profile-avatar">
                     <div class="profile-meta">
                         <h4><?= htmlspecialchars($user['username']) ?></h4>
@@ -630,7 +727,7 @@ foreach ($orders as $order) {
                 </div>
 
                 <div class="profile-actions">
-                    <form action="logout.php" method="POST">
+                    <form id="logoutForm" action="logout.php" method="POST">
                         <button type="submit" class="btn btn-outline-danger w-100">
                             <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
                         </button>
@@ -695,7 +792,7 @@ foreach ($orders as $order) {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <a href="/Cake/pages/order-detail.php?id=<?= $o['id'] ?>"
+                                                        <a href="/cakev0/pages/order-detail.php?id=<?= $o['id'] ?>"
                                                             class="btn btn-sm btn-outline-primary">Xem</a>
                                                         <?php if (strtolower($o['status']) === 'pending'): ?>
                                                             <button type="button"
@@ -855,6 +952,42 @@ foreach ($orders as $order) {
             });
         });
     </script>
+
+    <?php if ($clerkEnabled): ?>
+    <script async crossorigin="anonymous" data-clerk-publishable-key="<?= htmlspecialchars($clerkPublishableKey, ENT_QUOTES) ?>" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const logoutForm = document.getElementById('logoutForm');
+            if (!logoutForm) {
+                return;
+            }
+
+            let isSubmitting = false;
+
+            logoutForm.addEventListener('submit', async function (event) {
+                if (isSubmitting) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                try {
+                    if (typeof window.Clerk !== 'undefined') {
+                        await window.Clerk.load();
+                        if (window.Clerk.session) {
+                            await window.Clerk.signOut();
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Clerk signOut failed, continue local logout.', error);
+                }
+
+                isSubmitting = true;
+                logoutForm.submit();
+            });
+        });
+    </script>
+    <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

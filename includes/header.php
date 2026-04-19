@@ -855,7 +855,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       }
 
       $.ajax({
-        url: "/Cake/index.php",
+        url: "/cakev0/index.php",
         method: "POST",
         data: {
           search_products: true,
@@ -867,7 +867,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
             let html = "";
             res.products.forEach(p => {
               html += `
-<a class="search-item" href="/Cake/product/${encodeURIComponent(p.slug)}">
+<a class="search-item" href="/cakev0/product/${encodeURIComponent(p.slug)}">
   <img src="${p.hinh_anh}" alt="${p.ten_banh}">
   <div class="search-info">
     <div class="search-name">${p.ten_banh}</div>
@@ -928,7 +928,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
   function goToEvent() {
     document.getElementById("notifyList").style.display = "none";
-    window.location.href = "/Cake/pages/events.php";
+    window.location.href = "/cakev0/pages/events.php";
   }
 </script>
 

@@ -152,49 +152,25 @@ function slugify(string $value, ?int $id = null): string
     return $slug;
 }
 
-// 2. XỬ LÝ LOGIC (POST REQUESTS)
-
 /* --- ĐĂNG XUẤT --- */
 if (isset($_GET['logout'])) {
     session_destroy();
-    header("Location: admin.php");
+    header("Location: ../pages/login.php");
     exit;
 }
 
-/* --- ĐĂNG NHẬP ADMIN --- */
-$login_error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
-    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        $login_error = 'Lỗi bảo mật CSRF!';
-    } else {
-        $username = trim($_POST['username']);
-        $password = $_POST['password'];
-
-        // Kiểm tra tài khoản (Demo: admin/admin123) hoặc check DB nếu bảng users có phân quyền
-        // Ở đây dùng logic DB để khớp với hệ thống
-        $stmt = $conn->prepare(
-            "SELECT id, password FROM admins WHERE username = ? LIMIT 1"
-        );
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $admin = $stmt->get_result()->fetch_assoc();
-
-
-        // Fallback: Nếu không có trong DB thì dùng tài khoản cứng để test (theo nguồn)
-        if (($admin && password_verify($password, $admin['password'])) || ($username === 'admin' && $password === 'admin123')) {
-            session_regenerate_id(true);
-            $_SESSION['admin_logged_in'] = true;
-            setAdminToast("Đăng nhập quản trị thành công!");
-            unset($_SESSION['csrf_token']); // Reset token sau khi login
-            redirectToTab('dashboard');
-        } else {
-            $login_error = 'Sai tài khoản hoặc mật khẩu!';
-        }
-    }
+// 2. KIỂM TRA QUYỀN TRUY CẬP
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../pages/login.php");
+    exit;
 }
 
+// 3. XỬ LÝ LOGIC (POST REQUESTS)
+
+
+
 // Xử lý dữ liệu khi ĐÃ ĐĂNG NHẬP
-if (isset($_SESSION['admin_logged_in'])) {
+// Tạo token mới nếu chưa có sau khi login
 
     // Tạo token mới nếu chưa có sau khi login
     if (empty($_SESSION['csrf_token']))
@@ -507,7 +483,7 @@ if (isset($_SESSION['admin_logged_in'])) {
         setAdminToast("Đã xóa khuyến mãi thành công!");
         redirectToTab('promotions');
     }
-}
+//} // Removed redundant check
 
 // 3. LẤY DỮ LIỆU HIỂN THỊ & CHUẨN BỊ BIỂU ĐỒ
 $products = [];
@@ -899,66 +875,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             color: var(--ink);
         }
 
-        /* --- LOGIN STYLES --- */
-        .admin-login-body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: #fff7ea;
-        }
 
-        .admin-login-card {
-            width: 420px;
-            background: #fff;
-            border-radius: 26px;
-            padding: 40px;
-            border: 1px solid var(--caramel);
-            box-shadow: 0 26px 60px rgba(74, 29, 31, 0.16);
-            text-align: center;
-            animation: fadeUp 0.4s ease;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .admin-login-card .icon {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 15px;
-            border-radius: 50%;
-            background: var(--cream);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--brown-800);
-            font-size: 28px;
-        }
-
-        .btn-admin-login {
-            background: var(--brown-800);
-            color: #fbedcd;
-            border-radius: 30px;
-            padding: 12px;
-            font-weight: 600;
-            width: 100%;
-            border: none;
-            transition: 0.3s;
-        }
-
-        .btn-admin-login:hover {
-            background: #2f1415;
-            transform: translateY(-2px);
-        }
 
         /* --- DASHBOARD STYLES --- */
         .sidebar {
@@ -1315,40 +1232,9 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
     </style>
 </head>
 
-<body class="<?= !isset($_SESSION['admin_logged_in']) ? 'admin-login-body' : '' ?>">
+<body>
 
-    <!-- ================= TRƯỜNG HỢP 1: CHƯA ĐĂNG NHẬP (HIỆN FORM LOGIN) ================= -->
-    <?php if (!isset($_SESSION['admin_logged_in'])): ?>
-        <div class="admin-login-card">
-            <div class="icon"><i class="fa-solid fa-user-shield"></i></div>
-            <h3>Admin Login</h3>
-            <p>Hệ thống quản trị Gấu Bakery</p>
 
-            <?php if (!empty($login_error)): ?>
-                <div class="alert alert-danger text-center p-2 mb-3">
-                    <i class="fa-solid fa-circle-exclamation"></i> <?= htmlspecialchars($login_error) ?>
-                </div>
-            <?php endif; ?>
-
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                <input type="hidden" name="admin_login" value="1">
-
-                <div class="mb-3">
-                    <input type="text" name="username" class="form-control" placeholder="Tên đăng nhập (admin)" required>
-                </div>
-                <div class="mb-3">
-                    <input type="password" name="password" class="form-control" placeholder="Mật khẩu (admin123)" required>
-                </div>
-                <button type="submit" class="btn-admin-login">
-                    <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-                </button>
-            </form>
-            <div class="mt-4 small text-muted">&copy; <?= date('Y') ?> Gấu Bakery Admin Panel</div>
-        </div>
-
-        <!-- ================= TRƯỜNG HỢP 2: ĐÃ ĐĂNG NHẬP (HIỆN DASHBOARD) ================= -->
-    <?php else: ?>
 
         <!-- 1. SIDEBAR -->
         <div class="sidebar">
@@ -2668,8 +2554,6 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 }
             });
         </script>
-
-    <?php endif; ?>
 </body>
 
 </html>

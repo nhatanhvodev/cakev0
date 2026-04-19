@@ -50,23 +50,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare(
                 "SELECT id, username, password FROM admins WHERE username = ? LIMIT 1"
             );
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $admin = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
+            if ($stmt) {
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $admin = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
 
-            if ($admin && password_verify($password, $admin['password'])) {
-                session_regenerate_id(true);
-                $_SESSION['admin_logged_in'] = true;
-                $_SESSION['admin_id'] = $admin['id'];
-                $_SESSION['username'] = $admin['username'];
-                $_SESSION['role'] = 'admin';
-                $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
-                unset($_SESSION['csrf_token']);
-                header("Location: /cakev0/admin/admin.php");
-                exit;
+                if ($admin && password_verify($password, $admin['password'])) {
+                    session_regenerate_id(true);
+                    $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_id'] = $admin['id'];
+                    $_SESSION['username'] = $admin['username'];
+                    $_SESSION['role'] = 'admin';
+                    $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
+                    unset($_SESSION['csrf_token']);
+                    header("Location: /cakev0/admin/admin.php");
+                    exit;
+                }
             }
-        } catch (mysqli_sql_exception $e) {
+        } catch (Throwable $e) {
             // Nếu không có bảng admins thì bỏ qua và xử lý như user thường.
         }
 
@@ -84,25 +86,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Truy vấn thông tin user
+        $user = null;
         try {
             $stmt = $conn->prepare(
                 "SELECT id, username, password, role FROM users WHERE username = ? LIMIT 1"
             );
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
-            $stmt->close(); //
-        } catch (mysqli_sql_exception $e) {
+            if ($stmt) {
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $user = $stmt->get_result()->fetch_assoc();
+                $stmt->close(); //
+            } else {
+                throw new Exception("Users query failed");
+            }
+        } catch (Throwable $e) {
             // Fallback when the users table does not have a role column.
             $stmt = $conn->prepare(
                 "SELECT id, username, password FROM users WHERE username = ? LIMIT 1"
             );
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
-            $stmt->close(); //
-            if ($user) {
-                $user['role'] = 'user';
+            if ($stmt) {
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $user = $stmt->get_result()->fetch_assoc();
+                $stmt->close(); //
+                if ($user) {
+                    $user['role'] = 'user';
+                }
             }
         }
 

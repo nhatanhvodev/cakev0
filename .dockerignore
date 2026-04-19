@@ -1,12 +1,24 @@
 .git
 .gitignore
+.github
 
 .venv
 .vs
 
+.agent
+.agents
+_agent
+_agents
 cakev0/.agent
 
 *.log
 *.tmp
 .env
 .env.local
+.env.docker
+
+docker-compose.yml
+DEPLOY_RENDER.md
+render.yaml
+
+node_modules

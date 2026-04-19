@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gau-bakery-app
+    ports:
+      - "8080:80"
+    volumes:
+      - upload_data:/var/www/html/assets/uploads
+      - page_uploads:/var/www/html/pages/uploads
+    environment:
+      - APP_ENV=development
+      - APP_DEBUG=true
+      - APP_TIMEZONE=Asia/Ho_Chi_Minh
+      - APP_BASE_PATH=/cakev0
+      - APP_ORIGIN=http://localhost:8080
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASS=root_password
+      - DB_NAME=banh_store
+      - DB_CHARSET=utf8mb4
+      - VNPAY_TMN_CODE=${VNPAY_TMN_CODE:-GO1IEGFS}
+      - VNPAY_HASH_SECRET=${VNPAY_HASH_SECRET:-FALJ15YAAF9B9AEWXHVGBVQL6WO4SONA}
+      - VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      - VNPAY_RETURN_URL=http://localhost:8080/cakev0/vnpay/vnpay_return.php
+      - VNPAY_MERCHANT_URL=http://sandbox.vnpayment.vn/merchant_webapi/merchant.html
+      - VNPAY_TRANSACTION_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+      - CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_Y3VycmVudC1pZ3VhbmEtMC5jbGVyay5hY2NvdW50cy5kZXYk}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-sk_test_QJpWhvL7DBSeXGbdjMHllgsYcd7l8wU4vZ9I3GYLs7}
+      - CLERK_AUTHORIZED_PARTIES=http://localhost:8080
+      - UPLOADTHING_TOKEN=${UPLOADTHING_TOKEN:-eyJhcGlLZXkiOiJza19saXZlXzY1ODEwZTRlOWZjYWUxMmEyM2MyZGRiYWQ0NWVjNzAyNGQxY2RiY2I4MDJiZTg3MmVlOGE5ZjQzM2VjN2FkZjciLCJhcHBJZCI6Ingyanp1eTUzbnYiLCJyZWdpb25zIjpbInNlYTEiXX0=}
+      - UPLOADTHING_APP_ID=${UPLOADTHING_APP_ID:-x2jzuy53nv}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bakery-net
+
+  db:
+    image: mysql:8.0
+    container_name: gau-bakery-db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: banh_store
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_general_ci
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/banh_store.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - bakery-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: gau-bakery-pma
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root_password
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bakery-net
+
+volumes:
+  db_data:
+  upload_data:
+  page_uploads:
+
+
+networks:
+  bakery-net:
+    driver: bridge

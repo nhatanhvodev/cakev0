@@ -711,7 +711,46 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .notify-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .notify-box > i {
+    color: var(--header-text);
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .notify-box > i:hover {
+    color: var(--header-accent);
+  }
+
+  .notify-list {
     display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 230px;
+    background: #fff;
+    border: 1px solid rgba(74, 29, 31, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+    padding: 8px;
+    z-index: 1200;
+  }
+
+  .notify-list div {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #4a1d1f;
+    white-space: nowrap;
+  }
+
+  .notify-list div + div {
+    margin-top: 4px;
   }
 
 </style>
@@ -751,9 +790,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
               <?php elseif ($role === 'user'): ?>
                 <div><i class="fa-solid fa-truck-fast" style="color: #8b4513;"></i> Đơn hàng đang giao</div>
               <?php else: ?>
-                <div class="notification-item" onclick="goToEvent()">
-                  <i class="fa-solid fa-champagne-glasses" style="color: #ffb703;"></i> Có sự kiện mới
-                </div>
+                <div><i class="fa-solid fa-circle-info" style="color: #8b4513;"></i> Cập nhật mới từ Gấu Bakery</div>
               <?php endif; ?>
             </div>
           </div>
@@ -935,10 +972,6 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   function toggleNotify() {
     const box = document.getElementById("notifyList");
     box.style.display = box.style.display === "block" ? "none" : "block";
-  }
-  function goToEvent() {
-    document.getElementById("notifyList").style.display = "none";
-    window.location.href = "/cakev0/pages/events.php";
   }
 </script>
 

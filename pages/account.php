@@ -492,6 +492,7 @@ foreach ($orders as $order) {
                 #ffffff;
             font-family: 'Poppins', sans-serif;
             color: var(--ink);
+            overflow-x: hidden;
         }
 
         .account-shell {
@@ -651,6 +652,14 @@ foreach ($orders as $order) {
         .nav-tabs {
             border-bottom: none;
             gap: 10px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .nav-tabs .nav-link {

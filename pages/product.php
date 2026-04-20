@@ -339,6 +339,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 .page-content {
@@ -439,7 +440,6 @@ body {
 
 @media (max-width: 640px) {
     .products-wrap { grid-template-columns: 1fr; }
-    }
 
     .product-content {
         padding: 18px;
@@ -447,7 +447,7 @@ body {
     }
 
     .product-card img {
-        height: 180px;
+        aspect-ratio: 1 / 1;
     }
 }
 
@@ -479,7 +479,8 @@ body {
 
 .product-card img {
     width: 100%;
-    height: 300px;
+    height: auto;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: 14px;
 }

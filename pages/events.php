@@ -215,7 +215,8 @@ body{
 
 .product-card img{
   width:100%;
-  height:160px;
+  height:auto;
+  aspect-ratio:4 / 5;
   object-fit:cover;
   border-radius:14px;
   box-shadow:0 6px 14px rgba(0,0,0,.08);
@@ -328,7 +329,7 @@ body{
   .event-hero{padding:24px;}
   .event-hero h1{font-size:24px;}
   .promo-grid{gap:18px;}
-  .product-card img{height:140px;}
+  .product-card img{aspect-ratio:1 / 1;}
 }
 
 @media (max-width: 520px){

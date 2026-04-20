@@ -521,7 +521,8 @@ body {
 
 .related-card img {
     width: 100%;
-    height: 300px;
+    height: auto;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: 14px;
 }

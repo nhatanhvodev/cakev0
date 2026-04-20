@@ -96,6 +96,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     --header-sticky-offset: 75px;
   }
 
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   #site-header {
     background: var(--header-bg);
     width: 100%;
@@ -209,6 +215,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     align-items: center;
     gap: 8px;
     margin-left: 12px;
+    min-width: 0;
+    flex: 1 1 auto;
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
@@ -624,6 +632,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
     .header-actions {
       order: 3;
+      min-width: 0;
       width: auto;
       justify-content: flex-start;
       flex-wrap: nowrap;
@@ -633,6 +642,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
     .search-box {
       flex: 1 1 auto;
+      min-width: 0;
       width: auto;
       max-width: none;
     }

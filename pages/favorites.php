@@ -306,7 +306,8 @@ body {
 
 .favorite-card img {
     width: 100%;
-    height: 250px;
+    height: auto;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     display: block;
 }
@@ -439,7 +440,7 @@ body {
     }
 
     .favorite-card img {
-        height: 220px;
+        aspect-ratio: 1 / 1;
     }
 }
 </style>

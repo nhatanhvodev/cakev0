@@ -107,6 +107,7 @@ function prepareAvatarUploadPayload(string $tmpPath, string $ext): array
     $result = [
         'path' => $tmpPath,
         'mime' => 'image/' . ($ext === 'jpg' ? 'jpeg' : $ext),
+        'ext' => $ext === 'jpg' ? 'jpeg' : $ext,
         'cleanup' => null,
     ];
 
@@ -181,15 +182,28 @@ function prepareAvatarUploadPayload(string $tmpPath, string $ext): array
     }
 
     $saved = false;
-    if ($ext === 'jpg' || $ext === 'jpeg') {
+    $preferWebp = function_exists('imagewebp') && $ext !== 'webp';
+    if ($preferWebp) {
+        imagesavealpha($target, true);
+        $saved = @imagewebp($target, $optimizedPath, 80);
+        if ($saved) {
+            $result['mime'] = 'image/webp';
+            $result['ext'] = 'webp';
+        }
+    }
+
+    if (!$saved && ($ext === 'jpg' || $ext === 'jpeg')) {
         $saved = @$saveFn($target, $optimizedPath, 82);
         $result['mime'] = 'image/jpeg';
-    } elseif ($ext === 'png') {
+        $result['ext'] = 'jpg';
+    } elseif (!$saved && $ext === 'png') {
         $saved = @$saveFn($target, $optimizedPath, 6);
         $result['mime'] = 'image/png';
-    } elseif ($ext === 'webp') {
+        $result['ext'] = 'png';
+    } elseif (!$saved && $ext === 'webp') {
         $saved = @$saveFn($target, $optimizedPath, 80);
         $result['mime'] = 'image/webp';
+        $result['ext'] = 'webp';
     }
 
     imagedestroy($source);
@@ -254,22 +268,37 @@ if (isset($_POST['update_profile'])) {
             $oldAvatar = $avatar_name;
             $new_name = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
             $tmpAvatarPath = (string) ($avatarFile['tmp_name'] ?? '');
-            $preparedUpload = prepareAvatarUploadPayload($tmpAvatarPath, $ext);
-            $uploadMime = (string) ($avatarFile['type'] ?? '');
-            if ($uploadMime === '') {
-                $uploadMime = $preparedUpload['mime'];
+            if ($tmpAvatarPath === '' || !is_uploaded_file($tmpAvatarPath)) {
+                $error = 'Tệp tải lên không hợp lệ, vui lòng thử lại.';
             }
 
             $uploadedUrl = null;
-            try {
-                $uploadedUrl = uploadthing_upload_file(
-                    $preparedUpload['path'],
-                    $new_name,
-                    $uploadMime
-                );
-            } finally {
-                if (!empty($preparedUpload['cleanup']) && is_string($preparedUpload['cleanup'])) {
-                    @unlink($preparedUpload['cleanup']);
+            if (empty($error)) {
+                $preparedUpload = [
+                    'path' => $tmpAvatarPath,
+                    'mime' => (string) ($avatarFile['type'] ?? ''),
+                    'ext' => $ext,
+                    'cleanup' => null,
+                ];
+
+                if (uploadthing_enabled()) {
+                    $preparedUpload = prepareAvatarUploadPayload($tmpAvatarPath, $ext);
+                }
+
+                $uploadMime = $preparedUpload['mime'] ?: ('image/' . ($ext === 'jpg' ? 'jpeg' : $ext));
+                $remoteExt = (string) ($preparedUpload['ext'] ?? $ext);
+                $remoteName = preg_replace('/\.[a-z0-9]+$/i', '', $new_name) . '.' . $remoteExt;
+
+                try {
+                    $uploadedUrl = uploadthing_upload_file(
+                        $preparedUpload['path'],
+                        $remoteName,
+                        $uploadMime
+                    );
+                } finally {
+                    if (!empty($preparedUpload['cleanup']) && is_string($preparedUpload['cleanup'])) {
+                        @unlink($preparedUpload['cleanup']);
+                    }
                 }
             }
 

@@ -547,22 +547,26 @@ body {
 }
 
 .fav-btn {
-    width: 44px;
-    min-width: 44px;
-    height: 44px;
-    border: 1px solid #eecfa6;
-    border-radius: 10px;
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    border: 1.5px solid #f3e0be;
+    border-radius: 14px;
     background: #fff9f1;
-    color: #8a5a3a;
+    color: #4a1d1f;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(74, 29, 31, 0.05);
 }
 
 .fav-btn:hover {
-    background: #fcebd5;
+    background: #fbedcd;
+    border-color: #4a1d1f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 29, 31, 0.12);
 }
 
 .fav-btn.is-active {
@@ -573,12 +577,12 @@ body {
 
 @media (max-width: 640px) {
     .product-actions {
-        gap: 6px;
+        gap: 8px;
     }
 
     .product-actions .add-btn {
-        min-height: 40px;
-        padding: 8px 10px;
+        min-height: 44px;
+        padding: 8px 12px;
         font-size: 13px;
     }
 
@@ -587,9 +591,18 @@ body {
     }
 
     .fav-btn {
-        width: 40px;
-        min-width: 40px;
-        height: 40px;
+        width: 44px;
+        min-width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    .product-grid {
+        gap: 16px;
+    }
+
+    .product-card {
+        padding: 12px;
     }
 }
 

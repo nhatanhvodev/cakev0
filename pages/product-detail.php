@@ -311,8 +311,9 @@ body {
     max-width: 1180px;
     margin: 24px auto 40px;
     padding: 0 24px;
-    display: grid;
-    gap: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
 }
 
 .detail-hero {
@@ -469,21 +470,26 @@ body {
 }
 
 .wishlist-btn {
-    padding: 12px 18px;
-    border-radius: 12px;
-    border: 1px solid #e7d0b1;
-    background: #fff7ed;
-    color: #7a4725;
+    padding: 12px 20px;
+    border-radius: 14px;
+    border: 1.5px solid #f3e0be;
+    background: #fff9f1;
+    color: #4a1d1f;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(74, 29, 31, 0.05);
 }
 
 .wishlist-btn:hover {
-    background: #fcebd5;
+    background: #fbedcd;
+    border-color: #4a1d1f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 29, 31, 0.12);
 }
 
 .wishlist-btn.is-active {
@@ -623,17 +629,24 @@ body {
 
     .related-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        gap: 16px;
     }
 
     .related-card {
-        padding: 10px;
+        padding: 12px;
+        border-radius: 20px;
     }
 
     .related-card img {
         aspect-ratio: 1 / 1;
+        border-radius: 14px;
     }
-}
+
+    .detail-wrap {
+        padding: 0 16px;
+        margin: 16px auto 60px; /* Increased bottom margin */
+        gap: 24px;
+    }
 </style>
 
 <main class="page-content">

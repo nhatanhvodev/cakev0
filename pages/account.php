@@ -102,6 +102,110 @@ function resolveAvatarLocalPath(?string $avatar): ?string
     return dirname(__DIR__) . '/' . $normalized;
 }
 
+function prepareAvatarUploadPayload(string $tmpPath, string $ext): array
+{
+    $result = [
+        'path' => $tmpPath,
+        'mime' => 'image/' . ($ext === 'jpg' ? 'jpeg' : $ext),
+        'cleanup' => null,
+    ];
+
+    if ($tmpPath === '' || !is_file($tmpPath)) {
+        return $result;
+    }
+
+    $size = @filesize($tmpPath);
+    if ($size !== false && $size <= 900 * 1024) {
+        return $result;
+    }
+
+    $imageInfo = @getimagesize($tmpPath);
+    if (!is_array($imageInfo) || empty($imageInfo[0]) || empty($imageInfo[1])) {
+        return $result;
+    }
+
+    $width = (int) $imageInfo[0];
+    $height = (int) $imageInfo[1];
+    $maxSide = 1200;
+
+    $createMap = [
+        'jpg' => 'imagecreatefromjpeg',
+        'jpeg' => 'imagecreatefromjpeg',
+        'png' => 'imagecreatefrompng',
+        'webp' => 'imagecreatefromwebp',
+    ];
+    $saveMap = [
+        'jpg' => 'imagejpeg',
+        'jpeg' => 'imagejpeg',
+        'png' => 'imagepng',
+        'webp' => 'imagewebp',
+    ];
+
+    $createFn = $createMap[$ext] ?? null;
+    $saveFn = $saveMap[$ext] ?? null;
+    if ($createFn === null || $saveFn === null || !function_exists($createFn) || !function_exists($saveFn)) {
+        return $result;
+    }
+
+    $source = @$createFn($tmpPath);
+    if (!$source) {
+        return $result;
+    }
+
+    $scale = min(1, $maxSide / max($width, $height));
+    $targetW = max(1, (int) round($width * $scale));
+    $targetH = max(1, (int) round($height * $scale));
+
+    $target = imagecreatetruecolor($targetW, $targetH);
+    if (!$target) {
+        imagedestroy($source);
+        return $result;
+    }
+
+    if ($ext === 'png' || $ext === 'webp') {
+        imagealphablending($target, false);
+        imagesavealpha($target, true);
+    }
+
+    if (!imagecopyresampled($target, $source, 0, 0, 0, 0, $targetW, $targetH, $width, $height)) {
+        imagedestroy($source);
+        imagedestroy($target);
+        return $result;
+    }
+
+    $optimizedPath = tempnam(sys_get_temp_dir(), 'avatar_opt_');
+    if ($optimizedPath === false) {
+        imagedestroy($source);
+        imagedestroy($target);
+        return $result;
+    }
+
+    $saved = false;
+    if ($ext === 'jpg' || $ext === 'jpeg') {
+        $saved = @$saveFn($target, $optimizedPath, 82);
+        $result['mime'] = 'image/jpeg';
+    } elseif ($ext === 'png') {
+        $saved = @$saveFn($target, $optimizedPath, 6);
+        $result['mime'] = 'image/png';
+    } elseif ($ext === 'webp') {
+        $saved = @$saveFn($target, $optimizedPath, 80);
+        $result['mime'] = 'image/webp';
+    }
+
+    imagedestroy($source);
+    imagedestroy($target);
+
+    if (!$saved || !is_file($optimizedPath)) {
+        @unlink($optimizedPath);
+        return $result;
+    }
+
+    $result['path'] = $optimizedPath;
+    $result['cleanup'] = $optimizedPath;
+
+    return $result;
+}
+
 /* =================================================================================
    PHẦN 2: XỬ LÝ FORM (POST REQUESTS)
    ================================================================================= */
@@ -140,15 +244,34 @@ if (isset($_POST['update_profile'])) {
         $allow = ['jpg', 'jpeg', 'png', 'webp'];
 
         if (empty($error) && in_array($ext, $allow, true)) { //
+            $avatarSize = (int) ($avatarFile['size'] ?? 0);
+            if ($avatarSize > 8 * 1024 * 1024) {
+                $error = "Ảnh quá lớn (tối đa 8MB). Vui lòng chọn ảnh nhỏ hơn.";
+            }
+        }
+
+        if (empty($error) && in_array($ext, $allow, true)) { //
             $oldAvatar = $avatar_name;
             $new_name = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
             $tmpAvatarPath = (string) ($avatarFile['tmp_name'] ?? '');
+            $preparedUpload = prepareAvatarUploadPayload($tmpAvatarPath, $ext);
+            $uploadMime = (string) ($avatarFile['type'] ?? '');
+            if ($uploadMime === '') {
+                $uploadMime = $preparedUpload['mime'];
+            }
 
-            $uploadedUrl = uploadthing_upload_file(
-                $tmpAvatarPath,
-                $new_name,
-                (string) ($avatarFile['type'] ?? '')
-            );
+            $uploadedUrl = null;
+            try {
+                $uploadedUrl = uploadthing_upload_file(
+                    $preparedUpload['path'],
+                    $new_name,
+                    $uploadMime
+                );
+            } finally {
+                if (!empty($preparedUpload['cleanup']) && is_string($preparedUpload['cleanup'])) {
+                    @unlink($preparedUpload['cleanup']);
+                }
+            }
 
             if ($uploadedUrl !== null) {
                 $avatar_name = $uploadedUrl;

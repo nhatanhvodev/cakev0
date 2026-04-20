@@ -622,7 +622,16 @@ body {
     }
 
     .related-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .related-card {
+        padding: 10px;
+    }
+
+    .related-card img {
+        aspect-ratio: 1 / 1;
     }
 }
 </style>

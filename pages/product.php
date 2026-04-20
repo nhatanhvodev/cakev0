@@ -526,6 +526,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 7px;
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
 .add-btn:hover {
@@ -567,6 +569,28 @@ body {
     background: #ffefef;
     border-color: #f3b8b8;
     color: #b42318;
+}
+
+@media (max-width: 640px) {
+    .product-actions {
+        gap: 6px;
+    }
+
+    .product-actions .add-btn {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .product-actions .add-btn i {
+        display: none;
+    }
+
+    .fav-btn {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+    }
 }
 
 .hidden { display: none; }

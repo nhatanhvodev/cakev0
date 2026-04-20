@@ -143,7 +143,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .logo a {
-    font-size: 30px;
+    font-size: 18px;
     font-weight: 500;
     color: var(--header-accent);
     letter-spacing: 0.09em;

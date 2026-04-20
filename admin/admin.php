@@ -747,7 +747,11 @@ foreach ($order_items as $item) {
     ];
 }
 $promotions = $conn->query("SELECT p.*, b.ten_banh, b.gia AS gia_hien_tai FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
-$contactRequests = $conn->query("SELECT * FROM contact_requests ORDER BY created_at DESC")->fetch_all(MYSQLI_ASSOC);
+
+// Kiểm tra query contact_requests (phòng trường hợp người dùng chưa tạo bảng trên cloud)
+$contactRequestsQuery = $conn->query("SELECT * FROM contact_requests ORDER BY created_at DESC");
+$contactRequests = $contactRequestsQuery ? $contactRequestsQuery->fetch_all(MYSQLI_ASSOC) : [];
+
 $reviews = $conn->query("SELECT * FROM reviews ORDER BY timestamp DESC")->fetch_all(MYSQLI_ASSOC);
 $productImages = $conn->query("SELECT * FROM product_images ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
 

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Lọc dữ liệu đầu vào
     $username = trim($_POST['username']);
-    $email    = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+    $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
     $password = $_POST['password'];
 
     // Validate dữ liệu
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $check = $conn->prepare("SELECT id FROM users WHERE username = ?");
         $check->bind_param("s", $username);
         $check->execute();
-        
+
         if ($check->get_result()->num_rows > 0) {
             $error_message = "Tên đăng nhập đã tồn tại!";
         } else {
@@ -39,16 +39,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
             $stmt->bind_param("sss", $username, $hash, $email);
-            
+
             if ($stmt->execute()) {
                 // Gửi email xác nhận đăng ký thành công
                 $subject = "Chào mừng bạn đến với Gấu Bakery!";
                 $body = "<h2>Đăng ký thành công!</h2>
-                         <p>Chào mừng <strong>{$username}</strong> đã trở thành thành viên của gia đình Gấu Bakery.</p>
+                         <p>Chào mừng <strong>{$username}</strong> đã trở thành thành viên của cửa hàng Gấu Bakery.</p>
                          <p>Bắt đầu khám phá những chiếc bánh ngọt ngào nhất tại cửa hàng của chúng tôi ngay nhé!</p>
                          <br>
                          <p>Trân trọng,<br><strong>Gấu Bakery Team</strong></p>";
-                
+
                 send_custom_mail($email, $subject, $body);
 
                 // Đăng ký thành công -> Tự động đăng nhập & chuyển hướng
@@ -70,14 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <title>Đăng ký tài khoản</title> <!-- -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- Thư viện Icon & Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Bootstrap 5 (Cần thiết để chia cột col-md-6 hoạt động) -->
@@ -85,9 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <style>
         /* - CSS GỐC TỪ NGUỒN */
-        
+
         /* Reset cơ bản */
-        *, *::before, *::after { box-sizing: border-box; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         :root {
             --brown-900: #3c1819;
             --brown-800: #4a1d1f;
@@ -100,8 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body {
             font-family: 'Poppins', sans-serif;
             background: radial-gradient(circle at 12% 18%, #fff3da 0%, transparent 45%),
-                        radial-gradient(circle at 90% 12%, #fde8c6 0%, transparent 40%),
-                        #ffffff;
+                radial-gradient(circle at 90% 12%, #fde8c6 0%, transparent 40%),
+                #ffffff;
             color: var(--ink);
             min-height: 100vh;
         }
@@ -111,7 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center; /* */
+            justify-content: center;
+            /* */
             padding: 40px 16px;
         }
 
@@ -122,16 +130,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 28px;
             overflow: hidden;
             box-shadow: 0 30px 80px rgba(74, 29, 31, .18);
-            background: #fff; /* */
+            background: #fff;
+            /* */
             border: 1px solid var(--caramel);
         }
 
         /* ===== CỘT TRÁI (LEFT) ===== */
         .login-left {
             position: relative;
-            background: linear-gradient(145deg,#3c1819,#7a4a2a);
+            background: linear-gradient(145deg, #3c1819, #7a4a2a);
             color: #fbedcd;
-            padding: 56px 46px; /* */
+            padding: 56px 46px;
+            /* */
             display: flex;
             flex-direction: column;
             gap: 18px;
@@ -152,54 +162,122 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-transform: uppercase;
             opacity: 0.8;
         }
-        .login-left h2 { font-weight: 800; font-size: 30px; letter-spacing: .3px; margin: 0; }
-        .login-left p { opacity: .95; line-height: 1.8; font-size: 16px; margin: 0; } /* */
-        
+
+        .login-left h2 {
+            font-weight: 800;
+            font-size: 30px;
+            letter-spacing: .3px;
+            margin: 0;
+        }
+
+        .login-left p {
+            opacity: .95;
+            line-height: 1.8;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        /* */
+
         /* Icons trang trí */
-        .login-icons { margin-top: 10px; }
+        .login-icons {
+            margin-top: 10px;
+        }
+
         .login-icons i {
-            font-size: 30px; margin-right: 18px; padding: 14px;
-            border-radius: 50%; background: rgba(255,255,255,.18);
+            font-size: 30px;
+            margin-right: 18px;
+            padding: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .18);
             transition: .3s ease;
         }
+
         .login-icons i:hover {
-            background: rgba(255,255,255,.35); transform: translateY(-3px); /* */
+            background: rgba(255, 255, 255, .35);
+            transform: translateY(-3px);
+            /* */
         }
 
         /* ===== CỘT PHẢI (RIGHT - FORM) ===== */
         .login-right {
             padding: 56px 48px;
-            background: var(--cream); /* */
+            background: var(--cream);
+            /* */
         }
+
         .login-right h3 {
-            color: var(--brown-800); font-weight: 800; font-size: 26px;
-            text-align: center; margin-bottom: 28px; /* */
+            color: var(--brown-800);
+            font-weight: 800;
+            font-size: 26px;
+            text-align: center;
+            margin-bottom: 28px;
+            /* */
         }
 
         /* Style cho Input Form (Đồng bộ với CSS nguồn) */
-        .login-right .form-label { font-weight: 600; font-size: 14px; color: #555; margin-bottom: 8px; display: block; } /* */
+        .login-right .form-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* */
         .login-right .form-control {
-            width: 100%; padding: 14px 18px; border-radius: 14px;
-            font-size: 15px; border: 1px solid #e5d6bf; margin-bottom: 20px; /* */
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 15px;
+            border: 1px solid #e5d6bf;
+            margin-bottom: 20px;
+            /* */
             background: #fff;
         }
+
         .login-right .form-control:focus {
-            border-color: var(--brown-800); outline: none;
-            box-shadow: 0 0 0 .15rem rgba(74,29,31,.2); /* */
+            border-color: var(--brown-800);
+            outline: none;
+            box-shadow: 0 0 0 .15rem rgba(74, 29, 31, .2);
+            /* */
         }
 
         /* Nút Đăng ký */
         .btn-login {
-            width: 100%; background: linear-gradient(135deg, #4a1d1f, #2f1415); color: #fbedcd;
-            border-radius: 30px; padding: 14px; font-weight: 700;
-            font-size: 16px; border: none; transition: .3s ease; cursor: pointer; /* */
+            width: 100%;
+            background: linear-gradient(135deg, #4a1d1f, #2f1415);
+            color: #fbedcd;
+            border-radius: 30px;
+            padding: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            border: none;
+            transition: .3s ease;
+            cursor: pointer;
+            /* */
         }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(74, 29, 31, .22); } /* */
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 29, 31, .22);
+        }
+
+        /* */
 
         /* Link chuyển trang */
-        .login-right a { color: var(--brown-700); transition: .3s; text-decoration: none; }
-        .login-right a:hover { color: var(--brown-800); } /* */
-        
+        .login-right a {
+            color: var(--brown-700);
+            transition: .3s;
+            text-decoration: none;
+        }
+
+        .login-right a:hover {
+            color: var(--brown-800);
+        }
+
+        /* */
+
         /* Responsive Mobile */
         .visual-stack {
             position: relative;
@@ -238,12 +316,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             object-fit: cover;
         }
 
-        .float-one { top: 18px; right: 18px; animation-delay: .2s; }
-        .float-two { bottom: 18px; left: 18px; animation-delay: 1s; }
+        .float-one {
+            top: 18px;
+            right: 18px;
+            animation-delay: .2s;
+        }
+
+        .float-two {
+            bottom: 18px;
+            left: 18px;
+            animation-delay: 1s;
+        }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
         }
 
         .taste-row {
@@ -261,38 +355,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         @media (max-width: 991px) {
-            .login-left { padding: 36px 28px; }
-            .login-right { padding: 36px 28px; }
-            .visual-stack img { height: 200px; }
+            .login-left {
+                padding: 36px 28px;
+            }
+
+            .login-right {
+                padding: 36px 28px;
+            }
+
+            .visual-stack img {
+                height: 200px;
+            }
         }
 
         @media (max-width: 768px) {
-            .login-left { text-align: left; }
-            .login-icons i { margin-bottom: 10px; } /* */
+            .login-left {
+                text-align: left;
+            }
+
+            .login-icons i {
+                margin-bottom: 10px;
+            }
+
+            /* */
         }
 
         @media (max-width: 600px) {
-            .login-wrapper { padding: 24px 12px; }
-            .login-card { border-radius: 20px; }
-            .login-left, .login-right { padding: 26px 20px; }
-            .login-left h2 { font-size: 24px; }
-            .login-right h3 { font-size: 22px; }
+            .login-wrapper {
+                padding: 24px 12px;
+            }
+
+            .login-card {
+                border-radius: 20px;
+            }
+
+            .login-left,
+            .login-right {
+                padding: 26px 20px;
+            }
+
+            .login-left h2 {
+                font-size: 24px;
+            }
+
+            .login-right h3 {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- ===== BỐ CỤC CHÍNH ===== -->
     <div class="login-wrapper"> <!-- -->
         <div class="card login-card border-0"> <!-- -->
             <div class="row g-0">
-                
+
                 <!-- ===== CỘT TRÁI: GIỚI THIỆU (Intro) ===== -->
                 <!-- Sử dụng class col-md-6 để chiếm 50% chiều rộng -->
                 <div class="col-md-6 login-left"> <!-- -->
                     <div class="brand-tag">GẤU BAKERY</div>
                     <h2 class="mb-3">Bắt đầu hành trình vị ngọt</h2> <!-- -->
-                    
+
                     <p class="mt-2">
                         Tạo tài khoản để lưu đơn hàng, nhận ưu đãi và lưu giữ khoảnh khắc ngọt ngào cùng Gấu Bakery.
                     </p>
@@ -325,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- ===== CỘT PHẢI: FORM ĐĂNG KÝ ===== -->
                 <!-- Thay vì dùng .register-card, ta dùng .col-md-6 .login-right để khớp với CSS bố cục -->
                 <div class="col-md-6 login-right"> <!-- -->
-                    
+
                     <h3><i class="fa-solid fa-user-plus"></i> Đăng ký tài khoản</h3> <!-- -->
 
                     <!-- Hiển thị lỗi PHP -->
@@ -338,20 +463,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <form method="POST">
                         <!-- Input 1: Tên đăng nhập -->
                         <div>
-                            <label class="form-label"><i class="fa-regular fa-user" style="color: #8b4513;"></i> Tên đăng nhập</label> <!-- -->
-                            <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required> <!-- -->
+                            <label class="form-label"><i class="fa-regular fa-user" style="color: #8b4513;"></i> Tên
+                                đăng nhập</label> <!-- -->
+                            <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập"
+                                required> <!-- -->
                         </div>
 
                         <!-- Input 2: Email -->
                         <div>
-                            <label class="form-label"><i class="fa-solid fa-envelope" style="color: #8b4513;"></i> Email</label> <!-- -->
-                            <input type="email" name="email" class="form-control" placeholder="Ví dụ: ten@email.com" required> <!-- -->
+                            <label class="form-label"><i class="fa-solid fa-envelope" style="color: #8b4513;"></i>
+                                Email</label> <!-- -->
+                            <input type="email" name="email" class="form-control" placeholder="Ví dụ: ten@email.com"
+                                required> <!-- -->
                         </div>
 
                         <!-- Input 3: Mật khẩu -->
                         <div>
-                            <label class="form-label"><i class="fa-solid fa-lock" style="color: #d32f2f;"></i> Mật khẩu</label> <!-- -->
-                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 6 ký tự" required> <!-- -->
+                            <label class="form-label"><i class="fa-solid fa-lock" style="color: #d32f2f;"></i> Mật
+                                khẩu</label> <!-- -->
+                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 6 ký tự"
+                                required> <!-- -->
                         </div>
 
                         <!-- Nút Submit -->
@@ -362,7 +493,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- Footer chuyển sang đăng nhập -->
                     <div class="text-center mt-4">
-                        Đã có tài khoản? <a href="/cakev0/pages/login.php" style="font-weight: bold;">Đăng nhập ngay</a> <!-- -->
+                        Đã có tài khoản? <a href="/cakev0/pages/login.php" style="font-weight: bold;">Đăng nhập ngay</a>
+                        <!-- -->
                     </div>
                 </div>
 
@@ -405,4 +537,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         window.showToast(<?= json_encode($error_message) ?>, 'error');
     <?php endif; ?>
 </script>
+
 </html>

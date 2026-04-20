@@ -95,29 +95,6 @@ LOCK TABLES `cart` WRITE;
 INSERT INTO `cart` VALUES (65,7,32,1),(66,7,2,1),(67,7,40,1),(68,7,26,1),(69,7,35,1),(70,7,25,1);
 /*!40000 ALTER TABLE `cart` ENABLE KEYS */;
 UNLOCK TABLES;
-
-DROP TABLE IF EXISTS `contact_requests`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `contact_requests` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `message` text NOT NULL,
-  `status` enum('pending','replied') DEFAULT 'pending',
-  `reply_message` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `replied_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-LOCK TABLES `contact_requests` WRITE;
-/*!40000 ALTER TABLE `contact_requests` DISABLE KEYS */;
-/*!40000 ALTER TABLE `contact_requests` ENABLE KEYS */;
-UNLOCK TABLES;
-
 DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

@@ -2103,7 +2103,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Nội dung phản hồi</label>
-                            <textarea name="reply_message" class="form-control" rows="5" required placeholder="Nhập nội dung phản hồi cho khách hàng..."></textarea>
+                            <textarea name="reply_message" id="reply_message_editor" class="form-control editor" rows="5" placeholder="Nhập nội dung phản hồi cho khách hàng..."></textarea>
                         </div>
                         <div class="col-12 mt-4 d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('contactReplyModal').classList.remove('is-open')">Hủy</button>
@@ -2648,6 +2648,20 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         document.getElementById('replyContactName').value = btn.dataset.name;
                         document.getElementById('displayReplyName').value = btn.dataset.name + ' (' + btn.dataset.email + ')';
                         document.getElementById('contactReplyModal').classList.add('is-open');
+                        // Reset TinyMCE content when opening
+                        const editor = tinymce.get('reply_message_editor');
+                        if (editor) {
+                            editor.setContent('');
+                        }
+                    });
+                });
+
+                // Ensure TinyMCE saves content before form submit
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', () => {
+                        if (typeof tinymce !== 'undefined') {
+                            tinymce.triggerSave();
+                        }
                     });
                 });
             });

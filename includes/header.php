@@ -572,7 +572,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     .logo a {
-      font-size: 24px;
+      font-size: 20px;
+      white-space: nowrap;
     }
 
     .logo {
@@ -669,12 +670,24 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       --header-sticky-offset: 64px;
     }
 
+    .logo a {
+      font-size: 17px;
+    }
+
+    .header-top {
+      gap: 6px;
+    }
+
     #main-nav a {
       font-size: 14px;
     }
 
+    #user-actions {
+      gap: 8px;
+    }
+
     #user-actions a {
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .cate-panel-links a {

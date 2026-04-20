@@ -27,6 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $headers .= "From: Gau Bakery <no-reply@gaubakery.local>\r\n";
         $headers .= "Reply-To: {$email}\r\n";
 
+        // Save to DB
+        $stmt = $conn->prepare("INSERT INTO contact_requests (name, email, phone, message) VALUES (?, ?, ?, ?)");
+        if ($stmt) {
+            $stmt->bind_param("ssss", $name, $email, $phone, $message);
+            $stmt->execute();
+            $stmt->close();
+        }
+
         if (@mail($contactRecipient, $subject, $body, $headers)) {
             $success_message = 'Cảm ơn bạn! Gấu Bakery sẽ liên hệ trong thời gian sớm nhất.';
         } else {

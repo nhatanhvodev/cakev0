@@ -492,6 +492,39 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         setAdminToast("Đã xóa khuyến mãi thành công!");
         redirectToTab('promotions');
     }
+
+    /* --- XỬ LÝ LIÊN HỆ / HỖ TRỢ --- */
+    if (isset($_POST['reply_contact']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $id = (int) $_POST['contact_id'];
+        $email = $_POST['contact_email'];
+        $name = $_POST['contact_name'];
+        $reply_message = trim($_POST['reply_message'] ?? '');
+
+        if ($id > 0 && !empty($reply_message)) {
+            // Update DB
+            $stmt = $conn->prepare("UPDATE contact_requests SET status = 'replied', reply_message = ?, replied_at = NOW() WHERE id = ?");
+            $stmt->bind_param("si", $reply_message, $id);
+            $stmt->execute();
+            $stmt->close();
+
+            // Send Email
+            $subject = "Phan hoi tu Gau Bakery";
+            $body = "Chao {$name},\n\nCam on ban da lien he voi Chung toi. Day la phan hoi cho thac mac cua ban:\n\n{$reply_message}\n\nTran trong,\nGau Bakery Team";
+            $headers = "From: Gau Bakery <no-reply@gaubakery.vn>";
+            @mail($email, $subject, $body, $headers);
+
+            setAdminToast("Đã gửi phản hồi thành công!");
+        }
+        regenerateCsrfToken();
+        redirectToTab('contacts');
+    }
+
+    if (isset($_GET['delete_contact_id'])) {
+        $id = (int) $_GET['delete_contact_id'];
+        $conn->query("DELETE FROM contact_requests WHERE id=$id");
+        setAdminToast("Đã xóa liên hệ!");
+        redirectToTab('contacts');
+    }
 //} // Removed redundant check
 
 // 3. LẤY DỮ LIỆU HIỂN THỊ & CHUẨN BỊ BIỂU ĐỒ
@@ -706,6 +739,7 @@ foreach ($order_items as $item) {
     ];
 }
 $promotions = $conn->query("SELECT p.*, b.ten_banh, b.gia AS gia_hien_tai FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
+$contactRequests = $conn->query("SELECT * FROM contact_requests ORDER BY created_at DESC")->fetch_all(MYSQLI_ASSOC);
 $reviews = $conn->query("SELECT * FROM reviews ORDER BY timestamp DESC")->fetch_all(MYSQLI_ASSOC);
 $productImages = $conn->query("SELECT * FROM product_images ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
 
@@ -1270,6 +1304,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         class="bi bi-people"></i> Khách hàng</a>
                 <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions"
                     onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
+                <a class="nav-link" href="admin.php?tab=contacts#contacts" data-tab="contacts"
+                    onclick="showTab(event, 'contacts')"><i class="bi bi-envelope"></i> Liên hệ</a>
             </nav>
         </div>
 
@@ -1864,6 +1900,76 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
+            <!-- TAB 6: CONTACTS -->
+            <div id="contacts" class="tab-content">
+                <h3 class="mb-4" style="color:#4a1d1f;">Yêu cầu hỗ trợ khách hàng</h3>
+                <div class="custom-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên</th>
+                                <th>Email/SĐT</th>
+                                <th>Nội dung</th>
+                                <th>Ngày gửi</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($contactRequests as $c): ?>
+                                <tr>
+                                    <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
+                                    <td>
+                                        <small><?= htmlspecialchars($c['email']) ?></small><br>
+                                        <small class="text-muted"><?= htmlspecialchars($c['phone']) ?></small>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 250px;" title="<?= htmlspecialchars($c['message']) ?>">
+                                            <?= htmlspecialchars($c['message']) ?>
+                                        </div>
+                                    </td>
+                                    <td><small><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></small></td>
+                                    <td>
+                                        <?php if ($c['status'] === 'pending'): ?>
+                                            <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-success">Đã phản hồi</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary contact-detail-btn" 
+                                            data-id="<?= $c['id'] ?>"
+                                            data-name="<?= htmlspecialchars($c['name']) ?>"
+                                            data-email="<?= htmlspecialchars($c['email']) ?>"
+                                            data-phone="<?= htmlspecialchars($c['phone']) ?>"
+                                            data-msg="<?= htmlspecialchars($c['message']) ?>"
+                                            data-status="<?= $c['status'] ?>"
+                                            data-reply="<?= htmlspecialchars($c['reply_message'] ?? '') ?>"
+                                            data-date="<?= date('d/m/Y H:i', strtotime($c['created_at'])) ?>">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <?php if ($c['status'] === 'pending'): ?>
+                                        <button type="button" class="btn btn-sm btn-success contact-reply-btn"
+                                            data-id="<?= $c['id'] ?>"
+                                            data-name="<?= htmlspecialchars($c['name']) ?>"
+                                            data-email="<?= htmlspecialchars($c['email']) ?>">
+                                            <i class="bi bi-reply"></i>
+                                        </button>
+                                        <?php endif; ?>
+                                        <a href="?delete_contact_id=<?= $c['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa liên hệ này?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($contactRequests)): ?>
+                                <tr><td colspan="6" class="text-center py-4 text-muted">Chưa có yêu cầu hỗ trợ nào.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div id="deleteProductModal" class="confirm-modal" role="dialog" aria-modal="true"
                 aria-labelledby="deleteProductTitle">
                 <div class="confirm-modal-box">
@@ -1957,6 +2063,41 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     <div class="confirm-modal-actions" style="justify-content: flex-end;">
                         <button type="button" class="btn btn-outline-secondary" id="adminOrderClose">Đóng</button>
                     </div>
+                </div>
+            </div>
+
+            <div id="contactDetailModal" class="confirm-modal" role="dialog" aria-modal="true">
+                <div class="confirm-modal-box" style="text-align: left; max-width: 600px;">
+                    <div class="confirm-modal-title">Chi tiết yêu cầu hỗ trợ</div>
+                    <div id="contactDetailBody" class="mt-3"></div>
+                    <div class="confirm-modal-actions mt-4" style="justify-content: flex-end;">
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('contactDetailModal').classList.remove('is-open')">Đóng</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contactReplyModal" class="confirm-modal" role="dialog" aria-modal="true">
+                <div class="confirm-modal-box" style="text-align: left; max-width: 500px;">
+                    <div class="confirm-modal-title">Phản hồi khách hàng</div>
+                    <form method="POST" class="mt-3 row g-3">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="contact_id" id="replyContactId">
+                        <input type="hidden" name="contact_email" id="replyContactEmail">
+                        <input type="hidden" name="contact_name" id="replyContactName">
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Người nhận</label>
+                            <input type="text" id="displayReplyName" class="form-control" readonly disabled>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Nội dung phản hồi</label>
+                            <textarea name="reply_message" class="form-control" rows="5" required placeholder="Nhập nội dung phản hồi cho khách hàng..."></textarea>
+                        </div>
+                        <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('contactReplyModal').classList.remove('is-open')">Hủy</button>
+                            <button type="submit" name="reply_contact" class="btn btn-green">Gửi phản hồi</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -2460,6 +2601,42 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     if (event.key === 'Escape' && userOrdersModal.classList.contains('is-open')) {
                         closeUserOrdersModal();
                     }
+                });
+
+                // CONTACT LOGIC
+                document.querySelectorAll('.contact-detail-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const d = btn.dataset;
+                        let html = `
+                            <div class="mb-2"><strong>Khách hàng:</strong> ${d.name}</div>
+                            <div class="mb-2"><strong>Email:</strong> ${d.email}</div>
+                            <div class="mb-2"><strong>SĐT:</strong> ${d.phone}</div>
+                            <div class="mb-2"><strong>Ngày gửi:</strong> ${d.date}</div>
+                            <div class="mb-3 p-3 bg-light rounded" style="border:1px solid #eee">
+                                <strong>Nội dung thắc mắc:</strong><br>${d.msg}
+                            </div>
+                        `;
+                        if (d.status === 'replied') {
+                            html += `
+                                <div class="mt-3 p-3 rounded" style="background:#e8f5e9; border:1px solid #c8e6c9">
+                                    <strong class="text-success"><i class="bi bi-check-circle"></i> Đã phản hồi:</strong><br>
+                                    ${d.reply}
+                                </div>
+                            `;
+                        }
+                        document.getElementById('contactDetailBody').innerHTML = html;
+                        document.getElementById('contactDetailModal').classList.add('is-open');
+                    });
+                });
+
+                document.querySelectorAll('.contact-reply-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.getElementById('replyContactId').value = btn.dataset.id;
+                        document.getElementById('replyContactEmail').value = btn.dataset.email;
+                        document.getElementById('replyContactName').value = btn.dataset.name;
+                        document.getElementById('displayReplyName').value = btn.dataset.name + ' (' + btn.dataset.email + ')';
+                        document.getElementById('contactReplyModal').classList.add('is-open');
+                    });
                 });
             });
         </script>

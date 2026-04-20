@@ -2,6 +2,7 @@
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
+require_once '../config/connect.php';
 ?>
 <?php
 $pageTitle = 'Liên hệ với chúng tôi';

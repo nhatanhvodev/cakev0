@@ -477,6 +477,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         redirectToTab('promotions');
     }
 
+    if (isset($_POST['update_promotion']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $stmt = $conn->prepare("UPDATE promotions SET gia_khuyen_mai = ?, ngay_bat_dau = ?, ngay_ket_thuc = ? WHERE id = ?");
+        $stmt->bind_param("issi", $_POST['gia_khuyen_mai'], $_POST['ngay_bat_dau'], $_POST['ngay_ket_thuc'], $_POST['promotion_id']);
+        $stmt->execute();
+        setAdminToast("Đã cập nhật khuyến mãi thành công!");
+        regenerateCsrfToken();
+        redirectToTab('promotions');
+    }
+
     if (isset($_GET['delete_promotion_id'])) {
         $id = (int) $_GET['delete_promotion_id'];
         $conn->query("DELETE FROM promotions WHERE id=$id");
@@ -1834,11 +1843,19 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                         <?= date('d/m', strtotime($promo['ngay_ket_thuc'])) ?>
                                     </td>
                                     <td>
-                                        <a href="?delete_promotion_id=<?= $promo['id'] ?>" class="text-danger promo-delete-btn"
+                                        <button type="button" class="btn btn-sm btn-outline-primary promo-edit-btn"
+                                            data-id="<?= $promo['id'] ?>"
+                                            data-price="<?= $promo['gia_khuyen_mai'] ?>"
+                                            data-start="<?= date('Y-m-d', strtotime($promo['ngay_bat_dau'])) ?>"
+                                            data-end="<?= date('Y-m-d', strtotime($promo['ngay_ket_thuc'])) ?>"
+                                            data-name="<?= htmlspecialchars($promo['ten_banh']) ?>">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger promo-delete-btn"
                                             data-delete-url="?delete_promotion_id=<?= $promo['id'] ?>"
                                             data-promo-name="<?= htmlspecialchars($promo['ten_banh']) ?>">
                                             <i class="bi bi-trash"></i>
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -1896,6 +1913,38 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <button type="button" class="btn btn-outline-secondary" id="deletePromotionCancel">Hủy</button>
                         <button type="button" class="btn btn-danger" id="deletePromotionConfirm">Xác nhận xóa</button>
                     </div>
+                </div>
+            </div>
+
+            <div id="editPromotionModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="editPromotionTitle">
+                <div class="confirm-modal-box" style="text-align: left; max-width: 500px;">
+                    <div class="confirm-modal-title" id="editPromotionTitle">Chỉnh sửa khuyến mãi</div>
+                    <form method="POST" class="mt-3 row g-3">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="promotion_id" id="editPromoId">
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Sản phẩm</label>
+                            <input type="text" id="editPromoName" class="form-control" readonly disabled>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Giá khuyến mãi (VNĐ)</label>
+                            <input type="number" name="gia_khuyen_mai" id="editPromoPrice" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày bắt đầu</label>
+                            <input type="date" name="ngay_bat_dau" id="editPromoStart" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày kết thúc</label>
+                            <input type="date" name="ngay_ket_thuc" id="editPromoEnd" class="form-control" required>
+                        </div>
+                        <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" id="editPromotionCancel">Hủy</button>
+                            <button type="submit" name="update_promotion" class="btn btn-green">Lưu thay đổi</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -2193,6 +2242,42 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 document.addEventListener('keydown', function (event) {
                     if (event.key === 'Escape' && deletePromotionModal.classList.contains('is-open')) {
                         closeDeletePromotionModal();
+                    }
+                });
+
+                const editPromotionModal = document.getElementById('editPromotionModal');
+                const editPromotionCancel = document.getElementById('editPromotionCancel');
+
+                function closeEditPromotionModal() {
+                    editPromotionModal.classList.remove('is-open');
+                }
+
+                document.querySelectorAll('.promo-edit-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        document.getElementById('editPromoId').value = btn.dataset.id;
+                        document.getElementById('editPromoName').value = btn.dataset.name;
+                        document.getElementById('editPromoPrice').value = btn.dataset.price;
+                        document.getElementById('editPromoStart').value = btn.dataset.start;
+                        document.getElementById('editPromoEnd').value = btn.dataset.end;
+                        editPromotionModal.classList.add('is-open');
+                    });
+                });
+
+                if (editPromotionCancel) {
+                    editPromotionCancel.addEventListener('click', closeEditPromotionModal);
+                }
+
+                if (editPromotionModal) {
+                    editPromotionModal.addEventListener('click', function (event) {
+                        if (event.target === editPromotionModal) {
+                            closeEditPromotionModal();
+                        }
+                    });
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && editPromotionModal && editPromotionModal.classList.contains('is-open')) {
+                        closeEditPromotionModal();
                     }
                 });
 

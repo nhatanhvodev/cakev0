@@ -25,11 +25,11 @@ function imgPath($path) {
     // Keep only project-relative path when SQL stores absolute machine path.
     $cakePos = stripos($path, '/cakev0/');
     if ($cakePos !== false) {
-        $path = substr($path, $cakePos + 6);
+        $path = substr($path, $cakePos + 8);
     } else {
         $cakePos = stripos($path, 'cakev0/');
         if ($cakePos !== false) {
-            $path = substr($path, $cakePos + 5);
+            $path = substr($path, $cakePos + 7);
         }
     }
 

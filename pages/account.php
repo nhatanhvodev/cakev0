@@ -50,9 +50,9 @@ function resolveAvatarUrl(?string $avatar): string
 
     $cakePos = stripos($avatar, '/cakev0/');
     if ($cakePos !== false) {
-        $avatar = substr($avatar, $cakePos + 6);
+        $avatar = substr($avatar, $cakePos + 8);
     } elseif (stripos($avatar, 'cakev0/') === 0) {
-        $avatar = substr($avatar, 5);
+        $avatar = substr($avatar, 7);
     }
 
     $avatar = ltrim($avatar, '/');
@@ -125,29 +125,42 @@ if (isset($_POST['update_profile'])) {
 
     // Xử lý Upload Ảnh
     if (!empty($_FILES['avatar']['name'])) { //
-        $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
+        $avatarFile = $_FILES['avatar'];
+        $uploadError = (int) ($avatarFile['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            $error = match ($uploadError) {
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Ảnh vượt quá dung lượng cho phép của máy chủ.',
+                UPLOAD_ERR_PARTIAL => 'Ảnh được tải lên chưa hoàn tất, vui lòng thử lại.',
+                UPLOAD_ERR_NO_FILE => 'Bạn chưa chọn ảnh để tải lên.',
+                default => 'Không thể tải ảnh lên máy chủ.',
+            };
+        } else {
+            $ext = strtolower(pathinfo((string) ($avatarFile['name'] ?? ''), PATHINFO_EXTENSION));
+        }
         $allow = ['jpg', 'jpeg', 'png', 'webp'];
 
-        if (in_array($ext, $allow)) { //
+        if (empty($error) && in_array($ext, $allow, true)) { //
             $oldAvatar = $avatar_name;
             $new_name = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
+            $tmpAvatarPath = (string) ($avatarFile['tmp_name'] ?? '');
 
             $uploadedUrl = uploadthing_upload_file(
-                (string) ($_FILES['avatar']['tmp_name'] ?? ''),
+                $tmpAvatarPath,
                 $new_name,
-                (string) ($_FILES['avatar']['type'] ?? '')
+                (string) ($avatarFile['type'] ?? '')
             );
 
             if ($uploadedUrl !== null) {
                 $avatar_name = $uploadedUrl;
             } else {
-                $upload_dir = 'uploads/';
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
+                $uploadDirFs = __DIR__ . '/uploads';
+                if (!is_dir($uploadDirFs)) {
+                    mkdir($uploadDirFs, 0777, true);
                 }
 
-                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $upload_dir . $new_name)) {
-                    $avatar_name = $new_name;
+                $targetPath = rtrim($uploadDirFs, '/\\') . '/' . $new_name;
+                if ($tmpAvatarPath !== '' && move_uploaded_file($tmpAvatarPath, $targetPath)) {
+                    $avatar_name = 'uploads/' . $new_name;
                 } else {
                     $error = 'Không thể lưu file ảnh.';
                 }
@@ -159,7 +172,7 @@ if (isset($_POST['update_profile'])) {
                     @unlink($oldAvatarPath);
                 }
             }
-        } else {
+        } elseif (empty($error)) {
             $error = "Định dạng ảnh không hợp lệ (Chỉ nhận JPG, PNG, WEBP)."; //
         }
     }

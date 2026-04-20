@@ -7,13 +7,14 @@ if (session_status() === PHP_SESSION_NONE) {
 } //
 
 require_once '../config/config.php';
+require_once '../includes/mailer.php';
 
 $error_message = '';
 
 // Kiểm tra khi người dùng nhấn nút Đăng ký
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once '../config/connect.php';
-$conn->set_charset("utf8mb4"); //
+    $conn->set_charset("utf8mb4");
 
     // Lọc dữ liệu đầu vào
     $username = trim($_POST['username']);
@@ -22,9 +23,9 @@ $conn->set_charset("utf8mb4"); //
 
     // Validate dữ liệu
     if (!$email) {
-        $error_message = "Email không hợp lệ!"; //
+        $error_message = "Email không hợp lệ!";
     } elseif (strlen($password) < 6) {
-        $error_message = "Mật khẩu tối thiểu 6 ký tự!"; //
+        $error_message = "Mật khẩu tối thiểu 6 ký tự!";
     } else {
         // Kiểm tra tên đăng nhập đã tồn tại chưa
         $check = $conn->prepare("SELECT id FROM users WHERE username = ?");
@@ -32,20 +33,30 @@ $conn->set_charset("utf8mb4"); //
         $check->execute();
         
         if ($check->get_result()->num_rows > 0) {
-            $error_message = "Tên đăng nhập đã tồn tại!"; //
+            $error_message = "Tên đăng nhập đã tồn tại!";
         } else {
             // Thêm người dùng mới
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)"); //
-            $stmt->bind_param("sss", $username, $hash, $email); //
+            $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $username, $hash, $email);
             
             if ($stmt->execute()) {
+                // Gửi email xác nhận đăng ký thành công
+                $subject = "Chào mừng bạn đến với Gấu Bakery!";
+                $body = "<h2>Đăng ký thành công!</h2>
+                         <p>Chào mừng <strong>{$username}</strong> đã trở thành thành viên của gia đình Gấu Bakery.</p>
+                         <p>Bắt đầu khám phá những chiếc bánh ngọt ngào nhất tại cửa hàng của chúng tôi ngay nhé!</p>
+                         <br>
+                         <p>Trân trọng,<br><strong>Gấu Bakery Team</strong></p>";
+                
+                send_custom_mail($email, $subject, $body);
+
                 // Đăng ký thành công -> Tự động đăng nhập & chuyển hướng
                 $_SESSION['user_id'] = $conn->insert_id;
                 $_SESSION['username'] = $username;
                 $_SESSION['toast'] = ['msg' => 'Đăng ký thành công! Chào mừng bạn đến với Gấu Bakery.', 'type' => 'success'];
                 header("Location: " . base_url('index.php'));
-                exit; //
+                exit;
             } else {
                 $error_message = "Lỗi đăng ký!";
             }
@@ -53,7 +64,7 @@ $conn->set_charset("utf8mb4"); //
         }
         $check->close();
     }
-    $conn->close(); //
+    $conn->close();
 }
 ?>
 

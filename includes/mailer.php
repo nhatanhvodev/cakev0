@@ -45,7 +45,7 @@ function send_custom_mail($to, $subject, $body, $fromName = null) {
         $mail->send();
         return true;
     } catch (Exception $e) {
-        // Bạn có thể log lỗi ở đây nếu cần: error_log("Mailer Error: {$mail->ErrorInfo}");
+        error_log("Mailer Error: " . $mail->ErrorInfo);
         return false;
     }
 }

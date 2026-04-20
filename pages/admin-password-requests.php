@@ -47,7 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password_reque
     }
 
     if ($request_status === 'approved') {
-        $sql = "SELECT user_id, new_password FROM password_reset_requests WHERE id = ? AND status = 'pending'";
+        // Fetch user email along with the request details
+        $sql = "SELECT r.user_id, r.new_password, u.email, u.username 
+                FROM password_reset_requests r 
+                JOIN users u ON r.user_id = u.id 
+                WHERE r.id = ? AND r.status = 'pending'";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $request_id);
         $stmt->execute();
@@ -55,20 +59,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password_reque
         $stmt->close();
 
         if ($request) {
+            $user_id = $request['user_id'];
+            $new_password_hash = $request['new_password'];
+            $user_email = $request['email'];
+            $username = $request['username'];
+
+            // 1. Update user password
             $sql = "UPDATE users SET password = ? WHERE id = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("si", $request['new_password'], $request['user_id']);
+            $stmt->bind_param("si", $new_password_hash, $user_id);
             $stmt->execute();
             $stmt->close();
 
+            // 2. Update request status
             $sql = "UPDATE password_reset_requests SET status = 'approved', approved_at = NOW() WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $request_id);
             $stmt->execute();
             $stmt->close();
 
+            // 3. Send notification email
+            require_once '../includes/mailer.php';
+            $subject = "Thông báo: Mật khẩu Gấu Bakery của bạn đã được cập nhật";
+            $body = "<h3>Chào mừng quay trở lại, {$username}!</h3>
+                     <p>Yêu cầu đặt lại mật khẩu của bạn đã được quản trị viên phê duyệt thành công.</p>
+                     <p>Giờ đây bạn có thể đăng nhập vào hệ thống bằng mật khẩu mới mà bạn đã đăng ký.</p>
+                     <p>Nếu bạn không thực hiện yêu cầu này, vui lòng liên hệ ngay với chúng tôi để được hỗ trợ.</p>
+                     <br>
+                     <p>Trân trọng,<br><strong>Gấu Bakery Team</strong></p>";
+            
+            send_custom_mail($user_email, $subject, $body);
+
             $_SESSION['admin_password_request_flash'] = [
-                'msg' => 'Đã duyệt yêu cầu đổi mật khẩu.',
+                'msg' => 'Đã duyệt và gửi email thông báo cho khách hàng.',
                 'type' => 'success'
             ];
         } else {

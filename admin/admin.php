@@ -12,6 +12,7 @@ date_default_timezone_set('Asia/Ho_Chi_Minh');
 require_once '../config/config.php';
 require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
+require_once '../includes/mailer.php';
 
 // Hàm tạo lại CSRF Token
 function regenerateCsrfToken()
@@ -508,12 +509,19 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
             $stmt->close();
 
             // Send Email
-            $subject = "Phan hoi tu Gau Bakery";
-            $body = "Chao {$name},\n\nCam on ban da lien he voi Chung toi. Day la phan hoi cho thac mac cua ban:\n\n{$reply_message}\n\nTran trong,\nGau Bakery Team";
-            $headers = "From: Gau Bakery <no-reply@gaubakery.vn>";
-            @mail($email, $subject, $body, $headers);
-
-            setAdminToast("Đã gửi phản hồi thành công!");
+            $subject = "Phản hồi từ Gấu Bakery";
+            $body = "<p>Chào <strong>{$name}</strong>,</p>
+                     <p>Cảm ơn bạn đã liên hệ với Gấu Bakery. Đây là phản hồi cho thắc mắc của bạn:</p>
+                     <div style='background:#f9f9f9; padding:15px; border-left:4px solid #4a1d1f; margin:15px 0;'>
+                        " . nl2br($reply_message) . "
+                     </div>
+                     <p>Trân trọng,<br><strong>Gấu Bakery Team</strong></p>";
+            
+            if (send_custom_mail($email, $subject, $body)) {
+                setAdminToast("Đã gửi phản hồi thành công!");
+            } else {
+                setAdminToast("Đã lưu phản hồi nhưng không thể gửi email (Lỗi SMTP).", "error");
+            }
         }
         regenerateCsrfToken();
         redirectToTab('contacts');

@@ -3,12 +3,13 @@ if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 require_once '../config/connect.php';
+require_once '../includes/mailer.php';
 ?>
 <?php
 $pageTitle = 'Liên hệ với chúng tôi';
 $success_message = '';
 $error_message = '';
-$contactRecipient = 'hello@gaubakery.vn';
+$contactRecipient = env_value('MAIL_FROM_ADDRESS', 'hello@gaubakery.vn');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
@@ -22,11 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = 'Email không hợp lệ.';
     } else {
         $subject = 'Lien he tu Gau Bakery';
-        $body = "Ho va ten: {$name}\nEmail: {$email}\nSo dien thoai: {$phone}\n\nNoi dung:\n{$message}\n";
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/plain; charset=UTF-8\r\n";
-        $headers .= "From: Gau Bakery <no-reply@gaubakery.local>\r\n";
-        $headers .= "Reply-To: {$email}\r\n";
+        $body = "<h3>Thông tin liên hệ mới</h3>
+                 <p><strong>Họ và tên:</strong> {$name}</p>
+                 <p><strong>Email:</strong> {$email}</p>
+                 <p><strong>Số điện thoại:</strong> {$phone}</p>
+                 <p><strong>Nội dung:</strong><br>" . nl2br($message) . "</p>";
 
         // Save to DB
         $stmt = $conn->prepare("INSERT INTO contact_requests (name, email, phone, message) VALUES (?, ?, ?, ?)");
@@ -36,10 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
 
-        if (@mail($contactRecipient, $subject, $body, $headers)) {
-            $success_message = 'Cảm ơn bạn! Gấu Bakery sẽ liên hệ trong thời gian sớm nhất.';
+        if (send_custom_mail($contactRecipient, $subject, $body, "Hệ thống Web")) {
+            $success_message = 'Cảm ơn bạn! Gấu Bakery sẽ phản hồi trong thời gian sớm nhất.';
         } else {
-            $error_message = 'Gửi mail thất bại. Vui lòng thử lại sau.';
+            $error_message = 'Gửi thông báo thất bại, nhưng tin nhắn đã được lưu lại. Vui lòng liên hệ trực tiếp.';
         }
     }
 }

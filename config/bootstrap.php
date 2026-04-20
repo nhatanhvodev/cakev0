@@ -4,6 +4,12 @@ if (!defined('APP_ROOT')) {
     define('APP_ROOT', dirname(__DIR__));
 }
 
+// Load Composer Autoloader
+$autoload = APP_ROOT . '/vendor/autoload.php';
+if (file_exists($autoload)) {
+    require_once $autoload;
+}
+
 if (!function_exists('load_env_file')) {
     function load_env_file(string $filePath): void
     {

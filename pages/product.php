@@ -585,23 +585,27 @@ body {
 
     .product-actions .add-btn {
         flex: 1;
+        min-width: 0; /* Ngăn chặn nội dung đẩy nút sibling ra ngoài */
         min-height: 44px;
-        padding: 0 10px;
+        padding: 0 8px;
         font-size: 13px;
         border-radius: 12px;
-    }
-
-    .product-actions .add-btn i {
-        display: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        text-align: center;
+        line-height: 44px;
     }
 
     .fav-btn {
-        width: 44px;
-        min-width: 44px;
-        height: 44px;
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
         border-radius: 12px;
         background: #fff9f1;
         border: 1px solid #f3e0be;
+        flex-shrink: 0; /* Không cho phép nút này bị co lại */
     }
 
     .product-grid {

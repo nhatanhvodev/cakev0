@@ -122,7 +122,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .header-inner {
-    width: min(1200px, calc(100% - 48px));
+    width: min(1200px, calc(100% - 32px));
     margin: 0 auto;
     height: 75px;
     padding: 0;
@@ -130,6 +130,27 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     align-items: center;
     justify-content: space-between;
     gap: 18px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .logo a {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--header-accent);
+    letter-spacing: 0.09em;
   }
 
   body {
@@ -148,7 +169,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .menu-container #main-nav {
-    width: min(1200px, calc(100% - 48px));
+    width: min(1200px, calc(100% - 32px));
     margin: 0 auto;
     padding: 10px 0;
   }
@@ -199,7 +220,9 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     top: 126px;
     z-index: 1998;
     margin-top: 0;
+    background: var(--menu-bg);
   }
+
 
 
   .catePanelJs.open {
@@ -211,7 +234,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .cate-panel-inner {
-    width: min(1200px, calc(100% - 104px));
+    width: min(1200px, calc(100% - 32px));
     margin: 0 auto;
     padding: 24px 0;
     display: grid;

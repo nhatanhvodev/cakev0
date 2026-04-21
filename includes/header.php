@@ -153,6 +153,52 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     letter-spacing: 0.09em;
   }
 
+  #main-nav {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  #main-nav ul {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    white-space: nowrap;
+  }
+
+  .menu-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    min-width: auto;
+    min-height: auto;
+    border: 1px solid rgba(74, 29, 31, 0.22);
+    border-radius: 999px;
+    background: var(--menu-surface);
+    color: var(--header-accent);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(74, 29, 31, 0.08);
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .menu-toggle-btn i {
+    font-size: 14px;
+  }
+
+  .menu-toggle-btn:hover {
+    background: var(--header-accent);
+    border-color: var(--header-accent);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
   body {
     padding-top: 126px; /* Header (75px) + Menu (51px) */
   }

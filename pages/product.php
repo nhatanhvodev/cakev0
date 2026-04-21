@@ -577,13 +577,18 @@ body {
 
 @media (max-width: 640px) {
     .product-actions {
+        display: flex;
         gap: 8px;
+        width: 100%;
+        margin-top: 12px;
     }
 
     .product-actions .add-btn {
+        flex: 1;
         min-height: 44px;
-        padding: 8px 12px;
+        padding: 0 10px;
         font-size: 13px;
+        border-radius: 12px;
     }
 
     .product-actions .add-btn i {
@@ -595,6 +600,8 @@ body {
         min-width: 44px;
         height: 44px;
         border-radius: 12px;
+        background: #fff9f1;
+        border: 1px solid #f3e0be;
     }
 
     .product-grid {
@@ -603,6 +610,7 @@ body {
 
     .product-card {
         padding: 12px;
+        border-radius: 16px;
     }
 }
 

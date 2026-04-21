@@ -619,11 +619,22 @@ body {
     }
 
     .detail-actions {
-        flex-direction: column;
-        align-items: stretch;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
     }
 
     .qty-input {
+        grid-column: span 2;
+        width: 100% !important;
+        height: 48px;
+    }
+
+    .cta-btn, .wishlist-btn {
+        height: 50px;
+        font-size: 14px;
+        padding: 0 10px;
         width: 100%;
     }
 

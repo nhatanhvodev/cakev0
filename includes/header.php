@@ -106,19 +106,23 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     background: var(--header-bg);
     width: 100%;
     margin: 0;
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 1000;
+    left: 0;
+    z-index: 2000;
     padding: 0;
     border-bottom: 0.5px solid var(--header-border);
+    transition: all 0.3s ease;
   }
 
-  #site-header.scrolled .header-inner {
-    transition: 0.3s ease;
+  #site-header.scrolled {
+    box-shadow: 0 4px 20px rgba(74, 29, 31, 0.12);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
   }
 
   .header-inner {
-    width: min(1200px, calc(100% - 104px));
+    width: min(1200px, calc(100% - 48px));
     margin: 0 auto;
     height: 75px;
     padding: 0;
@@ -128,84 +132,23 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     gap: 18px;
   }
 
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 16px;
-    width: 100%;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .logo a {
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--header-accent);
-    letter-spacing: 0.09em;
-  }
-
-  #main-nav {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  #main-nav ul {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 0;
-    white-space: nowrap;
-  }
-
-  .menu-toggle-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    min-width: auto;
-    min-height: auto;
-    border: 1px solid rgba(74, 29, 31, 0.22);
-    border-radius: 999px;
-    background: var(--menu-surface);
-    color: var(--header-accent);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 8px 18px rgba(74, 29, 31, 0.08);
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-  }
-
-  .menu-toggle-btn i {
-    font-size: 14px;
-  }
-
-  .menu-toggle-btn:hover {
-    background: var(--header-accent);
-    border-color: var(--header-accent);
-    color: #fff;
-    transform: translateY(-1px);
+  body {
+    padding-top: 126px; /* Header (75px) + Menu (51px) */
   }
 
   .menu-container {
     width: 100%;
     background: #ffffff;
     border-bottom: 1px solid var(--header-border);
-    position: sticky;
-    top: var(--header-sticky-offset);
-    z-index: 990;
+    position: fixed;
+    top: 75px;
+    left: 0;
+    z-index: 1999;
+    transition: all 0.3s ease;
   }
 
   .menu-container #main-nav {
-    width: min(1200px, calc(100% - 104px));
+    width: min(1200px, calc(100% - 48px));
     margin: 0 auto;
     padding: 10px 0;
   }
@@ -252,11 +195,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     width: 100%;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    position: sticky;
-    top: calc(var(--header-sticky-offset) + 51px);
-    z-index: 989;
-    margin-top: -1px;
+    position: fixed;
+    top: 126px;
+    z-index: 1998;
+    margin-top: 0;
   }
+
 
   .catePanelJs.open {
     display: block;
@@ -561,14 +505,25 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
     .header-inner {
       width: calc(100% - 32px);
-      height: auto;
-      padding: 12px 0;
+      height: 64px;
+      padding: 0;
       flex-wrap: nowrap;
     }
 
-    .header-top {
-      flex-wrap: nowrap;
-      gap: 10px;
+    body {
+      padding-top: 112px; /* 64px header + 48px menu */
+    }
+
+    .menu-container {
+      top: 64px;
+    }
+
+    .menu-container #main-nav {
+      padding: 8px 0;
+    }
+
+    .catePanelJs {
+      top: 112px;
     }
 
     .logo a {
@@ -666,8 +621,17 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   @media (max-width: 600px) {
-    :root {
-      --header-sticky-offset: 64px;
+    .header-inner {
+      height: 60px;
+    }
+    body {
+      padding-top: 104px; /* 60px header + 44px menu */
+    }
+    .menu-container {
+      top: 60px;
+    }
+    .catePanelJs {
+      top: 104px;
     }
 
     .logo a {
@@ -812,6 +776,18 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     </div>
   </div>
 </header>
+
+<script>
+  // Script xử lý hiệu ứng cuộn cho Header
+  window.addEventListener('scroll', function() {
+    const header = document.getElementById('site-header');
+    if (window.scrollY > 10) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+</script>
 
 <div class="menu-container">
   <nav id="main-nav">

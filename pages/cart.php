@@ -258,6 +258,14 @@ if (!empty($cartItems) && $couponInput !== '') {
             background: #ffffff;
             color: #272727;
             font-family: 'Poppins', sans-serif;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-page {
+            flex: 1;
+            padding: 28px 0 24px;
         }
 
         .cart-card {
@@ -326,7 +334,7 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
             .cart-card {
                 padding: 16px;
             }
@@ -464,7 +472,7 @@ if (!empty($cartItems) && $couponInput !== '') {
 
 <?php include '../includes/header.php'; ?>
 
-<section class="pt-5 pb-5">
+<section class="cart-page">
     <div class="container-xl">
         <div class="cart-card">
             <div class="cart-title">Giỏ hàng của bạn</div>

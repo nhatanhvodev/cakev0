@@ -258,6 +258,9 @@ body {
         radial-gradient(circle at 90% 12%, #fde8c6 0%, transparent 40%),
         #ffffff;
     color: #272727;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
 }
 
 .order-shell {
@@ -267,6 +270,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 22px;
+    flex: 1;
+    width: 100%;
 }
 
 .order-hero {
@@ -478,7 +483,7 @@ body {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .order-shell {
         padding: 0 16px;
         margin: 16px auto 40px;

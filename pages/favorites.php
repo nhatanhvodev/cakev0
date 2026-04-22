@@ -436,11 +436,46 @@ body {
     }
 
     .favorites-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
     }
 
     .favorite-card img {
         aspect-ratio: 1 / 1;
+    }
+
+    .favorite-card {
+        border-radius: 18px;
+    }
+
+    .favorite-card-body {
+        padding: 12px;
+        gap: 6px;
+    }
+
+    .favorite-name {
+        font-size: 15px;
+        line-height: 1.35;
+    }
+
+    .favorite-price .current {
+        font-size: 15px;
+    }
+
+    .favorite-actions {
+        flex-direction: column;
+    }
+
+    .btn-primary-soft,
+    .btn-danger-soft {
+        padding: 9px 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 380px) {
+    .favorites-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>

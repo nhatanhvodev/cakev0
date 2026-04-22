@@ -446,7 +446,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
   .search-result {
     position: absolute;
-    top: 40px;
+    top: calc(100% + 8px);
     left: 0;
     width: 100%;
     background: #fff;
@@ -454,6 +454,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     box-shadow: 0 6px 18px rgba(0, 0, 0, .15);
     display: none;
     z-index: 20;
+    max-height: min(60vh, 420px);
+    overflow-y: auto;
   }
 
   .search-result div {
@@ -467,11 +469,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
   .search-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     padding: 8px;
     text-decoration: none;
     color: #333;
+    min-width: 0;
   }
 
   .search-item img {
@@ -492,17 +495,22 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .search-name {
     font-size: 14px;
     font-weight: 500;
     line-height: 1.3;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .search-price {
     font-size: 13px;
     color: #8b4513;
+    overflow-wrap: anywhere;
   }
 
   #user-actions {
@@ -754,6 +762,30 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     .menu-search-tag {
       font-size: 12px;
       padding: 6px 10px;
+    }
+
+    .search-result {
+      border-radius: 16px;
+    }
+
+    .search-item {
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .search-item img {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      min-height: 52px;
+    }
+
+    .search-name {
+      font-size: 13px;
+    }
+
+    .search-price {
+      font-size: 12px;
     }
   }
 

@@ -220,6 +220,58 @@ function prepareAvatarUploadPayload(string $tmpPath, string $ext): array
     return $result;
 }
 
+function persistAvatarFileLocally(string $sourcePath, string $fileName): ?string
+{
+    if ($sourcePath === '' || !is_file($sourcePath)) {
+        return null;
+    }
+
+    $uploadDirFs = __DIR__ . '/uploads';
+    if (!is_dir($uploadDirFs) && !mkdir($uploadDirFs, 0777, true) && !is_dir($uploadDirFs)) {
+        return null;
+    }
+
+    $targetPath = rtrim($uploadDirFs, '/\\') . '/' . $fileName;
+    if (is_uploaded_file($sourcePath)) {
+        if (!move_uploaded_file($sourcePath, $targetPath)) {
+            return null;
+        }
+    } else {
+        if (!@rename($sourcePath, $targetPath)) {
+            if (!@copy($sourcePath, $targetPath)) {
+                return null;
+            }
+            @unlink($sourcePath);
+        }
+    }
+
+    return 'uploads/' . $fileName;
+}
+
+function storeAvatarUploadLocally(array $avatarFile, int $userId, string $ext): ?string
+{
+    $tmpAvatarPath = (string) ($avatarFile['tmp_name'] ?? '');
+    if ($tmpAvatarPath === '') {
+        return null;
+    }
+
+    $newName = 'avatar_' . $userId . '_' . time() . '.' . $ext;
+    $preparedUpload = prepareAvatarUploadPayload($tmpAvatarPath, $ext);
+    $preparedExt = (string) ($preparedUpload['ext'] ?? $ext);
+
+    if ($preparedExt !== '') {
+        $newName = preg_replace('/\.[a-z0-9]+$/i', '', $newName) . '.' . $preparedExt;
+    }
+
+    $storedPath = persistAvatarFileLocally((string) $preparedUpload['path'], $newName);
+
+    if (!empty($preparedUpload['cleanup']) && is_string($preparedUpload['cleanup']) && is_file($preparedUpload['cleanup'])) {
+        @unlink($preparedUpload['cleanup']);
+    }
+
+    return $storedPath;
+}
+
 /* =================================================================================
    PHẦN 2: XỬ LÝ FORM (POST REQUESTS)
    ================================================================================= */
@@ -266,14 +318,26 @@ if (isset($_POST['update_profile'])) {
 
         if (empty($error) && in_array($ext, $allow, true)) { //
             $oldAvatar = $avatar_name;
+            $storedAvatarPath = null;
+            $skipRemoteAvatarUpload = false;
             $new_name = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
             $tmpAvatarPath = (string) ($avatarFile['tmp_name'] ?? '');
             if ($tmpAvatarPath === '' || !is_uploaded_file($tmpAvatarPath)) {
                 $error = 'Tệp tải lên không hợp lệ, vui lòng thử lại.';
             }
 
-            $uploadedUrl = null;
             if (empty($error)) {
+                $storedAvatarPath = storeAvatarUploadLocally($avatarFile, $user_id, $ext);
+                if ($storedAvatarPath !== null) {
+                    $avatar_name = $storedAvatarPath;
+                    $skipRemoteAvatarUpload = true;
+                } else {
+                    $error = 'Khong the luu file anh.';
+                }
+            }
+
+            $uploadedUrl = null;
+            if (empty($error) && !$skipRemoteAvatarUpload) {
                 $preparedUpload = [
                     'path' => $tmpAvatarPath,
                     'mime' => (string) ($avatarFile['type'] ?? ''),
@@ -304,7 +368,7 @@ if (isset($_POST['update_profile'])) {
 
             if ($uploadedUrl !== null) {
                 $avatar_name = $uploadedUrl;
-            } else {
+            } elseif (!$skipRemoteAvatarUpload) {
                 $uploadDirFs = __DIR__ . '/uploads';
                 if (!is_dir($uploadDirFs)) {
                     mkdir($uploadDirFs, 0777, true);

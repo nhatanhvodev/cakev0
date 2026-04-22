@@ -558,6 +558,85 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         redirectToTab('contacts');
     }
 
+    if (isset($_POST['update_password_request_status']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $requestId = isset($_POST['request_id']) ? (int) $_POST['request_id'] : 0;
+        $requestStatus = trim((string) ($_POST['request_status'] ?? ''));
+
+        if ($requestId <= 0 || !in_array($requestStatus, ['approved', 'rejected'], true)) {
+            setAdminToast("Thao tac khong hop le.", "error");
+            regenerateCsrfToken();
+            redirectToTab('password-requests');
+        }
+
+        if ($requestStatus === 'approved') {
+            $stmt = $conn->prepare(
+                "SELECT r.user_id, r.new_password, u.email, u.username
+                 FROM password_reset_requests r
+                 JOIN users u ON r.user_id = u.id
+                 WHERE r.id = ? AND r.status = 'pending'"
+            );
+            $stmt->bind_param("i", $requestId);
+            $stmt->execute();
+            $request = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if ($request) {
+                $userId = (int) $request['user_id'];
+                $newPasswordHash = (string) $request['new_password'];
+                $userEmail = (string) $request['email'];
+                $username = (string) $request['username'];
+
+                $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $stmt->bind_param("si", $newPasswordHash, $userId);
+                $stmt->execute();
+                $stmt->close();
+
+                $stmt = $conn->prepare(
+                    "UPDATE password_reset_requests
+                     SET status = 'approved', approved_at = NOW()
+                     WHERE id = ?"
+                );
+                $stmt->bind_param("i", $requestId);
+                $stmt->execute();
+                $stmt->close();
+
+                $subject = "Thong bao: Mat khau Gau Bakery cua ban da duoc cap nhat";
+                $body = "<h3>Chao mung quay tro lai, {$username}!</h3>
+                         <p>Yeu cau dat lai mat khau cua ban da duoc quan tri vien phe duyet thanh cong.</p>
+                         <p>Bay gio ban co the dang nhap vao he thong bang mat khau moi ma ban da dang ky.</p>
+                         <p>Neu ban khong thuc hien yeu cau nay, vui long lien he ngay voi chung toi de duoc ho tro.</p>
+                         <br>
+                         <p>Tran trong,<br><strong>Gau Bakery Team</strong></p>";
+
+                send_custom_mail($userEmail, $subject, $body);
+                setAdminToast("Da duyet yeu cau doi mat khau thanh cong.");
+            } else {
+                setAdminToast("Yeu cau khong ton tai hoac da duoc xu ly truoc do.", "warning");
+            }
+        }
+
+        if ($requestStatus === 'rejected') {
+            $stmt = $conn->prepare(
+                "UPDATE password_reset_requests
+                 SET status = 'rejected', approved_at = NULL
+                 WHERE id = ? AND status = 'pending'"
+            );
+            $stmt->bind_param("i", $requestId);
+            $stmt->execute();
+            $affected = $stmt->affected_rows;
+            $stmt->close();
+
+            if ($affected > 0) {
+                setAdminToast("Da tu choi yeu cau doi mat khau.");
+            } else {
+                setAdminToast("Yeu cau khong ton tai hoac da duoc xu ly truoc do.", "warning");
+            }
+        }
+
+        regenerateCsrfToken();
+        redirectToTab('password-requests');
+    }
+
     if (isset($_GET['delete_contact_id'])) {
         $id = (int) $_GET['delete_contact_id'];
         $conn->query("DELETE FROM contact_requests WHERE id=$id");
@@ -777,6 +856,19 @@ $promotions = $conn->query("SELECT p.*, b.ten_banh, b.gia AS gia_hien_tai FROM p
 // Kiểm tra query contact_requests (phòng trường hợp người dùng chưa tạo bảng trên cloud)
 $contactRequestsQuery = $conn->query("SELECT * FROM contact_requests ORDER BY created_at DESC");
 $contactRequests = $contactRequestsQuery ? $contactRequestsQuery->fetch_all(MYSQLI_ASSOC) : [];
+
+$passwordRequestLabels = [
+    'pending' => ['label' => 'Cho duyet', 'class' => 'warning text-dark'],
+    'approved' => ['label' => 'Da duyet', 'class' => 'success'],
+    'rejected' => ['label' => 'Da tu choi', 'class' => 'danger'],
+];
+$passwordRequestsQuery = $conn->query(
+    "SELECT r.id, r.user_id, r.status, r.created_at, r.approved_at, u.username, u.email
+     FROM password_reset_requests r
+     JOIN users u ON r.user_id = u.id
+     ORDER BY r.created_at DESC"
+);
+$passwordRequests = $passwordRequestsQuery ? $passwordRequestsQuery->fetch_all(MYSQLI_ASSOC) : [];
 
 $reviews = $conn->query("SELECT * FROM reviews ORDER BY timestamp DESC")->fetch_all(MYSQLI_ASSOC);
 $productImages = $conn->query("SELECT * FROM product_images ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
@@ -1336,8 +1428,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Best Selling</a>
                 <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials"
                     onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
-                <a class="nav-link" href="/cakev0/pages/admin-password-requests.php"><i class="bi bi-shield-lock"></i> Duyệt
-                    đổi mật khẩu</a>
+                <a class="nav-link" href="admin.php?tab=password-requests#password-requests" data-tab="password-requests"
+                    onclick="showTab(event, 'password-requests')"><i class="bi bi-shield-lock"></i> Duyet doi mat khau</a>
                 <a class="nav-link" href="admin.php?tab=users#users" data-tab="users" onclick="showTab(event, 'users')"><i
                         class="bi bi-people"></i> Khách hàng</a>
                 <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions"
@@ -1881,6 +1973,74 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- TAB: PASSWORD REQUESTS -->
+            <div id="password-requests" class="tab-content"> 
+                <h3 class="mb-4" style="color:#4a1d1f;">Duyet yeu cau doi mat khau</h3>
+                <div class="custom-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nguoi dung</th>
+                                <th>Email</th>
+                                <th>Trang thai</th>
+                                <th>Yeu cau luc</th>
+                                <th>Phe duyet luc</th>
+                                <th>Hanh dong</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($passwordRequests as $request): ?>
+                                <tr>
+                                    <td>#<?= (int) $request['id'] ?></td>
+                                    <td><?= htmlspecialchars($request['username']) ?></td>
+                                    <td><?= htmlspecialchars((string) ($request['email'] ?? '')) ?></td>
+                                    <td>
+                                        <?php
+                                        $passwordRequestStatus = (string) ($request['status'] ?? 'pending');
+                                        $passwordRequestMeta = $passwordRequestLabels[$passwordRequestStatus] ?? ['label' => ucfirst($passwordRequestStatus), 'class' => 'secondary'];
+                                        ?>
+                                        <span class="badge bg-<?= htmlspecialchars($passwordRequestMeta['class']) ?>"><?= htmlspecialchars($passwordRequestMeta['label']) ?></span>
+                                    </td>
+                                    <td><small><?= htmlspecialchars((string) ($request['created_at'] ?? '')) ?></small></td>
+                                    <td>
+                                        <small>
+                                            <?= !empty($request['approved_at']) ? htmlspecialchars((string) $request['approved_at']) : '<span class="text-muted">Chua xu ly</span>' ?>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <?php if (($request['status'] ?? '') === 'pending'): ?>
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                                <input type="hidden" name="request_id" value="<?= (int) $request['id'] ?>">
+                                                <input type="hidden" name="request_status" value="approved">
+                                                <button type="submit" name="update_password_request_status" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                                <input type="hidden" name="request_id" value="<?= (int) $request['id'] ?>">
+                                                <input type="hidden" name="request_status" value="rejected">
+                                                <button type="submit" name="update_password_request_status" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span class="text-muted">Da xu ly</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($passwordRequests)): ?>
+                                <tr><td colspan="7" class="text-center py-4 text-muted">Chua co yeu cau doi mat khau nao.</td></tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

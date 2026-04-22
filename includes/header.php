@@ -626,16 +626,25 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
     .cate-panel-inner {
       width: calc(100% - 32px);
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
       padding: 18px 0;
     }
 
     .cate-panel-col + .cate-panel-col {
-      border-left: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.35);
-      padding-left: 0;
-      padding-top: 16px;
+      border: 0;
+      padding: 0;
+    }
+
+    .cate-panel-col:nth-child(2) {
+      border-left: 1px solid rgba(74, 29, 31, 0.16);
+      padding-left: 16px;
+    }
+
+    .cate-panel-col:nth-child(3) {
+      grid-column: 1 / -1;
+      border-top: 1px solid rgba(74, 29, 31, 0.16);
+      padding-top: 14px;
     }
 
     .cate-panel-links a {
@@ -643,8 +652,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     .cate-panel-grid {
-      grid-template-columns: 1fr;
-      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 16px;
     }
 
     .cate-panel-grid a {

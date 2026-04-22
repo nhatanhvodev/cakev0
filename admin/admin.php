@@ -2039,7 +2039,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                 </tr>
                             <?php endforeach; ?>
                             <?php if (empty($passwordRequests)): ?>
-                                <tr><td colspan="7" class="text-center py-4 text-muted">Chua co yeu cau doi mat khau nao.</td></tr>
+                                <tr><td colspan="7" class="text-center py-4 text-muted">Chưa có yêu cầu đổi mật khẩu nào.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>

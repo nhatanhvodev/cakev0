@@ -1,0 +1,574 @@
+﻿-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+--
+-- Host: 127.0.0.1    Database: banh_store
+-- ------------------------------------------------------
+-- Server version	10.4.32-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `admins`
+--
+
+DROP TABLE IF EXISTS `admins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `admins` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `admins`
+--
+
+LOCK TABLES `admins` WRITE;
+/*!40000 ALTER TABLE `admins` DISABLE KEYS */;
+INSERT INTO `admins` VALUES (1,'admin','$2y$10$YvZ5e5e5e5e5e5e5e5e5e5u5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e','2025-05-04 02:49:31');
+/*!40000 ALTER TABLE `admins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `banh`
+--
+
+DROP TABLE IF EXISTS `banh`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `banh` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ten_banh` varchar(255) NOT NULL,
+  `slug` varchar(255) DEFAULT NULL,
+  `gia` decimal(10,2) NOT NULL,
+  `hinh_anh` varchar(255) NOT NULL,
+  `loai` varchar(50) NOT NULL,
+  `mo_ta` text DEFAULT NULL,
+  `is_featured` tinyint(1) DEFAULT 0,
+  `stock` int(11) NOT NULL DEFAULT 100,
+  `is_best_manual` tinyint(1) DEFAULT 0,
+  `best_rank` int(11) DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `banh`
+--
+
+LOCK TABLES `banh` WRITE;
+/*!40000 ALTER TABLE `banh` DISABLE KEYS */;
+INSERT INTO `banh` VALUES (2,'Bánh Kem Chocolate','b-anh-kem-chocolate-2',250000.00,'assets/uploads/banhkem/banh_69dc5c3a20e646.19696629.jpg','kem','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem Chocolate l&agrave; sự lựa chọn ho&agrave;n hảo cho những t&iacute;n đồ y&ecirc;u th&iacute;ch hương vị đậm đ&agrave;, nồng n&agrave;n. Sự kết hợp giữa cốt b&aacute;nh b&ocirc;ng lan cacao xốp mềm v&agrave; lớp kem chocolate b&eacute;o ngậy, tan chảy ngay đầu lưỡi tạo n&ecirc;n một sức h&uacute;t kh&oacute; cưỡng. Bề mặt b&aacute;nh được phủ một lớp sốt ganache chocolate b&oacute;ng mượt hoặc rắc bột cacao nguy&ecirc;n chất, mang đến vị ngọt thanh xen lẫn ch&uacute;t đắng nhẹ đầy tinh tế.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram (hoặc đường k&iacute;nh 10cm - 12cm).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 8&deg;C để lớp kem chocolate lu&ocirc;n giữ được độ mịn mượt v&agrave; kh&ocirc;ng bị t&aacute;ch lớp.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh ngon nhất khi d&ugrave;ng lạnh; rất hợp để d&ugrave;ng l&agrave;m m&oacute;n tr&aacute;ng miệng hoặc qu&agrave; tặng trong c&aacute;c dịp kỷ niệm.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 3 - 5 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(3,'Bánh kem Cherry','b-anh-kem-cherry-3',300000.00,'assets/uploads/banhkem/banh_69dc5c1c6aae10.93189009.jpg','kem','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem Cherry l&agrave; sự kết hợp đầy sang trọng giữa cốt b&aacute;nh b&ocirc;ng lan mềm mại v&agrave; lớp kem tươi thanh khiết, điểm xuyết những quả cherry đỏ mọng, ngọt lịm. Vị chua nhẹ đặc trưng của sốt cherry tươi h&ograve;a quyện c&ugrave;ng độ b&eacute;o ngậy của kem ph&ocirc; mai tạo n&ecirc;n một hương vị tinh tế, kh&ocirc;ng g&acirc;y cảm gi&aacute;c ngấy. Bề mặt b&aacute;nh được trang tr&iacute; bằng những quả cherry nguy&ecirc;n cuống tươi ngon, mang lại vẻ ngo&agrave;i l&ocirc;i cuốn v&agrave; đẳng cấp.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram (hoặc đường k&iacute;nh 10cm - 12cm).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để đảm bảo tr&aacute;i c&acirc;y lu&ocirc;n tươi v&agrave; giữ được kết cấu b&aacute;nh tốt nhất.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn, hương vị của cherry sẽ đậm đ&agrave; v&agrave; sảng kho&aacute;i hơn khi ở nhiệt độ thấp.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất (để đảm bảo độ tươi ngon nhất của tr&aacute;i c&acirc;y).</p>\r\n</li>\r\n</ul>',0,100,0,0),(13,'Bánh mì bơ tỏi','b-anh-m-i-b-ti-13',30000.00,'assets/uploads/banhman/banh_69dc5c06b96570.58638428.jpg','mi','<p data-start=\"0\" data-end=\"375\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; bơ tỏi l&agrave; m&oacute;n b&aacute;nh hấp dẫn với lớp vỏ ngo&agrave;i v&agrave;ng gi&ograve;n, được phủ đều hỗn hợp bơ v&agrave; tỏi thơm lừng. Khi nướng l&ecirc;n, bơ tan chảy thấm v&agrave;o từng thớ b&aacute;nh, h&ograve;a quyện c&ugrave;ng vị tỏi đậm đ&agrave; v&agrave; ch&uacute;t rau thơm tạo n&ecirc;n hương vị cực kỳ cuốn h&uacute;t. B&aacute;nh c&oacute; kết cấu gi&ograve;n nhẹ b&ecirc;n ngo&agrave;i, mềm b&ecirc;n trong, rất th&iacute;ch hợp để ăn vặt, ăn s&aacute;ng hoặc d&ugrave;ng k&egrave;m trong c&aacute;c bữa ăn nhẹ.</p>\r\n<p data-start=\"377\" data-end=\"403\"><strong data-start=\"377\" data-end=\"393\">Trọng lượng:</strong> 110 gram.</p>\r\n<p data-start=\"405\" data-end=\"439\"><strong data-start=\"405\" data-end=\"439\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"441\" data-end=\"541\"><strong data-start=\"441\" data-end=\"454\">Bảo quản:</strong> Để nơi kh&ocirc; r&aacute;o, tho&aacute;ng m&aacute;t; c&oacute; thể bảo quản trong ngăn m&aacute;t tủ lạnh nếu chưa d&ugrave;ng ngay.</li>\r\n<li data-start=\"543\" data-end=\"672\"><strong data-start=\"543\" data-end=\"559\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng n&oacute;ng; n&ecirc;n l&agrave;m n&oacute;ng lại bằng l&ograve; nướng hoặc nồi chi&ecirc;n kh&ocirc;ng dầu để b&aacute;nh gi&ograve;n v&agrave; dậy m&ugrave;i bơ tỏi.</li>\r\n<li data-start=\"674\" data-end=\"722\"><strong data-start=\"674\" data-end=\"690\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(14,'Bánh bông lan trứng muối','b-anh-b-ong-lan-trng-mui-14',150000.00,'assets/uploads/banhman/banh_69dc5bfa161e54.16618725.jpg','man','<p data-start=\"0\" data-end=\"398\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh b&ocirc;ng lan trứng muối l&agrave; sự h&ograve;a quyện độc đ&aacute;o giữa vị ngọt mềm của cốt b&aacute;nh b&ocirc;ng lan v&agrave; vị mặn b&eacute;o đặc trưng của trứng muối. Lớp b&aacute;nh xốp nhẹ, mềm mịn được phủ b&ecirc;n tr&ecirc;n bởi sốt bơ b&eacute;o ngậy, ch&agrave; b&ocirc;ng tơi xốp c&ugrave;ng những miếng trứng muối b&ugrave;i b&ugrave;i. Tất cả tạo n&ecirc;n một tổng thể hương vị h&agrave;i h&ograve;a, vừa ngọt vừa mặn, k&iacute;ch th&iacute;ch vị gi&aacute;c v&agrave; rất dễ g&acirc;y &ldquo;nghiện&rdquo; ngay từ lần thử đầu ti&ecirc;n.</p>\r\n<p data-start=\"400\" data-end=\"426\"><strong data-start=\"400\" data-end=\"416\">Trọng lượng:</strong> 200 gram.</p>\r\n<p data-start=\"428\" data-end=\"462\"><strong data-start=\"428\" data-end=\"462\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"464\" data-end=\"579\"><strong data-start=\"464\" data-end=\"477\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon của b&aacute;nh v&agrave; c&aacute;c lớp topping.</li>\r\n<li data-start=\"581\" data-end=\"690\"><strong data-start=\"581\" data-end=\"597\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh hoặc để ra ngo&agrave;i 5 - 10 ph&uacute;t trước khi ăn để b&aacute;nh mềm v&agrave; dậy vị hơn.</li>\r\n<li data-start=\"692\" data-end=\"740\"><strong data-start=\"692\" data-end=\"708\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',1,100,0,0),(15,'Bánh mì Hotdog','b-anh-m-i-hotdog-15',30000.00,'assets/uploads/banhmi/banh_69dc5beaaccb13.36118409.jpg','mi','<p data-start=\"0\" data-end=\"385\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; Hotdog l&agrave; m&oacute;n b&aacute;nh quen thuộc với lớp vỏ b&aacute;nh mềm mịn, thơm nhẹ m&ugrave;i bơ v&agrave; phần x&uacute;c x&iacute;ch đậm đ&agrave; b&ecirc;n trong. X&uacute;c x&iacute;ch được chế biến vừa ch&iacute;n tới, giữ được độ dai ngon đặc trưng, kết hợp c&ugrave;ng sốt c&agrave; chua v&agrave; sốt mayonnaise b&eacute;o nhẹ, tạo n&ecirc;n hương vị h&agrave;i h&ograve;a, dễ ăn. Đ&acirc;y l&agrave; lựa chọn l&yacute; tưởng cho bữa ăn nhanh tiện lợi nhưng vẫn đảm bảo ngon miệng v&agrave; đủ năng lượng.</p>\r\n<p data-start=\"387\" data-end=\"413\"><strong data-start=\"387\" data-end=\"403\">Trọng lượng:</strong> 120 gram.</p>\r\n<p data-start=\"415\" data-end=\"449\"><strong data-start=\"415\" data-end=\"449\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"451\" data-end=\"559\"><strong data-start=\"451\" data-end=\"464\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon của b&aacute;nh v&agrave; x&uacute;c x&iacute;ch.</li>\r\n<li data-start=\"561\" data-end=\"696\"><strong data-start=\"561\" data-end=\"577\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng n&oacute;ng; c&oacute; thể h&acirc;m lại bằng l&ograve; vi s&oacute;ng hoặc nồi chi&ecirc;n kh&ocirc;ng dầu trước khi ăn để b&aacute;nh mềm v&agrave; thơm hơn.</li>\r\n<li data-start=\"698\" data-end=\"746\"><strong data-start=\"698\" data-end=\"714\">Hạn sử dụng:</strong> 1 - 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(17,'Bánh Tart trái cây','b-anh-tart-tr-ai-c-ay-17',100000.00,'assets/uploads/banhman/banh_69dbad2d992e07.25698681.jpg','man','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Tart Tr&aacute;i C&acirc;y l&agrave; sự kết hợp h&agrave;i h&ograve;a giữa lớp vỏ b&aacute;nh nướng tart v&agrave;ng ươm, gi&ograve;n rụm v&agrave; thơm nồng hương bơ, c&ugrave;ng lớp nh&acirc;n kem custard (kem trứng) b&eacute;o ngậy, mịn m&agrave;ng b&ecirc;n trong. Ph&iacute;a tr&ecirc;n mặt b&aacute;nh được xếp đầy c&aacute;c loại tr&aacute;i c&acirc;y tươi theo m&ugrave;a như d&acirc;u t&acirc;y, kiwi, xo&agrave;i hoặc việt quất, phủ th&ecirc;m một lớp thạch mỏng trong suốt để giữ độ tươi. Sự đối lập giữa vỏ b&aacute;nh gi&ograve;n v&agrave; tr&aacute;i c&acirc;y mọng nước tạo n&ecirc;n một trải nghiệm ẩm thực thanh m&aacute;t v&agrave; đầy m&agrave;u sắc.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram (Set 6 c&aacute;i).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để vỏ b&aacute;nh kh&ocirc;ng bị mềm v&agrave; tr&aacute;i c&acirc;y lu&ocirc;n giữ được độ gi&ograve;n ngọt.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh l&agrave; ngon nhất; th&iacute;ch hợp d&ugrave;ng k&egrave;m với c&aacute;c loại tr&agrave; tr&aacute;i c&acirc;y hoặc tr&agrave; đen.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 24 giờ kể từ ng&agrave;y sản xuất (n&ecirc;n d&ugrave;ng ngay trong ng&agrave;y để cảm nhận độ gi&ograve;n tốt nhất của vỏ b&aacute;nh).</p>\r\n</li>\r\n</ul>',0,100,0,0),(18,'Bánh Burger BBQ','b-anh-burger-bbq-18',50000.00,'assets/uploads/banhman/banh_69dc5bdcea6496.05767428.jpg','man','<p data-start=\"109\" data-end=\"517\"><strong data-start=\"109\" data-end=\"128\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Burger BBQ l&agrave; sự kết hợp hấp dẫn giữa lớp b&aacute;nh m&igrave; mềm mịn, v&agrave;ng nhẹ v&agrave; phần nh&acirc;n đậm đ&agrave; b&ecirc;n trong. Thịt nướng BBQ được tẩm ướp kỹ lưỡng, nướng ch&iacute;n thơm lừng với hương vị đậm đ&agrave;, xen lẫn ch&uacute;t ngọt nhẹ đặc trưng của sốt BBQ. Kết hợp c&ugrave;ng rau tươi gi&ograve;n v&agrave; lớp sốt b&eacute;o nhẹ, tất cả tạo n&ecirc;n một chiếc b&aacute;nh vừa ngon miệng, vừa đầy đủ dinh dưỡng, ph&ugrave; hợp cho bữa ăn nhanh nhưng vẫn trọn vị.</p>\r\n<p data-start=\"519\" data-end=\"545\"><strong data-start=\"519\" data-end=\"535\">Trọng lượng:</strong> 130 gram.</p>\r\n<p data-start=\"547\" data-end=\"581\"><strong data-start=\"547\" data-end=\"581\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"583\" data-end=\"691\"><strong data-start=\"583\" data-end=\"596\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon của nh&acirc;n thịt v&agrave; rau.</li>\r\n<li data-start=\"693\" data-end=\"820\"><strong data-start=\"693\" data-end=\"709\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng n&oacute;ng; c&oacute; thể h&acirc;m lại bằng l&ograve; vi s&oacute;ng hoặc l&ograve; nướng trước khi ăn để b&aacute;nh mềm v&agrave; dậy m&ugrave;i hơn.</li>\r\n<li data-start=\"822\" data-end=\"870\"><strong data-start=\"822\" data-end=\"838\">Hạn sử dụng:</strong> 1 - 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(20,'Bánh Croissant','b-anh-croissant-20',25000.00,'assets/uploads/banhmi/banh_69dbac0b7cac62.75556592.jpg','ngot','<p data-start=\"0\" data-end=\"444\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Croissant l&agrave; d&ograve;ng b&aacute;nh m&igrave; ngọt cao cấp nổi tiếng với lớp vỏ ngo&agrave;i v&agrave;ng &oacute;ng, gi&ograve;n nhẹ v&agrave; cấu tr&uacute;c nhiều lớp xếp chồng tinh tế. Khi thưởng thức, từng lớp b&aacute;nh mỏng t&aacute;ch nhẹ, mềm xốp b&ecirc;n trong, h&ograve;a quyện c&ugrave;ng hương bơ thơm ngậy đặc trưng, mang đến cảm gi&aacute;c vừa b&eacute;o nhẹ vừa thanh tao. Croissant thường được d&ugrave;ng k&egrave;m với mứt tr&aacute;i c&acirc;y, mật ong hoặc đơn giản l&agrave; thưởng thức nguy&ecirc;n bản để cảm nhận trọn vẹn hương vị chuẩn Ph&aacute;p.</p>\r\n<p data-start=\"446\" data-end=\"487\"><strong data-start=\"446\" data-end=\"462\">Trọng lượng:</strong> 70 gram/C&aacute;i.</p>\r\n<p data-start=\"489\" data-end=\"523\"><strong data-start=\"489\" data-end=\"523\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"525\" data-end=\"657\"><strong data-start=\"525\" data-end=\"538\">Bảo quản:</strong> Để ở nơi kh&ocirc; r&aacute;o, tho&aacute;ng m&aacute;t; tr&aacute;nh &aacute;nh nắng trực tiếp. Nếu muốn d&ugrave;ng l&acirc;u hơn, c&oacute; thể bảo quản trong ngăn m&aacute;t tủ lạnh.</li>\r\n<li data-start=\"659\" data-end=\"791\"><strong data-start=\"659\" data-end=\"675\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng trong ng&agrave;y; c&oacute; thể l&agrave;m n&oacute;ng lại bằng l&ograve; nướng hoặc nồi chi&ecirc;n kh&ocirc;ng dầu để b&aacute;nh gi&ograve;n v&agrave; thơm hơn.</li>\r\n<li data-start=\"793\" data-end=\"841\"><strong data-start=\"793\" data-end=\"809\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(25,'Tiramisu Matcha','tiramisu-matcha-25',60000.00,'assets/uploads/banhngot/banh_69dc5b4fb63517.31195849.jpg','ngot','<p><strong>M&ocirc; tả sản phẩm:</strong> B&aacute;nh Tiramisu Matcha l&agrave; sự kết hợp tinh tế giữa cốt b&aacute;nh b&ocirc;ng lan tươi mềm, h&ograve;a quyện với lớp kem trứng, đường v&agrave; ph&ocirc; mai được đ&aacute;nh b&ocirc;ng mịn m&agrave;ng, xen kẽ vị matcha thơm lừng. Bề mặt b&aacute;nh được rắc th&ecirc;m một lớp bột matcha nguy&ecirc;n chất, tạo n&ecirc;n hương vị đặc trưng v&agrave; hấp dẫn.</p>\r\n<p><strong>Trọng lượng:</strong> 100 gram/Hộp.</p>\r\n<p><strong>Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li><strong>Bảo quản</strong>: Giữ lạnh ở nhiệt độ th&iacute;ch hợp để đảm bảo chất lượng b&aacute;nh tốt nhất.</li>\r\n<li><strong>Thưởng thức</strong>: B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn.</li>\r\n<li><strong>Hạn sử dụng:</strong> 4 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,99,0,0),(26,'Bánh Cheesecake Cherry','b-anh-cheesecake-cherry-26',120000.00,'assets/uploads/banhngot/banh_69dbacfbbb9574.51672073.jpg','ngot','<p data-path-to-node=\"3,0,0\"><strong data-path-to-node=\"3,0,0\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Cheesecake Cherry l&agrave; sự giao thoa ho&agrave;n hảo giữa vị b&eacute;o ngậy, chua thanh nhẹ đặc trưng của lớp kem ph&ocirc; mai (cream cheese) mịn m&agrave;ng v&agrave; phần đế b&aacute;nh quy bơ thơm gi&ograve;n, đậm đ&agrave;. Điểm nhấn rực rỡ ch&iacute;nh l&agrave; lớp sốt cherry đỏ mọng phủ tr&ecirc;n bề mặt, với những quả anh đ&agrave;o ngọt lịm gi&uacute;p c&acirc;n bằng vị gi&aacute;c, tạo n&ecirc;n một trải nghiệm ẩm thực vừa sang trọng, vừa đầy l&ocirc;i cuốn.</p>\r\n<p data-path-to-node=\"3,1,0\"><strong data-path-to-node=\"3,1,0\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-path-to-node=\"3,1,0\"><strong data-path-to-node=\"3,2,0\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"3,2,1\">\r\n<li>\r\n<p data-path-to-node=\"3,2,1,0,0\"><strong data-path-to-node=\"3,2,1,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Lu&ocirc;n giữ lạnh ở nhiệt độ <strong data-path-to-node=\"3,2,1,0,0\" data-index-in-node=\"35\">2&deg;C - 5&deg;C</strong> trong hộp k&iacute;n để lớp ph&ocirc; mai giữ được độ kết cấu mịn mượt v&agrave; phần đế b&aacute;nh kh&ocirc;ng bị ẩm.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"3,2,1,1,0\"><strong data-path-to-node=\"3,2,1,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh ngon nhất khi d&ugrave;ng lạnh trực tiếp. Vị chua ngọt của cherry sẽ bung tỏa trọn vẹn khi kết hợp c&ugrave;ng lớp kem ph&ocirc; mai m&aacute;t lạnh.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"3,2,1,2,0\"><strong data-path-to-node=\"3,2,1,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>\r\n<p>&nbsp;</p>',0,97,0,0),(27,'Bánh Mochi Dâu tây','b-anh-mochi-d-au-t-ay-27',40000.00,'assets/uploads/banhngot/banh_69dbabeec4a9c8.67977495.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Mochi D&acirc;u T&acirc;y (Ichigo Daifuku) l&agrave; sự kết hợp tinh tế giữa lớp vỏ bột nếp Nhật Bản dẻo mịn, dai nhẹ v&agrave; lớp nh&acirc;n đậu đỏ b&ugrave;i b&eacute;o, ngọt thanh. T&acirc;m điểm của b&aacute;nh l&agrave; một quả d&acirc;u t&acirc;y tươi mọng, chua ngọt tự nhi&ecirc;n, tạo n&ecirc;n sự b&ugrave;ng nổ hương vị khi thưởng thức. Sự h&ograve;a quyện giữa vị thanh m&aacute;t của tr&aacute;i c&acirc;y v&agrave; độ dẻo thơm của vỏ b&aacute;nh tạo n&ecirc;n một m&oacute;n tr&aacute;ng miệng vừa truyền thống vừa hiện đại, v&ocirc; c&ugrave;ng hấp dẫn.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 240 gram (Set 4 c&aacute;i).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để d&acirc;u t&acirc;y lu&ocirc;n tươi v&agrave; vỏ b&aacute;nh kh&ocirc;ng bị qu&aacute; mềm. Tr&aacute;nh để ở nhiệt độ ph&ograve;ng qu&aacute; l&acirc;u.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn v&agrave; cảm nhận r&otilde; độ mọng nước của d&acirc;u t&acirc;y.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 1 - 2 ng&agrave;y kể từ ng&agrave;y sản xuất (n&ecirc;n d&ugrave;ng ngay trong ng&agrave;y để vỏ b&aacute;nh dẻo nhất v&agrave; tr&aacute;i c&acirc;y tươi nhất).</p>\r\n</li>\r\n</ul>',0,99,0,0),(28,'Bánh Muffin Cherry','b-anh-muffin-cherry-28',80000.00,'assets/uploads/banhngot/banh_69dbabb04f90c1.83549860.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Muffin Cherry l&agrave; sự kết hợp sang trọng giữa cốt b&aacute;nh bơ sữa xốp mịn v&agrave; lớp kem tươi thanh khiết, điểm xuyết những quả cherry đỏ mọng, ngọt lịm. Vị chua nhẹ đặc trưng từ sốt cherry tươi ẩn b&ecirc;n trong h&ograve;a quyện c&ugrave;ng độ b&eacute;o ngậy của lớp kem trang tr&iacute; tỉ mỉ, tạo n&ecirc;n một hương vị tinh tế, kh&ocirc;ng g&acirc;y cảm gi&aacute;c ngấy. Mỗi chiếc b&aacute;nh như một t&aacute;c phẩm nghệ thuật nhỏ xinh, mang lại trải nghiệm vị gi&aacute;c đẳng cấp v&agrave; vẻ ngo&agrave;i đầy cuốn h&uacute;t.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> Set 6 c&aacute;i (tổng khoảng 400 gram).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để bảo vệ cấu tr&uacute;c kem v&agrave; giữ tr&aacute;i c&acirc;y lu&ocirc;n tươi ngon.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn; hương vị thanh m&aacute;t của cherry sẽ b&ugrave;ng nổ r&otilde; rệt nhất khi thưởng thức lạnh.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(29,'Bánh Muffin Dâu tây','b-anh-muffin-d-au-t-ay-29',120000.00,'assets/uploads/banhngot/banh_69dbab2a18b470.14063134.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Muffin D&acirc;u t&acirc;y l&agrave; những chiếc b&aacute;nh nhỏ xinh với cốt b&aacute;nh bơ sữa xốp mềm, mang hương thơm vani dịu nhẹ. Mỗi chiếc b&aacute;nh được phủ một lớp kem tươi hoặc kem cheese m&agrave;u hồng nhạt bắt mắt, h&ograve;a quyện c&ugrave;ng mứt d&acirc;u t&acirc;y ngọt ng&agrave;o ẩn b&ecirc;n trong. Điểm nhấn tr&ecirc;n c&ugrave;ng l&agrave; một quả d&acirc;u t&acirc;y tươi mọng, tạo n&ecirc;n sự c&acirc;n bằng ho&agrave;n hảo giữa vị b&eacute;o ngậy của kem v&agrave; vị chua thanh tự nhi&ecirc;n, mang lại cảm gi&aacute;c nhẹ nh&agrave;ng khi thưởng thức.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> Set 6 c&aacute;i (tổng khoảng 400 gram)</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để lớp kem giữ được h&igrave;nh d&aacute;ng sắc n&eacute;t v&agrave; d&acirc;u t&acirc;y lu&ocirc;n tươi.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn. Rất th&iacute;ch hợp cho c&aacute;c buổi tiệc tr&agrave;, sinh nhật hoặc l&agrave;m qu&agrave; tặng.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,99,0,0),(30,'Tiramisu truyền thống','tiramisu-truyn-thng-30',80000.00,'assets/uploads/banhngot/banh_69dbab0d238210.70061934.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> Tiramisu truyền thống l&agrave; sự kết hợp tinh tế giữa những lớp b&aacute;nh Ladyfingers (b&aacute;nh s&acirc;m panh) mềm mại, thấm đẫm hương vị c&agrave; ph&ecirc; espresso đậm đ&agrave;, xen kẽ với lớp kem ph&ocirc; mai Mascarpone b&eacute;o ngậy, mịn m&agrave;ng. Bề mặt b&aacute;nh được phủ một lớp bột cacao nguy&ecirc;n chất, tạo n&ecirc;n sự c&acirc;n bằng ho&agrave;n hảo giữa vị đắng nhẹ, ngọt thanh v&agrave; b&eacute;o b&ugrave;i đặc trưng của ẩm thực &Yacute;.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 200 gram/Hộp.</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Lu&ocirc;n giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để đảm bảo kết cấu kem ph&ocirc; mai kh&ocirc;ng bị tan chảy.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh l&agrave; ngon nhất; hương vị c&agrave; ph&ecirc; v&agrave; ph&ocirc; mai sẽ h&ograve;a quyện trọn vẹn hơn khi thưởng thức lạnh.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(31,'Bánh Tart','b-anh-tart-31',80000.00,'assets/uploads/banhman/banh_69dbaaa9b80f98.10401963.jpg','man','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Tart l&agrave; sự h&ograve;a quyện tuyệt vời giữa lớp vỏ b&aacute;nh v&agrave;ng ươm, gi&ograve;n rụm v&agrave; đậm đ&agrave; hương vị bơ Ph&aacute;p. B&ecirc;n trong l&agrave; lớp nh&acirc;n kem trứng (custard) mềm mịn, tan chảy với vị ngọt thanh v&agrave; hương vani dịu nhẹ. Với kết cấu đặc trưng \"ngo&agrave;i gi&ograve;n trong mềm\", b&aacute;nh mang đến cảm gi&aacute;c th&iacute;ch th&uacute; khi thưởng thức, ph&ugrave; hợp cho những người y&ecirc;u th&iacute;ch d&ograve;ng b&aacute;nh nướng truyền thống đầy tinh tế.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 300 gram (Set 6 c&aacute;i)</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để lớp nh&acirc;n lu&ocirc;n tươi ngon. Nếu muốn vỏ b&aacute;nh gi&ograve;n lại, c&oacute; thể l&agrave;m n&oacute;ng nhanh bằng nồi chi&ecirc;n kh&ocirc;ng dầu ở 160&deg;C trong 2-3 ph&uacute;t.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh hay d&ugrave;ng n&oacute;ng nhẹ đều mang lại trải nghiệm đặc sắc ri&ecirc;ng; rất hợp khi nh&acirc;m nhi c&ugrave;ng tr&agrave; đen hoặc tr&agrave; oolong.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',1,98,0,0),(32,'Bánh Quy mix hạt','b-anh-quy-mix-ht-32',100000.00,'assets/uploads/banhngot/banh_69dbac321327a6.77842905.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh quy mix hạt l&agrave; m&oacute;n ăn nhẹ gi&agrave;u dinh dưỡng, kết hợp ho&agrave;n hảo giữa cốt b&aacute;nh quy bơ thơm lừng, gi&ograve;n tan v&agrave; sự phong ph&uacute; của c&aacute;c loại hạt cao cấp như hạnh nh&acirc;n, hạt điều, hạt b&iacute; v&agrave; m&egrave; đen. Mỗi miếng b&aacute;nh mang đến vị b&ugrave;i b&eacute;o tự nhi&ecirc;n từ hạt, h&ograve;a quyện c&ugrave;ng độ ngọt nhẹ v&agrave; hương thơm nồng n&agrave;n của bơ Ph&aacute;p. Đ&acirc;y l&agrave; lựa chọn tuyệt vời cho những ai y&ecirc;u th&iacute;ch hương vị nguy&ecirc;n bản, &iacute;t ngọt v&agrave; tốt cho sức khỏe.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng: </strong>450 gram (t&uacute;i 10 c&aacute;i).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Bảo quản nơi kh&ocirc; r&aacute;o, tho&aacute;ng m&aacute;t hoặc trong hũ đậy k&iacute;n để giữ độ gi&ograve;n. Tr&aacute;nh &aacute;nh nắng trực tiếp v&agrave; nơi c&oacute; độ ẩm cao.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> D&ugrave;ng trực tiếp như m&oacute;n ăn vặt hằng ng&agrave;y; đặc biệt ngon khi nh&acirc;m nhi c&ugrave;ng tr&agrave; xanh hoặc sữa n&oacute;ng.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 30 ng&agrave;y kể từ ng&agrave;y sản xuất (n&ecirc;n d&ugrave;ng trong 15 ng&agrave;y đầu sau khi mở nắp để cảm nhận độ gi&ograve;n tốt nhất).</p>\r\n</li>\r\n</ul>',1,99,0,0),(33,'Bánh Muffinhình nhím','b-anh-muffinh-inh-nh-im-33',90000.00,'assets/uploads/banhngot/banh_69dbaa8ed109b5.12053399.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Muffin h&igrave;nh nh&iacute;m l&agrave; sự kết hợp đ&aacute;ng y&ecirc;u giữa cốt b&aacute;nh b&ocirc;ng lan bơ sữa mềm xốp, c&oacute; vị ngọt thanh dịu nhẹ v&agrave; lớp kem b&eacute;o ngậy trang tr&iacute; thủ c&ocirc;ng tỉ mỉ. Điểm nhấn độc đ&aacute;o nằm ở lớp \"gai\" nh&iacute;m được l&agrave;m từ những l&aacute;t hạnh nh&acirc;n gi&ograve;n rụm, bao quanh khu&ocirc;n mặt nh&iacute;m bằng kem tươi v&ocirc; c&ugrave;ng dễ thương. Sản phẩm kh&ocirc;ng chỉ mang đến hương vị thơm ngon m&agrave; c&ograve;n l&agrave; m&oacute;n qu&agrave; tặng tinh tế, ph&ugrave; hợp cho trẻ em v&agrave; những buổi tiệc tr&agrave; th&acirc;n mật.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> Khoảng 80 - 100 gram/Set 4 c&aacute;i.</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để bảo vệ tạo h&igrave;nh kem v&agrave; giữ cho hạnh nh&acirc;n kh&ocirc;ng bị mềm.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn; kết hợp tuyệt vời c&ugrave;ng tr&agrave; hoặc sữa tươi.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,99,0,0),(34,'Bánh mì phomai hải sản','b-anh-m-i-phomai-hi-sn-34',80000.00,'assets/uploads/banhman/banh_69dc5ba8558381.03558149.jpg','mi','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; ph&ocirc; mai hải sản l&agrave; sự kết hợp độc đ&aacute;o giữa lớp vỏ b&aacute;nh bao v&agrave;ng ươm, mềm xốp v&agrave; phần nh&acirc;n hải sản tươi ngon đầy ắp b&ecirc;n trong. Lớp nh&acirc;n l&agrave; sự h&ograve;a quyện tuyệt vời của t&ocirc;m, thịt hải sản đậm đ&agrave; c&ugrave;ng d&ograve;ng ph&ocirc; mai tan chảy, b&eacute;o ngậy v&acirc;y quanh. B&aacute;nh mang hương vị hiện đại, vừa thơm nồng m&ugrave;i bơ sữa, vừa mang vị ngọt tự nhi&ecirc;n từ biển cả, tạo n&ecirc;n một m&oacute;n ăn nhẹ đầy đủ dinh dưỡng v&agrave; v&ocirc; c&ugrave;ng hấp dẫn.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> Khoảng 150 - 200 gram/c&aacute;i.</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Bảo quản ở ngăn m&aacute;t tủ lạnh nếu d&ugrave;ng trong ng&agrave;y hoặc ngăn đ&ocirc;ng để giữ b&aacute;nh được l&acirc;u hơn.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng n&oacute;ng sẽ ngon nhất để cảm nhận được độ k&eacute;o sợi của ph&ocirc; mai. Bạn c&oacute; thể l&agrave;m n&oacute;ng lại bằng l&ograve; vi s&oacute;ng hoặc hấp c&aacute;ch thủy trong 3-5 ph&uacute;t.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y trong ngăn m&aacute;t hoặc 7 ng&agrave;y trong ngăn đ&ocirc;ng kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(35,'Bánh Muffin Chocolate','b-anh-muffin-chocolate-35',80000.00,'assets/uploads/banhngot/banh_69dbaa45c851e9.30980417.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Muffin Chocolate l&agrave; sự kết hợp đậm đ&agrave; giữa cốt b&aacute;nh cacao xốp mềm, ẩm mịn v&agrave; lớp kem ganache chocolate b&eacute;o ngậy phủ tr&ecirc;n bề mặt. Vị đắng nhẹ đặc trưng của chocolate nguy&ecirc;n chất h&ograve;a quyện c&ugrave;ng độ ngọt thanh của kem tươi, tạo n&ecirc;n một hương vị nồng n&agrave;n v&agrave; l&ocirc;i cuốn. B&aacute;nh thường được trang tr&iacute; th&ecirc;m vụn chocolate hoặc hạt ngũ cốc gi&ograve;n, mang lại trải nghiệm đa dạng về cấu tr&uacute;c trong từng miếng b&aacute;nh.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> Set 2 - 4 c&aacute;i (tổng khoảng 200 - 300 gram) hoặc k&iacute;ch thước mini.</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 8&deg;C để lớp kem kh&ocirc;ng bị tan chảy v&agrave; giữ được độ ẩm của cốt b&aacute;nh.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn; cực kỳ ph&ugrave; hợp khi d&ugrave;ng k&egrave;m với một ly sữa tươi hoặc tr&agrave; n&oacute;ng.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 3 - 5 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(36,'Bánh Cheesecake Dâu tây','b-anh-cheesecake-d-au-t-ay-36',150000.00,'assets/uploads/banhngot/banh_69dca160f23c32.81252844.jpg','ngot','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Cheesecake D&acirc;u T&acirc;y l&agrave; sự kết hợp ho&agrave;n hảo giữa lớp đế b&aacute;nh quy bơ gi&ograve;n thơm v&agrave; phần th&acirc;n b&aacute;nh ph&ocirc; mai (cream cheese) b&eacute;o ngậy, mềm mịn như lụa, tan ngay tr&ecirc;n đầu lưỡi. Vị chua thanh tự nhi&ecirc;n của lớp sốt d&acirc;u t&acirc;y đỏ mọng phủ tr&ecirc;n bề mặt gi&uacute;p c&acirc;n bằng ho&agrave;n hảo với vị b&eacute;o đặc trưng của ph&ocirc; mai. B&aacute;nh mang đến một trải nghiệm ẩm thực sang trọng, thanh m&aacute;t v&agrave; đầy l&ocirc;i cuốn.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram (hoặc đường k&iacute;nh 10cm - 12cm).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Lu&ocirc;n giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để cấu tr&uacute;c ph&ocirc; mai giữ được độ đ&ocirc;ng đặc v&agrave; mịn mướt nhất.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh l&agrave; ngon nhất; c&oacute; thể d&ugrave;ng k&egrave;m một t&aacute;ch tr&agrave; Earl Grey để tăng th&ecirc;m hương vị.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 3 - 5 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(37,'Bánh kem Oreo Việt quất','b-anh-kem-oreo-vit-qut-37',280000.00,'assets/uploads/banhkem/banh_69db22e6a95e42.92082359.jpg','kem','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem Oreo Việt quất l&agrave; sự giao thoa ho&agrave;n hảo giữa vị ngọt đắng đặc trưng của b&aacute;nh quy Oreo nghiền vụn v&agrave; ch&uacute;t chua thanh, tươi m&aacute;t từ mứt việt quất tự nhi&ecirc;n. Lớp kem tươi mềm mịn, b&eacute;o ngậy được đ&aacute;nh b&ocirc;ng c&ugrave;ng ph&ocirc; mai, xen kẽ với những lớp cốt b&aacute;nh b&ocirc;ng lan xốp nhẹ, tạo n&ecirc;n cấu tr&uacute;c đa tầng đầy th&uacute; vị. Bề mặt b&aacute;nh được trang tr&iacute; bằng b&aacute;nh Oreo nguy&ecirc;n bản v&agrave; những quả việt quất mọng nước, mang đến trải nghiệm vị gi&aacute;c hiện đại v&agrave; l&ocirc;i cuốn.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram (hoặc đường k&iacute;nh 10cm - 12cm).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Giữ lạnh ở nhiệt độ từ 2&deg;C - 5&deg;C để duy tr&igrave; độ đ&ocirc;ng mịn của lớp kem v&agrave; độ gi&ograve;n của b&aacute;nh quy.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh sẽ ngon hơn; c&oacute; thể d&ugrave;ng k&egrave;m với tr&agrave; n&oacute;ng hoặc c&agrave; ph&ecirc; kh&ocirc;ng đường để c&acirc;n bằng vị b&eacute;o.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>\r\n</li>\r\n</ul>',0,100,0,0),(38,'Bánh kem Dâu tây','b-anh-kem-d-au-t-ay-38',260000.00,'assets/uploads/banhkem/banh_69db24e89af395.99525623.jpg','kem','<p data-path-to-node=\"1\"><strong data-path-to-node=\"1\" data-index-in-node=\"0\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem D&acirc;u t&acirc;y l&agrave; sự kết hợp ngọt ng&agrave;o giữa cốt b&aacute;nh b&ocirc;ng lan vani thơm bơ v&agrave; lớp kem tươi (whipping cream) trắng muốt, mịn m&agrave;ng. Điểm nhấn của b&aacute;nh ch&iacute;nh l&agrave; những l&aacute;t d&acirc;u t&acirc;y tươi mọng, c&oacute; vị chua ngọt thanh khiết được kh&eacute;o l&eacute;o đan xen giữa c&aacute;c lớp kem, gi&uacute;p c&acirc;n bằng vị b&eacute;o. Hương thơm tự nhi&ecirc;n từ d&acirc;u t&acirc;y c&ugrave;ng sắc đỏ bắt mắt tạo n&ecirc;n một m&oacute;n b&aacute;nh vừa tinh tế, vừa tr&agrave;n đầy sức sống.</p>\r\n<p data-path-to-node=\"2\"><strong data-path-to-node=\"2\" data-index-in-node=\"0\">Trọng lượng:</strong> 250 gram (hoặc đường k&iacute;nh 10cm - 12cm).</p>\r\n<p data-path-to-node=\"3\"><strong data-path-to-node=\"3\" data-index-in-node=\"0\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul data-path-to-node=\"4\">\r\n<li>\r\n<p data-path-to-node=\"4,0,0\"><strong data-path-to-node=\"4,0,0\" data-index-in-node=\"0\">Bảo quản:</strong> Lu&ocirc;n giữ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để d&acirc;u t&acirc;y giữ được độ tươi v&agrave; lớp kem kh&ocirc;ng bị tan chảy.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,1,0\"><strong data-path-to-node=\"4,1,0\" data-index-in-node=\"0\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh l&agrave; ngon nhất; n&ecirc;n thưởng thức ngay sau khi lấy ra khỏi tủ lạnh để cảm nhận độ tươi mới.</p>\r\n</li>\r\n<li>\r\n<p data-path-to-node=\"4,2,0\"><strong data-path-to-node=\"4,2,0\" data-index-in-node=\"0\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất (n&ecirc;n d&ugrave;ng sớm v&igrave; b&aacute;nh c&oacute; tr&aacute;i c&acirc;y tươi).</p>\r\n</li>\r\n</ul>',0,100,0,0),(39,'Bánh kem Phomai Bắp','b-anh-kem-phomai-bp-39',230000.00,'assets/uploads/banhkem/banh_69db2d7a894377.87782327.jpg','kem','<p data-start=\"0\" data-end=\"392\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem Ph&ocirc; mai Bắp l&agrave; sự kết hợp độc đ&aacute;o giữa vị b&eacute;o mịn của kem ph&ocirc; mai v&agrave; vị ngọt thanh tự nhi&ecirc;n từ hạt bắp. Cốt b&aacute;nh b&ocirc;ng lan mềm xốp được xen kẽ với lớp kem ph&ocirc; mai thơm ngậy, h&ograve;a quyện c&ugrave;ng những hạt bắp v&agrave;ng gi&ograve;n nhẹ, tạo n&ecirc;n kết cấu th&uacute; vị v&agrave; hương vị h&agrave;i h&ograve;a. Sự c&acirc;n bằng giữa vị b&eacute;o, ngọt v&agrave; ch&uacute;t b&ugrave;i của bắp khiến chiếc b&aacute;nh trở n&ecirc;n mới lạ nhưng vẫn rất dễ ăn.</p>\r\n<p data-start=\"394\" data-end=\"420\"><strong data-start=\"394\" data-end=\"410\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-start=\"422\" data-end=\"456\"><strong data-start=\"422\" data-end=\"456\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"458\" data-end=\"560\"><strong data-start=\"458\" data-end=\"471\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon của kem v&agrave; bắp.</li>\r\n<li data-start=\"562\" data-end=\"671\"><strong data-start=\"562\" data-end=\"578\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n lấy b&aacute;nh ra trước 5 - 10 ph&uacute;t để lớp kem mềm mịn v&agrave; dậy vị hơn.</li>\r\n<li data-start=\"673\" data-end=\"721\"><strong data-start=\"673\" data-end=\"689\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(40,'Bánh kem Valentine','b-anh-kem-valentine-40',300000.00,'assets/uploads/banhkem/banh_69db2e9c191a79.22376023.jpg','kem','<p data-start=\"0\" data-end=\"421\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem Valentine l&agrave; m&oacute;n qu&agrave; ngọt ng&agrave;o d&agrave;nh cho những dịp đặc biệt, được thiết kế tinh tế với gam m&agrave;u l&atilde;ng mạn như đỏ, hồng hoặc trắng. Cốt b&aacute;nh b&ocirc;ng lan mềm mịn kết hợp c&ugrave;ng lớp kem tươi (whipping cream) b&eacute;o nhẹ, được trang tr&iacute; bằng tr&aacute;i tim, socola hoặc c&aacute;c họa tiết dễ thương mang th&ocirc;ng điệp y&ecirc;u thương. Hương vị ngọt dịu, kh&ocirc;ng gắt, ph&ugrave; hợp để c&ugrave;ng người thương chia sẻ những khoảnh khắc &yacute; nghĩa.</p>\r\n<p data-start=\"423\" data-end=\"449\"><strong data-start=\"423\" data-end=\"439\">Trọng lượng:</strong> T&ugrave;y theo mẫu v&agrave; K&iacute;ch thước.</p>\r\n<p data-start=\"451\" data-end=\"485\"><strong data-start=\"451\" data-end=\"485\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<p data-start=\"487\" data-end=\"597\"><strong data-start=\"487\" data-end=\"500\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ form b&aacute;nh v&agrave; lớp kem lu&ocirc;n tươi ngon.</p>\r\n<p data-start=\"599\" data-end=\"716\"><strong data-start=\"599\" data-end=\"615\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n lấy b&aacute;nh ra trước 10 - 15 ph&uacute;t để kem mềm mịn v&agrave; hương vị trọn vẹn hơn.</p>\r\n<p data-start=\"718\" data-end=\"766\" data-is-last-node=\"\" data-is-only-node=\"\"><strong data-start=\"718\" data-end=\"734\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</p>',0,100,0,0),(41,'Bánh mì hoa Cúc','b-anh-m-i-hoa-c-uc-41',45000.00,'assets/uploads/banhmi/banh_69dca2da274b70.59125587.jpg','mi','<p data-start=\"0\" data-end=\"387\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; hoa c&uacute;c l&agrave; d&ograve;ng b&aacute;nh ngọt cao cấp với kết cấu mềm xốp, dai nhẹ đặc trưng v&agrave; hương thơm quyến rũ từ bơ, sữa v&agrave; trứng. B&aacute;nh được tạo h&igrave;nh đan xen đẹp mắt, lớp vỏ ngo&agrave;i v&agrave;ng &oacute;ng, phủ nhẹ hạnh nh&acirc;n hoặc đường tạo độ gi&ograve;n nhẹ. Khi thưởng thức, b&aacute;nh c&oacute; vị ngọt thanh, b&eacute;o nhẹ, thớ b&aacute;nh tơi mịn v&agrave; k&eacute;o sợi hấp dẫn, rất ph&ugrave; hợp cho bữa s&aacute;ng hoặc d&ugrave;ng k&egrave;m tr&agrave;, c&agrave; ph&ecirc;.</p>\r\n<p data-start=\"389\" data-end=\"415\"><strong data-start=\"389\" data-end=\"405\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-start=\"417\" data-end=\"451\"><strong data-start=\"417\" data-end=\"451\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"453\" data-end=\"550\"><strong data-start=\"453\" data-end=\"466\">Bảo quản:</strong> Để nơi kh&ocirc; r&aacute;o, tho&aacute;ng m&aacute;t; c&oacute; thể bảo quản trong ngăn m&aacute;t tủ lạnh để d&ugrave;ng l&acirc;u hơn.</li>\r\n<li data-start=\"552\" data-end=\"664\"><strong data-start=\"552\" data-end=\"568\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng trong ng&agrave;y; c&oacute; thể l&agrave;m ấm nhẹ bằng l&ograve; nướng để b&aacute;nh mềm v&agrave; dậy m&ugrave;i thơm hơn.</li>\r\n<li data-start=\"666\" data-end=\"714\"><strong data-start=\"666\" data-end=\"682\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(42,'Bánh mì kem phô mai','b-anh-m-i-kem-ph-o-mai-42',35000.00,'assets/uploads/banhmi/banh_69dcab1542a4b4.91633694.jpg','mi','<div class=\"flex flex-col text-sm pb-25\">\r\n<section class=\"text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]\" dir=\"auto\" data-turn-id=\"request-69db2b42-2ba0-8323-9490-2628457c5152-1\" data-testid=\"conversation-turn-22\" data-scroll-anchor=\"true\" data-turn=\"assistant\">\r\n<div class=\"text-base my-auto mx-auto pb-10 [--thread-content-margin:var(--thread-content-margin-xs,calc(var(--spacing)*4))] @w-sm/main:[--thread-content-margin:var(--thread-content-margin-sm,calc(var(--spacing)*6))] @w-lg/main:[--thread-content-margin:var(--thread-content-margin-lg,calc(var(--spacing)*16))] px-(--thread-content-margin)\">\r\n<div class=\"[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn\">\r\n<div class=\"flex max-w-full flex-col gap-4 grow\">\r\n<div class=\"min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal outline-none keyboard-focused:focus-ring [.text-message+&amp;]:mt-1\" dir=\"auto\" tabindex=\"0\" data-message-author-role=\"assistant\" data-message-id=\"1c700b59-844c-485b-bbb9-864cc4a3e053\" data-message-model-slug=\"gpt-5-3\" data-turn-start-message=\"true\">\r\n<div class=\"flex w-full flex-col gap-1 empty:hidden\">\r\n<div class=\"markdown prose dark:prose-invert w-full wrap-break-word light markdown-new-styling\">\r\n<p data-start=\"0\" data-end=\"390\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; kem ph&ocirc; mai tan chảy l&agrave; m&oacute;n b&aacute;nh hấp dẫn với lớp vỏ ngo&agrave;i mềm mịn, phủ nhẹ lớp bột sữa thơm b&eacute;o. B&ecirc;n trong l&agrave; nh&acirc;n kem ph&ocirc; mai s&aacute;nh mịn, b&eacute;o ngậy v&agrave; tan chảy khi cắn v&agrave;o, tạo cảm gi&aacute;c cực kỳ &ldquo;đ&atilde; miệng&rdquo;. Sự kết hợp giữa lớp b&aacute;nh tơi xốp v&agrave; phần nh&acirc;n mịn mượt mang đến hương vị ngọt dịu, b&eacute;o nhưng kh&ocirc;ng ngấy, rất ph&ugrave; hợp cho những ai y&ecirc;u th&iacute;ch b&aacute;nh m&igrave; ngọt.</p>\r\n<p data-start=\"392\" data-end=\"418\"><strong data-start=\"392\" data-end=\"408\">Trọng lượng:</strong> 130 gram.</p>\r\n<p data-start=\"420\" data-end=\"454\"><strong data-start=\"420\" data-end=\"454\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"456\" data-end=\"556\"><strong data-start=\"456\" data-end=\"469\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon của nh&acirc;n kem.</li>\r\n<li data-start=\"558\" data-end=\"669\"><strong data-start=\"558\" data-end=\"574\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh hoặc c&oacute; thể l&agrave;m ấm nhẹ để phần nh&acirc;n kem tan chảy, tăng độ b&eacute;o v&agrave; thơm.</li>\r\n<li data-start=\"671\" data-end=\"719\"><strong data-start=\"671\" data-end=\"687\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"mt-3 w-full empty:hidden\">&nbsp;</div>\r\n</div>\r\n</div>\r\n</section>\r\n</div>',0,100,0,0),(43,'Bánh mì Sandwich','b-anh-m-i-sandwich-43',25000.00,'assets/uploads/banhmi/banh_69dca5224bae30.13645557.jpg','mi','<p data-start=\"0\" data-end=\"343\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; sandwich l&agrave; loại b&aacute;nh m&igrave; mềm mịn, c&oacute; kết cấu xốp nhẹ v&agrave; vị ngọt dịu dễ ăn. Với lớp vỏ mỏng v&agrave; ruột b&aacute;nh trắng mịn, sandwich rất linh hoạt khi kết hợp c&ugrave;ng nhiều loại nh&acirc;n như trứng, thịt nguội, ph&ocirc; mai hoặc mứt tr&aacute;i c&acirc;y. Đ&acirc;y l&agrave; lựa chọn ho&agrave;n hảo cho bữa s&aacute;ng nhanh gọn, tiện lợi nhưng vẫn đảm bảo đầy đủ dinh dưỡng.</p>\r\n<p data-start=\"345\" data-end=\"371\"><strong data-start=\"345\" data-end=\"361\">Trọng lượng:</strong> 200 gram.</p>\r\n<p data-start=\"373\" data-end=\"407\"><strong data-start=\"373\" data-end=\"407\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"409\" data-end=\"519\"><strong data-start=\"409\" data-end=\"422\">Bảo quản:</strong> Để nơi kh&ocirc; r&aacute;o, tho&aacute;ng m&aacute;t; c&oacute; thể bảo quản trong ngăn m&aacute;t tủ lạnh để k&eacute;o d&agrave;i thời gian sử dụng.</li>\r\n<li data-start=\"521\" data-end=\"624\"><strong data-start=\"521\" data-end=\"537\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng trong ng&agrave;y; c&oacute; thể nướng nhẹ để b&aacute;nh gi&ograve;n b&ecirc;n ngo&agrave;i, mềm b&ecirc;n trong.</li>\r\n<li data-start=\"626\" data-end=\"674\"><strong data-start=\"626\" data-end=\"642\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(44,'Bánh mì Việt Nam','b-anh-m-i-vit-nam-44',25000.00,'assets/uploads/banhmi/banh_69dca5e9b8f5d5.11413003.jpg','mi','<div class=\"flex flex-col text-sm pb-25\">\r\n<section class=\"text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]\" dir=\"auto\" data-turn-id=\"request-69db2b42-2ba0-8323-9490-2628457c5152-3\" data-testid=\"conversation-turn-26\" data-scroll-anchor=\"true\" data-turn=\"assistant\">\r\n<div class=\"text-base my-auto mx-auto pb-10 [--thread-content-margin:var(--thread-content-margin-xs,calc(var(--spacing)*4))] @w-sm/main:[--thread-content-margin:var(--thread-content-margin-sm,calc(var(--spacing)*6))] @w-lg/main:[--thread-content-margin:var(--thread-content-margin-lg,calc(var(--spacing)*16))] px-(--thread-content-margin)\">\r\n<div class=\"[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn\">\r\n<div class=\"flex max-w-full flex-col gap-4 grow\">\r\n<div class=\"min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal outline-none keyboard-focused:focus-ring [.text-message+&amp;]:mt-1\" dir=\"auto\" tabindex=\"0\" data-message-author-role=\"assistant\" data-message-id=\"1db9b5cc-8de3-4d38-b1c1-3748b904a4cb\" data-message-model-slug=\"gpt-5-3\" data-turn-start-message=\"true\">\r\n<div class=\"flex w-full flex-col gap-1 empty:hidden\">\r\n<div class=\"markdown prose dark:prose-invert w-full wrap-break-word light markdown-new-styling\">\r\n<p data-start=\"0\" data-end=\"415\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh m&igrave; Việt Nam l&agrave; loại b&aacute;nh m&igrave; truyền thống với lớp vỏ ngo&agrave;i v&agrave;ng gi&ograve;n rụm, b&ecirc;n trong ruột b&aacute;nh mềm xốp, nhẹ v&agrave; tho&aacute;ng. Khi thưởng thức, b&aacute;nh c&oacute; độ gi&ograve;n đặc trưng h&ograve;a quyện c&ugrave;ng phần ruột b&aacute;nh dai nhẹ, tạo cảm gi&aacute;c rất &ldquo;đ&atilde; miệng&rdquo;. B&aacute;nh m&igrave; thường được d&ugrave;ng k&egrave;m với nhiều loại nh&acirc;n như thịt, pate, trứng, rau v&agrave; nước sốt, mang đến hương vị đậm đ&agrave;, phong ph&uacute; v&agrave; rất quen thuộc trong ẩm thực Việt.</p>\r\n<p data-start=\"417\" data-end=\"442\"><strong data-start=\"417\" data-end=\"433\">Trọng lượng:</strong> 90 gram.</p>\r\n<p data-start=\"444\" data-end=\"478\"><strong data-start=\"444\" data-end=\"478\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"480\" data-end=\"569\"><strong data-start=\"480\" data-end=\"493\">Bảo quản:</strong> Để nơi kh&ocirc; r&aacute;o, tho&aacute;ng m&aacute;t; tr&aacute;nh m&ocirc;i trường ẩm để giữ độ gi&ograve;n của vỏ b&aacute;nh.</li>\r\n<li data-start=\"571\" data-end=\"663\"><strong data-start=\"571\" data-end=\"587\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng n&oacute;ng; c&oacute; thể nướng lại để vỏ b&aacute;nh gi&ograve;n hơn trước khi ăn.</li>\r\n<li data-start=\"665\" data-end=\"713\"><strong data-start=\"665\" data-end=\"681\">Hạn sử dụng:</strong> Trong v&ograve;ng 1 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"mt-3 w-full empty:hidden\">&nbsp;</div>\r\n</div>\r\n</div>\r\n</section>\r\n</div>',0,100,0,0),(46,'Bánh Crepe Sầu riêng','b-anh-crepe-su-ri-eng-46',50000.00,'assets/uploads/banhngot/banh_69dcad70df69b3.41737110.jpg','ngot','<p data-start=\"0\" data-end=\"398\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh Crepe Sầu ri&ecirc;ng l&agrave; m&oacute;n tr&aacute;ng miệng hấp dẫn với lớp vỏ crepe mỏng mềm, mịn m&agrave;ng &ocirc;m trọn phần nh&acirc;n b&ecirc;n trong. Nh&acirc;n b&aacute;nh l&agrave; sự kết hợp giữa kem tươi b&eacute;o nhẹ v&agrave; sầu ri&ecirc;ng ch&iacute;n thơm lừng, mang đến hương vị đặc trưng, ngọt ng&agrave;o v&agrave; đậm đ&agrave;. Khi thưởng thức, lớp vỏ mềm tan c&ugrave;ng phần nh&acirc;n s&aacute;nh mịn, b&eacute;o ngậy tạo n&ecirc;n cảm gi&aacute;c cực kỳ &ldquo;g&acirc;y nghiện&rdquo; cho những t&iacute;n đồ y&ecirc;u th&iacute;ch sầu ri&ecirc;ng.</p>\r\n<p data-start=\"400\" data-end=\"426\"><strong data-start=\"400\" data-end=\"416\">Trọng lượng:</strong> 250 gram (Set 6 c&aacute;i).</p>\r\n<p data-start=\"428\" data-end=\"462\"><strong data-start=\"428\" data-end=\"462\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"464\" data-end=\"571\"><strong data-start=\"464\" data-end=\"477\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon v&agrave; kết cấu của b&aacute;nh.</li>\r\n<li data-start=\"573\" data-end=\"693\"><strong data-start=\"573\" data-end=\"589\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; c&oacute; thể để ra ngo&agrave;i v&agrave;i ph&uacute;t trước khi ăn để b&aacute;nh mềm v&agrave; dậy m&ugrave;i sầu ri&ecirc;ng hơn.</li>\r\n<li data-start=\"695\" data-end=\"739\"><strong data-start=\"695\" data-end=\"711\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,2),(47,'Bánh kem Xoài','b-anh-kem-xo-ai-47',210000.00,'assets/uploads/banhkem/banh_69dcae2ab0c0c8.91615598.jpg','kem','<p data-start=\"0\" data-end=\"386\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem Xo&agrave;i l&agrave; sự kết hợp tươi m&aacute;t giữa cốt b&aacute;nh b&ocirc;ng lan mềm mịn v&agrave; lớp kem tươi (whipping cream) b&eacute;o nhẹ, h&ograve;a quyện c&ugrave;ng xo&agrave;i ch&iacute;n v&agrave;ng ngọt lịm. Những miếng xo&agrave;i tươi được xen kẽ giữa c&aacute;c lớp b&aacute;nh gi&uacute;p c&acirc;n bằng vị b&eacute;o, mang lại cảm gi&aacute;c thanh nhẹ, kh&ocirc;ng ngấy. Hương thơm tự nhi&ecirc;n của xo&agrave;i c&ugrave;ng m&agrave;u sắc bắt mắt tạo n&ecirc;n một chiếc b&aacute;nh vừa ngon miệng, vừa hấp dẫn.</p>\r\n<p data-start=\"388\" data-end=\"414\"><strong data-start=\"388\" data-end=\"404\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-start=\"416\" data-end=\"450\"><strong data-start=\"416\" data-end=\"450\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"452\" data-end=\"555\"><strong data-start=\"452\" data-end=\"465\">Bảo quản:</strong> Lu&ocirc;n giữ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để xo&agrave;i giữ được độ tươi v&agrave; lớp kem kh&ocirc;ng bị tan chảy.</li>\r\n<li data-start=\"557\" data-end=\"676\"><strong data-start=\"557\" data-end=\"573\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh l&agrave; ngon nhất; n&ecirc;n thưởng thức ngay sau khi lấy ra khỏi tủ lạnh để cảm nhận độ tươi mới.</li>\r\n<li data-start=\"678\" data-end=\"762\"><strong data-start=\"678\" data-end=\"694\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất (n&ecirc;n d&ugrave;ng sớm v&igrave; b&aacute;nh c&oacute; tr&aacute;i c&acirc;y tươi).</li>\r\n</ul>',0,100,0,1),(48,'Bánh kem Trái cây Mix','b-anh-kem-tr-ai-c-ay-mix-48',300000.00,'assets/uploads/banhkem/banh_69dcaf117f7802.90346037.jpg','kem','<p data-start=\"0\" data-end=\"437\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem tr&aacute;i c&acirc;y mix l&agrave; sự h&ograve;a quyện tươi m&aacute;t giữa cốt b&aacute;nh b&ocirc;ng lan mềm mịn v&agrave; lớp kem tươi (whipping cream) b&eacute;o nhẹ. B&aacute;nh được phủ v&agrave; trang tr&iacute; bằng nhiều loại tr&aacute;i c&acirc;y tươi như d&acirc;u, kiwi, nho, xo&agrave;i&hellip; mang đến hương vị đa dạng, chua ngọt h&agrave;i h&ograve;a v&agrave; kh&ocirc;ng bị ngấy. M&agrave;u sắc rực rỡ c&ugrave;ng hương thơm tự nhi&ecirc;n của tr&aacute;i c&acirc;y gi&uacute;p chiếc b&aacute;nh trở n&ecirc;n bắt mắt, ph&ugrave; hợp cho c&aacute;c dịp sinh nhật, li&ecirc;n hoan hay những buổi tiệc nhẹ.</p>\r\n<p data-start=\"439\" data-end=\"465\"><strong data-start=\"439\" data-end=\"455\">Trọng lượng:</strong> 350 gram.</p>\r\n<p data-start=\"467\" data-end=\"501\"><strong data-start=\"467\" data-end=\"501\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"503\" data-end=\"610\"><strong data-start=\"503\" data-end=\"516\">Bảo quản:</strong> Lu&ocirc;n giữ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để tr&aacute;i c&acirc;y giữ được độ tươi v&agrave; lớp kem kh&ocirc;ng bị tan chảy.</li>\r\n<li data-start=\"612\" data-end=\"731\"><strong data-start=\"612\" data-end=\"628\">Thưởng thức:</strong> B&aacute;nh d&ugrave;ng lạnh l&agrave; ngon nhất; n&ecirc;n thưởng thức ngay sau khi lấy ra khỏi tủ lạnh để cảm nhận độ tươi mới.</li>\r\n<li data-start=\"733\" data-end=\"817\"><strong data-start=\"733\" data-end=\"749\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất (n&ecirc;n d&ugrave;ng sớm v&igrave; b&aacute;nh c&oacute; tr&aacute;i c&acirc;y tươi).</li>\r\n</ul>',0,100,0,0),(49,'Bánh kem hình hoa','b-anh-kem-h-inh-hoa-49',300000.00,'assets/uploads/banhkem/banh_69dcb5ebdb4780.19943051.jpg','kem','<div class=\"flex flex-col text-sm pb-25\">\r\n<section class=\"text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]\" dir=\"auto\" data-turn-id=\"request-69db2b42-2ba0-8323-9490-2628457c5152-7\" data-testid=\"conversation-turn-34\" data-scroll-anchor=\"true\" data-turn=\"assistant\">\r\n<div class=\"text-base my-auto mx-auto pb-10 [--thread-content-margin:var(--thread-content-margin-xs,calc(var(--spacing)*4))] @w-sm/main:[--thread-content-margin:var(--thread-content-margin-sm,calc(var(--spacing)*6))] @w-lg/main:[--thread-content-margin:var(--thread-content-margin-lg,calc(var(--spacing)*16))] px-(--thread-content-margin)\">\r\n<div class=\"[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn\">\r\n<div class=\"flex max-w-full flex-col gap-4 grow\">\r\n<div class=\"min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal outline-none keyboard-focused:focus-ring [.text-message+&amp;]:mt-1\" dir=\"auto\" tabindex=\"0\" data-message-author-role=\"assistant\" data-message-id=\"bd7b61e5-a6c9-4095-8c7c-1465bd4a40c7\" data-message-model-slug=\"gpt-5-3\" data-turn-start-message=\"true\">\r\n<div class=\"flex w-full flex-col gap-1 empty:hidden\">\r\n<div class=\"markdown prose dark:prose-invert w-full wrap-break-word light markdown-new-styling\">\r\n<p data-start=\"0\" data-end=\"387\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh kem h&igrave;nh hoa l&agrave; chiếc b&aacute;nh mang vẻ đẹp tinh tế với lớp kem tươi được tạo h&igrave;nh th&agrave;nh những b&ocirc;ng hoa mềm mại, sống động. Cốt b&aacute;nh b&ocirc;ng lan mềm xốp kết hợp c&ugrave;ng lớp kem b&eacute;o nhẹ, ngọt dịu tạo n&ecirc;n hương vị h&agrave;i h&ograve;a, dễ ăn. Thiết kế hoa trang nh&atilde;, m&agrave;u sắc nhẹ nh&agrave;ng gi&uacute;p chiếc b&aacute;nh trở th&agrave;nh lựa chọn ho&agrave;n hảo cho c&aacute;c dịp sinh nhật, ch&uacute;c mừng hoặc l&agrave;m qu&agrave; tặng &yacute; nghĩa.</p>\r\n<p data-start=\"389\" data-end=\"415\"><strong data-start=\"389\" data-end=\"405\">Trọng lượng:</strong> 400 gram.</p>\r\n<p data-start=\"417\" data-end=\"451\"><strong data-start=\"417\" data-end=\"451\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"453\" data-end=\"563\"><strong data-start=\"453\" data-end=\"466\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ form b&aacute;nh v&agrave; lớp kem lu&ocirc;n tươi ngon.</li>\r\n<li data-start=\"565\" data-end=\"682\"><strong data-start=\"565\" data-end=\"581\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n lấy b&aacute;nh ra trước 10 - 15 ph&uacute;t để kem mềm mịn v&agrave; hương vị trọn vẹn hơn.</li>\r\n<li data-start=\"684\" data-end=\"732\"><strong data-start=\"684\" data-end=\"700\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"mt-3 w-full empty:hidden\">&nbsp;</div>\r\n</div>\r\n</div>\r\n</section>\r\n</div>',0,100,0,0),(50,'Bánh su kem','b-anh-su-kem-50',150000.00,'assets/uploads/banhngot/banh_69dcb85c434b71.60954750.jpg','ngot','<div class=\"flex flex-col text-sm pb-25\">\r\n<section class=\"text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]\" dir=\"auto\" data-turn-id=\"request-69db2b42-2ba0-8323-9490-2628457c5152-8\" data-testid=\"conversation-turn-36\" data-scroll-anchor=\"true\" data-turn=\"assistant\">\r\n<div class=\"text-base my-auto mx-auto pb-10 [--thread-content-margin:var(--thread-content-margin-xs,calc(var(--spacing)*4))] @w-sm/main:[--thread-content-margin:var(--thread-content-margin-sm,calc(var(--spacing)*6))] @w-lg/main:[--thread-content-margin:var(--thread-content-margin-lg,calc(var(--spacing)*16))] px-(--thread-content-margin)\">\r\n<div class=\"[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn\">\r\n<div class=\"flex max-w-full flex-col gap-4 grow\">\r\n<div class=\"min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal outline-none keyboard-focused:focus-ring [.text-message+&amp;]:mt-1\" dir=\"auto\" tabindex=\"0\" data-message-author-role=\"assistant\" data-message-id=\"55263120-af0e-46c1-aa99-039239e6d232\" data-message-model-slug=\"gpt-5-3\" data-turn-start-message=\"true\">\r\n<div class=\"flex w-full flex-col gap-1 empty:hidden\">\r\n<div class=\"markdown prose dark:prose-invert w-full wrap-break-word light markdown-new-styling\">\r\n<p data-start=\"0\" data-end=\"349\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> B&aacute;nh su kem l&agrave; m&oacute;n b&aacute;nh ngọt hấp dẫn với lớp vỏ mỏng, mềm nhẹ v&agrave; hơi dai đặc trưng. B&ecirc;n trong l&agrave; phần nh&acirc;n kem s&aacute;nh mịn, b&eacute;o ngậy, c&oacute; thể l&agrave; kem sữa, custard hoặc kem tươi, mang đến cảm gi&aacute;c m&aacute;t lạnh v&agrave; tan ngay trong miệng. Sự kết hợp giữa lớp vỏ nhẹ v&agrave; nh&acirc;n kem đậm đ&agrave; tạo n&ecirc;n hương vị h&agrave;i h&ograve;a, dễ ăn, ph&ugrave; hợp cho mọi lứa tuổi.</p>\r\n<p data-start=\"351\" data-end=\"377\"><strong data-start=\"351\" data-end=\"367\">Trọng lượng:</strong> 450 gram (T&uacute;i 10 c&aacute;i).</p>\r\n<p data-start=\"379\" data-end=\"413\"><strong data-start=\"379\" data-end=\"413\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"415\" data-end=\"515\"><strong data-start=\"415\" data-end=\"428\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon của nh&acirc;n kem.</li>\r\n<li data-start=\"517\" data-end=\"635\"><strong data-start=\"517\" data-end=\"533\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n d&ugrave;ng ngay sau khi lấy ra khỏi tủ lạnh để cảm nhận độ mịn v&agrave; b&eacute;o của kem.</li>\r\n<li data-start=\"637\" data-end=\"681\"><strong data-start=\"637\" data-end=\"653\">Hạn sử dụng:</strong> 2 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n<div class=\"mt-3 w-full empty:hidden\">&nbsp;</div>\r\n</div>\r\n</div>\r\n</section>\r\n</div>',0,100,0,0),(51,'Cheesecake Việt quất','cheesecake-vit-qut-51',150000.00,'assets/uploads/banhngot/banh_69e1ec13ded1d2.34316447.jpg','ngot','<p data-start=\"0\" data-end=\"384\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> Cheesecake Việt quất l&agrave; m&oacute;n b&aacute;nh cao cấp với lớp đế b&aacute;nh quy gi&ograve;n nhẹ kết hợp c&ugrave;ng lớp kem ph&ocirc; mai mềm mịn, b&eacute;o ngậy. Phần sốt việt quất phủ b&ecirc;n tr&ecirc;n c&oacute; vị chua ngọt thanh m&aacute;t, gi&uacute;p c&acirc;n bằng độ b&eacute;o của ph&ocirc; mai v&agrave; tạo n&ecirc;n hương vị h&agrave;i h&ograve;a, dễ ăn. M&agrave;u t&iacute;m đỏ bắt mắt c&ugrave;ng hương thơm đặc trưng của việt quất khiến chiếc b&aacute;nh trở n&ecirc;n hấp dẫn ngay từ c&aacute;i nh&igrave;n đầu ti&ecirc;n.</p>\r\n<p data-start=\"386\" data-end=\"412\"><strong data-start=\"386\" data-end=\"402\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-start=\"414\" data-end=\"448\"><strong data-start=\"414\" data-end=\"448\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"450\" data-end=\"557\"><strong data-start=\"450\" data-end=\"463\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon v&agrave; kết cấu của b&aacute;nh.</li>\r\n<li data-start=\"559\" data-end=\"665\"><strong data-start=\"559\" data-end=\"575\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n lấy b&aacute;nh ra trước 5 - 10 ph&uacute;t để b&aacute;nh mềm mịn v&agrave; dậy vị hơn.</li>\r\n<li data-start=\"667\" data-end=\"715\"><strong data-start=\"667\" data-end=\"683\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0),(52,'Cheesecake Chanh dây','cheesecake-chanh-d-ay-52',160000.00,'assets/uploads/banhngot/banh_69e1ecc4d473f5.03860930.jpg','ngot','<div class=\"flex flex-col text-sm pb-25\">\r\n<section class=\"text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]\" dir=\"auto\" data-turn-id=\"request-69db2b42-2ba0-8323-9490-2628457c5152-1\" data-testid=\"conversation-turn-40\" data-scroll-anchor=\"true\" data-turn=\"assistant\">\r\n<div class=\"text-base my-auto mx-auto pb-10 [--thread-content-margin:var(--thread-content-margin-xs,calc(var(--spacing)*4))] @w-sm/main:[--thread-content-margin:var(--thread-content-margin-sm,calc(var(--spacing)*6))] @w-lg/main:[--thread-content-margin:var(--thread-content-margin-lg,calc(var(--spacing)*16))] px-(--thread-content-margin)\">\r\n<div class=\"[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn\">\r\n<div class=\"flex max-w-full flex-col gap-4 grow\">\r\n<div class=\"min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal outline-none keyboard-focused:focus-ring [.text-message+&amp;]:mt-1\" dir=\"auto\" tabindex=\"0\" data-message-author-role=\"assistant\" data-message-id=\"1d7deccc-7d92-4eda-a0d9-4894d9a39e87\" data-message-model-slug=\"gpt-5-3\" data-turn-start-message=\"true\">\r\n<div class=\"flex w-full flex-col gap-1 empty:hidden\">\r\n<div class=\"markdown prose dark:prose-invert w-full wrap-break-word light markdown-new-styling\">\r\n<p data-start=\"0\" data-end=\"397\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> Cheesecake chanh (Lemon Cheesecake) l&agrave; sự kết hợp ho&agrave;n hảo giữa lớp đế b&aacute;nh quy gi&ograve;n nhẹ v&agrave; lớp kem ph&ocirc; mai mềm mịn, b&eacute;o ngậy. Điểm nhấn của b&aacute;nh l&agrave; vị chanh tươi thanh m&aacute;t, chua nhẹ h&ograve;a quyện c&ugrave;ng vị b&eacute;o của ph&ocirc; mai, tạo n&ecirc;n tổng thể hương vị c&acirc;n bằng, kh&ocirc;ng g&acirc;y ngấy. Hương thơm dịu nhẹ từ chanh c&ugrave;ng m&agrave;u sắc tươi s&aacute;ng mang đến cảm gi&aacute;c sảng kho&aacute;i v&agrave; tinh tế khi thưởng thức.</p>\r\n<p data-start=\"399\" data-end=\"425\"><strong data-start=\"399\" data-end=\"415\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-start=\"427\" data-end=\"461\"><strong data-start=\"427\" data-end=\"461\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"463\" data-end=\"570\"><strong data-start=\"463\" data-end=\"476\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon v&agrave; kết cấu của b&aacute;nh.</li>\r\n<li data-start=\"572\" data-end=\"678\"><strong data-start=\"572\" data-end=\"588\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n lấy b&aacute;nh ra trước 5 - 10 ph&uacute;t để b&aacute;nh mềm mịn v&agrave; dậy vị hơn.</li>\r\n<li data-start=\"680\" data-end=\"728\"><strong data-start=\"680\" data-end=\"696\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n</div>\r\n</section>\r\n</div>',0,100,0,0),(53,'Bánh Cheesecake Caramel','b-anh-cheesecake-caramel-53',140000.00,'assets/uploads/banhngot/banh_69e1ee13b58259.29444276.jpg','ngot','<p data-start=\"0\" data-end=\"377\"><strong data-start=\"0\" data-end=\"19\">M&ocirc; tả sản phẩm:</strong> Cheesecake caramel l&agrave; sự h&ograve;a quyện tinh tế giữa lớp đế b&aacute;nh quy gi&ograve;n nhẹ v&agrave; lớp kem ph&ocirc; mai mềm mịn, b&eacute;o ngậy. Điểm nhấn của b&aacute;nh nằm ở lớp sốt caramel &oacute;ng mượt với vị ngọt đậm đ&agrave;, thoảng ch&uacute;t đắng nhẹ đặc trưng, gi&uacute;p c&acirc;n bằng ho&agrave;n hảo vị b&eacute;o của ph&ocirc; mai. Hương thơm quyến rũ c&ugrave;ng kết cấu mịn mượt mang đến trải nghiệm tr&aacute;ng miệng sang trọng v&agrave; đầy hấp dẫn.</p>\r\n<p data-start=\"379\" data-end=\"405\"><strong data-start=\"379\" data-end=\"395\">Trọng lượng:</strong> 250 gram.</p>\r\n<p data-start=\"407\" data-end=\"441\"><strong data-start=\"407\" data-end=\"441\">Hướng dẫn sử dụng v&agrave; bảo quản:</strong></p>\r\n<ul>\r\n<li data-start=\"443\" data-end=\"550\"><strong data-start=\"443\" data-end=\"456\">Bảo quản:</strong> Bảo quản trong ngăn m&aacute;t tủ lạnh ở nhiệt độ 2&deg;C - 5&deg;C để giữ độ tươi ngon v&agrave; kết cấu của b&aacute;nh.</li>\r\n<li data-start=\"552\" data-end=\"658\"><strong data-start=\"552\" data-end=\"568\">Thưởng thức:</strong> Ngon nhất khi d&ugrave;ng lạnh; n&ecirc;n lấy b&aacute;nh ra trước 5 - 10 ph&uacute;t để b&aacute;nh mềm mịn v&agrave; dậy vị hơn.</li>\r\n<li data-start=\"660\" data-end=\"708\"><strong data-start=\"660\" data-end=\"676\">Hạn sử dụng:</strong> 2 - 3 ng&agrave;y kể từ ng&agrave;y sản xuất.</li>\r\n</ul>',0,100,0,0);
+/*!40000 ALTER TABLE `banh` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `blogs`
+--
+
+DROP TABLE IF EXISTS `blogs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `blogs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `author_id` int(11) NOT NULL,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `image` varchar(255) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `views_count` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `author_id` (`author_id`),
+  CONSTRAINT `blogs_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `blogs`
+--
+
+LOCK TABLES `blogs` WRITE;
+/*!40000 ALTER TABLE `blogs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `blogs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cart`
+--
+
+DROP TABLE IF EXISTS `cart`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cart` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `banh_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `banh_id` (`banh_id`),
+  CONSTRAINT `cart_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cart_ibfk_2` FOREIGN KEY (`banh_id`) REFERENCES `banh` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cart`
+--
+
+LOCK TABLES `cart` WRITE;
+/*!40000 ALTER TABLE `cart` DISABLE KEYS */;
+INSERT INTO `cart` VALUES (65,7,32,1),(66,7,2,1),(67,7,40,1),(68,7,26,1),(69,7,35,1),(70,7,25,1),(71,7,43,1);
+/*!40000 ALTER TABLE `cart` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cart_coupons`
+--
+
+DROP TABLE IF EXISTS `cart_coupons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cart_coupons` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `discount_percent` decimal(5,2) NOT NULL,
+  `min_subtotal` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `starts_at` date DEFAULT NULL,
+  `ends_at` date DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_cart_coupon_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cart_coupons`
+--
+
+LOCK TABLES `cart_coupons` WRITE;
+/*!40000 ALTER TABLE `cart_coupons` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cart_coupons` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `comments`
+--
+
+DROP TABLE IF EXISTS `comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `blog_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `blog_id` (`blog_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`blog_id`) REFERENCES `blogs` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comments`
+--
+
+LOCK TABLES `comments` WRITE;
+/*!40000 ALTER TABLE `comments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `favorites`
+--
+
+DROP TABLE IF EXISTS `favorites`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `favorites` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `banh_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_favorites_user_product` (`user_id`,`banh_id`),
+  KEY `idx_favorites_user` (`user_id`),
+  KEY `idx_favorites_banh` (`banh_id`),
+  CONSTRAINT `favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `favorites_ibfk_2` FOREIGN KEY (`banh_id`) REFERENCES `banh` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `favorites`
+--
+
+LOCK TABLES `favorites` WRITE;
+/*!40000 ALTER TABLE `favorites` DISABLE KEYS */;
+INSERT INTO `favorites` VALUES (10,7,37,'2026-04-17 19:09:22'),(11,7,47,'2026-04-17 19:09:22'),(12,7,17,'2026-04-17 19:09:26'),(13,7,31,'2026-04-17 19:09:28'),(14,7,27,'2026-04-17 19:09:32'),(15,7,25,'2026-04-17 19:09:33'),(16,7,13,'2026-04-17 19:09:39'),(17,7,41,'2026-04-17 19:09:41'),(18,7,43,'2026-04-17 19:09:42');
+/*!40000 ALTER TABLE `favorites` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `likes`
+--
+
+DROP TABLE IF EXISTS `likes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `likes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `blog_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `blog_id` (`blog_id`),
+  CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`blog_id`) REFERENCES `blogs` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `likes`
+--
+
+LOCK TABLES `likes` WRITE;
+/*!40000 ALTER TABLE `likes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `likes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `login_logs`
+--
+
+DROP TABLE IF EXISTS `login_logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `login_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `login_time` datetime NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `status` enum('success','failed') NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `login_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `login_logs`
+--
+
+LOCK TABLES `login_logs` WRITE;
+/*!40000 ALTER TABLE `login_logs` DISABLE KEYS */;
+INSERT INTO `login_logs` VALUES (45,7,'2026-03-23 16:04:51','::1','success'),(46,7,'2026-03-30 15:42:24','::1','success'),(47,7,'2026-04-03 11:34:31','::1','success'),(48,7,'2026-04-03 15:05:48','::1','success'),(49,7,'2026-04-03 10:13:47','::1',''),(50,7,'2026-04-03 15:14:00','::1','success'),(51,7,'2026-04-03 10:17:46','::1',''),(52,7,'2026-04-03 15:26:52','::1','success'),(53,7,'2026-04-04 11:56:50','::1','success'),(54,7,'2026-04-04 07:03:55','::1',''),(55,7,'2026-04-04 13:04:08','::1','success'),(56,7,'2026-04-04 08:29:07','::1',''),(57,7,'2026-04-04 13:29:29','::1','success'),(58,7,'2026-04-05 12:06:03','::1','success'),(59,7,'2026-04-08 11:41:35','::1','success'),(60,7,'2026-04-08 06:43:50','::1',''),(61,8,'2026-04-08 06:47:33','::1',''),(62,9,'2026-04-08 08:07:36','::1',''),(63,7,'2026-04-08 13:07:46','::1','success'),(64,8,'2026-04-10 15:21:56','::1','success'),(65,8,'2026-04-10 12:01:34','::1',''),(66,7,'2026-04-10 17:01:56','::1','success'),(67,9,'2026-04-11 15:32:56','::1','success'),(68,7,'2026-04-11 15:51:08','::1','success'),(69,7,'2026-04-12 14:24:37','::1','success'),(70,7,'2026-04-12 20:56:29','::1','success'),(71,7,'2026-04-13 09:52:15','::1','success'),(72,7,'2026-04-13 07:48:47','::1',''),(73,9,'2026-04-13 12:49:04','::1','success'),(74,9,'2026-04-13 14:50:24','::1','success'),(75,9,'2026-04-13 10:16:14','::1',''),(76,7,'2026-04-13 15:16:24','::1','success'),(77,7,'2026-04-15 10:52:00','::1','success'),(78,7,'2026-04-15 08:34:23','::1',''),(79,7,'2026-04-17 10:10:02','::1','success'),(80,7,'2026-04-17 05:43:50','::1',''),(81,7,'2026-04-17 10:46:20','::1','success'),(82,7,'2026-04-17 11:01:42','::1','success'),(83,7,'2026-04-17 15:21:14','::1','success'),(84,7,'2026-04-17 19:04:19','::1','success'),(85,7,'2026-04-17 14:10:54','::1',''),(86,7,'2026-04-17 19:32:33','::1','success'),(87,7,'2026-04-18 12:56:18','::1','success'),(88,10,'2026-04-19 05:21:28','::1',''),(89,11,'2026-04-19 05:35:12','::1',''),(90,12,'2026-04-19 05:44:41','::1',''),(91,7,'2026-04-19 12:41:48','::1','success');
+/*!40000 ALTER TABLE `login_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `login_tokens`
+--
+
+DROP TABLE IF EXISTS `login_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `login_tokens` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `token` varchar(32) NOT NULL,
+  `expiry` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `login_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `login_tokens`
+--
+
+LOCK TABLES `login_tokens` WRITE;
+/*!40000 ALTER TABLE `login_tokens` DISABLE KEYS */;
+INSERT INTO `login_tokens` VALUES (8,7,'4477ea98f9a831c1e5ec9aa334ad8258','2026-05-08 11:41:35');
+/*!40000 ALTER TABLE `login_tokens` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `order_items`
+--
+
+DROP TABLE IF EXISTS `order_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `order_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `banh_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_id` (`order_id`),
+  KEY `banh_id` (`banh_id`),
+  CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
+  CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`banh_id`) REFERENCES `banh` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `order_items`
+--
+
+LOCK TABLES `order_items` WRITE;
+/*!40000 ALTER TABLE `order_items` DISABLE KEYS */;
+INSERT INTO `order_items` VALUES (7,11,31,1,80000.00),(8,12,32,1,100000.00),(9,13,26,1,120000.00),(10,13,25,1,15000.00),(11,13,27,1,180000.00),(12,14,26,1,120000.00),(13,15,26,1,120000.00),(14,16,31,1,80000.00),(15,16,33,1,85000.00),(16,16,29,1,120000.00),(17,17,2,1,80000.00),(18,17,3,1,300000.00),(19,18,25,1,15000.00),(20,19,25,1,60000.00),(21,20,36,1,150000.00),(23,22,25,1,60000.00),(24,23,25,1,60000.00),(26,25,37,1,280000.00),(27,26,25,1,60000.00),(28,27,50,1,150000.00),(29,27,40,1,300000.00),(30,28,18,1,50000.00),(31,28,31,1,80000.00),(32,28,17,1,100000.00),(33,28,14,1,150000.00),(34,29,26,1,120000.00),(35,29,36,1,150000.00),(36,29,51,1,150000.00),(37,29,52,1,160000.00),(38,29,53,1,140000.00),(39,30,48,1,300000.00);
+/*!40000 ALTER TABLE `order_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `orders`
+--
+
+DROP TABLE IF EXISTS `orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `orders` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `recipient_name` varchar(255) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `address` text NOT NULL,
+  `note` text DEFAULT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `payment_method` varchar(50) NOT NULL,
+  `status` varchar(20) DEFAULT 'pending',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `orders`
+--
+
+LOCK TABLES `orders` WRITE;
+/*!40000 ALTER TABLE `orders` DISABLE KEYS */;
+INSERT INTO `orders` VALUES (11,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,80000.00,'2026-03-23 05:16:59','VNPAY','completed'),(12,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,100000.00,'2026-03-23 05:24:52','VNPAY','completed'),(13,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,315000.00,'2026-03-23 05:39:30','Tiền mặt','completed'),(14,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,120000.00,'2026-03-23 06:40:29','VNPAY','completed'),(15,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,120000.00,'2026-03-30 08:42:43','VNPAY','completed'),(16,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,285000.00,'2026-03-30 09:39:33','VNPAY','completed'),(17,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,380000.00,'2026-04-03 09:18:26','VNPAY','completed'),(18,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,15000.00,'2026-04-04 06:41:47','Tiền mặt','completed'),(19,8,'Thanh Nhàn','0123789456','65 Đ. Đào Duy Anh, Phường 9, Đức Nhuận, Hồ Chí Minh, Việt Nam',NULL,60000.00,'2026-04-10 08:24:58','VNPAY','completed'),(20,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,150000.00,'2026-04-12 14:37:57','VNPAY','completed'),(22,7,'Nhật Anh','0917025731','1',NULL,60000.00,'2026-04-13 04:17:13','VNPAY','cancelled'),(23,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh','Giao vào giờ sáng ngày kia',60000.00,'2026-04-13 04:17:27','VNPAY','delivering'),(25,9,'Phương Anh','0987654321','885 Nguyễn Kiệm, Phường 3, Hạnh Thông, Hồ Chí Minh, Việt Nam','Ghi chữ \"Chúc mừng sinh nhật mẹ iu\"\r\nNgày sinh: 17/5/1985',280000.00,'2026-04-13 06:13:50','VNPAY','paid'),(26,7,'Nhật Anh','0917025731','a','abc',60000.00,'2026-04-13 08:54:18','Tiền mặt','cancelled'),(27,10,'Mỹ Duyên','0853261514','656 Quang Trung, Phường 8, Thông Tây Hội, Hồ Chí Minh, Việt Nam','',450000.00,'2026-04-19 03:18:15','VNPAY','completed'),(28,11,'Hữu Thọ','085654321','32/B1 Hẻm 350 Nguyễn Văn Lượng, Phường 16, An Hội Đông, Hồ Chí Minh, Việt Nam','',380000.00,'2026-04-19 03:31:08','VNPAY','completed'),(29,12,'Minh Khai','0356217256','123/11 Đ. Phùng Văn Cung, Phường 7, Cầu Kiệu, Hồ Chí Minh, Việt Nam','',720000.00,'2026-04-19 03:37:57','VNPAY','completed'),(30,13,'Văn Thắng','0925684523','7 Trần Khắc Chân, Tân Định, Hồ Chí Minh, Việt Nam','',300000.00,'2026-04-19 03:48:44','Tiền mặt','completed');
+/*!40000 ALTER TABLE `orders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `password_reset_requests`
+--
+
+DROP TABLE IF EXISTS `password_reset_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `password_reset_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `reset_token` varchar(255) NOT NULL,
+  `new_password` varchar(255) NOT NULL,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `approved_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `password_reset_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `password_reset_requests`
+--
+
+LOCK TABLES `password_reset_requests` WRITE;
+/*!40000 ALTER TABLE `password_reset_requests` DISABLE KEYS */;
+INSERT INTO `password_reset_requests` VALUES (6,7,'42dea157580252244c3c4ffbc7a1efb0','$2y$10$4gPhmYJL4z957cdSjAfjLegu9trjuYLr2ckb4oeBw1jPxM0svqHVG','approved','2026-04-19 05:43:25','2026-04-19 05:43:29'),(7,7,'84e54014d47645fd12b30d1f45a63522','$2y$10$AL35npovKcMiNd8hQBIGKuLvGqMFpWJbMEghsnOO/vfLc2NOdsjV2','approved','2026-04-19 05:44:15','2026-04-19 05:44:18');
+/*!40000 ALTER TABLE `password_reset_requests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `product_images`
+--
+
+DROP TABLE IF EXISTS `product_images`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product_images` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `image_path` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_product_images_product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=259 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `product_images`
+--
+
+LOCK TABLES `product_images` WRITE;
+/*!40000 ALTER TABLE `product_images` DISABLE KEYS */;
+INSERT INTO `product_images` VALUES (25,16,'admin/img/uploads/banhman/banh_69d8b13f188d81.80149056.jpg','2026-04-10 08:13:51'),(26,16,'admin/img/uploads/banhman/banh_69d8b13f1a4e35.12110465.jpg','2026-04-10 08:13:51'),(27,16,'admin/img/uploads/banhman/banh_69d8b13f1d47d6.41836632.jpg','2026-04-10 08:13:51'),(28,16,'admin/img/uploads/banhman/banh_69d8b1547ce786.08581719.jpg','2026-04-10 08:14:12'),(29,16,'admin/img/uploads/banhman/banh_69d8b1b7049f20.94325442.jpg','2026-04-10 08:15:51'),(141,37,'assets/uploads/banhkem/banh_69db22e6a9cff8.06428673.jpg','2026-04-12 04:43:18'),(142,37,'assets/uploads/banhkem/banh_69db22e6a9f240.21037251.jpg','2026-04-12 04:43:18'),(143,37,'assets/uploads/banhkem/banh_69db22e6aa10e5.83179496.jpg','2026-04-12 04:43:18'),(144,38,'assets/uploads/banhkem/banh_69db24e89bb1c0.10360276.jpg','2026-04-12 04:51:52'),(145,38,'assets/uploads/banhkem/banh_69db24e89bd4f8.81946173.jpg','2026-04-12 04:51:52'),(146,38,'assets/uploads/banhkem/banh_69db24e89bf341.27695027.jpg','2026-04-12 04:51:52'),(147,39,'assets/uploads/banhkem/banh_69db2d7a89e889.17640738.jpg','2026-04-12 05:28:26'),(148,39,'assets/uploads/banhkem/banh_69db2d7a8a0e76.51341311.jpg','2026-04-12 05:28:26'),(149,39,'assets/uploads/banhkem/banh_69db2d7a8a2e46.08499729.jpg','2026-04-12 05:28:26'),(150,40,'assets/uploads/banhkem/banh_69db2e9c19b812.34487309.jpg','2026-04-12 05:33:16'),(151,40,'assets/uploads/banhkem/banh_69db2e9c19db17.14124726.jpg','2026-04-12 05:33:16'),(152,40,'assets/uploads/banhkem/banh_69db2e9c19f8d1.11252736.jpg','2026-04-12 05:33:16'),(153,40,'assets/uploads/banhkem/banh_69db2e9c1a1ca8.72505211.jpg','2026-04-12 05:33:16'),(154,35,'assets/uploads/banhngot/banh_69dbaa45c8a628.84619525.jpg','2026-04-12 14:20:53'),(155,35,'assets/uploads/banhngot/banh_69dbaa45c8bec1.29701023.jpg','2026-04-12 14:20:53'),(156,33,'assets/uploads/banhngot/banh_69dbaa8ed131e3.59072365.jpg','2026-04-12 14:22:06'),(157,33,'assets/uploads/banhngot/banh_69dbaa8ed143d0.52774630.jpg','2026-04-12 14:22:06'),(159,31,'assets/uploads/banhman/banh_69dbaaa9b82f19.87407224.jpg','2026-04-12 14:22:33'),(160,31,'assets/uploads/banhman/banh_69dbaaa9b84254.45228102.jpg','2026-04-12 14:22:33'),(161,30,'assets/uploads/banhngot/banh_69dbab0d239db7.73922554.jpg','2026-04-12 14:24:13'),(162,30,'assets/uploads/banhngot/banh_69dbab0d23b419.90601663.jpg','2026-04-12 14:24:13'),(163,29,'assets/uploads/banhngot/banh_69dbab2a18ce47.23690773.jpg','2026-04-12 14:24:42'),(164,29,'assets/uploads/banhngot/banh_69dbab2a18e444.51056820.jpg','2026-04-12 14:24:42'),(167,28,'assets/uploads/banhngot/banh_69dbabb04faad6.05865783.jpg','2026-04-12 14:26:56'),(168,27,'assets/uploads/banhngot/banh_69dbabeec4c5e4.74925862.jpg','2026-04-12 14:27:58'),(169,27,'assets/uploads/banhngot/banh_69dbabeec4d9a8.60401231.jpg','2026-04-12 14:27:58'),(170,20,'assets/uploads/banhmi/banh_69dbac0b7cc3a2.98636095.jpg','2026-04-12 14:28:27'),(171,20,'assets/uploads/banhmi/banh_69dbac0b7cd9e2.23932792.jpg','2026-04-12 14:28:27'),(172,32,'assets/uploads/banhngot/banh_69dbac321344b1.46081077.jpg','2026-04-12 14:29:06'),(173,26,'assets/uploads/banhngot/banh_69dbacfbbbb329.33357133.jpg','2026-04-12 14:32:27'),(174,26,'assets/uploads/banhngot/banh_69dbacfbbbcf21.23784700.jpg','2026-04-12 14:32:27'),(176,17,'assets/uploads/banhman/banh_69dbad2d994fc7.78344166.jpg','2026-04-12 14:33:17'),(177,17,'assets/uploads/banhman/banh_69dbad2d9967b0.62119745.jpg','2026-04-12 14:33:17'),(178,25,'assets/uploads/banhngot/banh_69dc5b4fb67537.12501853.jpg','2026-04-13 02:56:15'),(179,25,'assets/uploads/banhngot/banh_69dc5b4fb689f6.20758315.jpg','2026-04-13 02:56:15'),(180,25,'assets/uploads/banhngot/banh_69dc5b4fb6a3a9.25209513.jpg','2026-04-13 02:56:15'),(181,25,'assets/uploads/banhngot/banh_69dc5b4fb6bf71.05701850.jpg','2026-04-13 02:56:15'),(182,34,'assets/uploads/banhman/banh_69dc5ba855a625.79593935.jpg','2026-04-13 02:57:44'),(183,34,'assets/uploads/banhman/banh_69dc5ba855ce96.31342983.jpg','2026-04-13 02:57:44'),(184,34,'assets/uploads/banhman/banh_69dc5ba855f250.93673647.jpg','2026-04-13 02:57:44'),(185,18,'assets/uploads/banhman/banh_69dc5bdcea7e33.20499922.jpg','2026-04-13 02:58:36'),(186,18,'assets/uploads/banhman/banh_69dc5bdcea9552.84281698.jpg','2026-04-13 02:58:36'),(187,15,'assets/uploads/banhmi/banh_69dc5beaacf7e8.35145543.jpg','2026-04-13 02:58:50'),(188,15,'assets/uploads/banhmi/banh_69dc5beaad1f38.06327975.jpg','2026-04-13 02:58:50'),(189,14,'assets/uploads/banhman/banh_69dc5bfa164c64.96080326.jpg','2026-04-13 02:59:06'),(190,13,'assets/uploads/banhman/banh_69dc5c06b98a82.35949527.jpg','2026-04-13 02:59:18'),(191,13,'assets/uploads/banhman/banh_69dc5c06b9a636.49165408.jpg','2026-04-13 02:59:18'),(192,3,'assets/uploads/banhkem/banh_69dc5c1c6ade34.32637375.jpg','2026-04-13 02:59:40'),(193,3,'assets/uploads/banhkem/banh_69dc5c1c6b0415.82467200.jpg','2026-04-13 02:59:40'),(194,3,'assets/uploads/banhkem/banh_69dc5c1c6b2552.42384846.jpg','2026-04-13 02:59:40'),(195,3,'assets/uploads/banhkem/banh_69dc5c1c6b45f9.09773970.jpg','2026-04-13 02:59:40'),(196,2,'assets/uploads/banhkem/banh_69dc5c3a210498.26720465.jpg','2026-04-13 03:00:10'),(197,2,'assets/uploads/banhkem/banh_69dc5c3a2121a3.55679015.jpg','2026-04-13 03:00:10'),(198,2,'assets/uploads/banhkem/banh_69dc5c3a213a31.67301232.jpg','2026-04-13 03:00:10'),(199,36,'assets/uploads/banhngot/banh_69dca160f27726.25419947.jpg','2026-04-13 07:55:13'),(200,36,'assets/uploads/banhngot/banh_69dca160f290b5.65543337.jpg','2026-04-13 07:55:13'),(201,41,'assets/uploads/banhmi/banh_69dca2da2804b0.90233971.jpg','2026-04-13 08:01:30'),(202,41,'assets/uploads/banhmi/banh_69dca2da282835.46250729.jpg','2026-04-13 08:01:30'),(203,41,'assets/uploads/banhmi/banh_69dca2da286078.88556855.jpg','2026-04-13 08:01:30'),(206,43,'assets/uploads/banhmi/banh_69dca5224be2a9.56328947.jpg','2026-04-13 08:11:14'),(207,43,'assets/uploads/banhmi/banh_69dca5224c07e9.81953451.jpg','2026-04-13 08:11:14'),(208,44,'assets/uploads/banhmi/banh_69dca5e9b923d5.69452994.jpg','2026-04-13 08:14:33'),(209,44,'assets/uploads/banhmi/banh_69dca5e9b94ee5.67135563.jpg','2026-04-13 08:14:33'),(210,44,'assets/uploads/banhmi/banh_69dca5e9b981d5.95609032.jpg','2026-04-13 08:14:33'),(231,42,'assets/uploads/banhmi/banh_69dcab1542bf89.01237691.jpg','2026-04-13 08:36:37'),(232,42,'assets/uploads/banhmi/banh_69dcab1542dca1.54704723.jpg','2026-04-13 08:36:37'),(240,46,'assets/uploads/banhngot/banh_69dcac8bbea1a4.66009884.jpg','2026-04-13 08:42:51'),(242,47,'assets/uploads/banhkem/banh_69dcae2ab0e827.26264752.jpg','2026-04-13 08:49:46'),(243,47,'assets/uploads/banhkem/banh_69dcae2ab10d96.51631563.jpg','2026-04-13 08:49:46'),(244,48,'assets/uploads/banhkem/banh_69dcaf117f98b4.11252771.jpg','2026-04-13 08:53:37'),(245,48,'assets/uploads/banhkem/banh_69dcaf117fab29.84012867.jpg','2026-04-13 08:53:37'),(246,49,'assets/uploads/banhkem/banh_69dcb5ebdbde19.27662116.jpg','2026-04-13 09:22:51'),(247,49,'assets/uploads/banhkem/banh_69dcb5ebdc0842.01039114.jpg','2026-04-13 09:22:51'),(248,49,'assets/uploads/banhkem/banh_69dcb5ebdc3f41.33005374.jpg','2026-04-13 09:22:51'),(249,49,'assets/uploads/banhkem/banh_69dcb5ebdc62b1.08342034.jpg','2026-04-13 09:22:51'),(250,49,'assets/uploads/banhkem/banh_69dcb5ebdc8433.64221552.jpg','2026-04-13 09:22:51'),(251,50,'assets/uploads/banhngot/banh_69dcb85c43dd76.17335582.jpg','2026-04-13 09:33:16'),(252,50,'assets/uploads/banhngot/banh_69dcb85c43f681.26700896.jpg','2026-04-13 09:33:16'),(253,51,'assets/uploads/banhngot/banh_69e1ec13dfb0e0.72563149.jpg','2026-04-17 08:15:15'),(254,51,'assets/uploads/banhngot/banh_69e1ec13dfd867.26912281.jpg','2026-04-17 08:15:15'),(255,52,'assets/uploads/banhngot/banh_69e1ecc4d4bc36.56813785.jpg','2026-04-17 08:18:12'),(256,52,'assets/uploads/banhngot/banh_69e1ecc4d503d4.17872472.jpg','2026-04-17 08:18:12'),(257,53,'assets/uploads/banhngot/banh_69e1ee13b5e6e6.67342922.jpg','2026-04-17 08:23:47'),(258,53,'assets/uploads/banhngot/banh_69e1ee13b60a61.22833140.jpg','2026-04-17 08:23:47');
+/*!40000 ALTER TABLE `product_images` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `product_reviews`
+--
+
+DROP TABLE IF EXISTS `product_reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product_reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `rating` tinyint(1) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `product_reviews`
+--
+
+LOCK TABLES `product_reviews` WRITE;
+/*!40000 ALTER TABLE `product_reviews` DISABLE KEYS */;
+INSERT INTO `product_reviews` VALUES (1,26,14,7,'nhatanh',5,'','2026-04-08 07:05:13'),(2,25,13,7,'nhatanh',5,'','2026-04-08 08:13:17'),(3,25,19,8,'thanhnhan',5,'Bánh ăn rất ngon','2026-04-10 08:29:38'),(4,50,27,10,'myduyen',4,'','2026-04-19 03:20:56'),(5,40,27,10,'myduyen',5,'','2026-04-19 03:21:01'),(6,18,28,11,'huutho',4,'','2026-04-19 03:33:06'),(7,31,28,11,'huutho',5,'','2026-04-19 03:33:07'),(8,17,28,11,'huutho',5,'','2026-04-19 03:33:09'),(9,14,28,11,'huutho',5,'','2026-04-19 03:33:11'),(10,36,29,12,'minhkhai',4,'Hơi ngọt quá nhưng mà vẫn rất ngon','2026-04-19 03:41:31'),(11,26,29,12,'minhkhai',5,'','2026-04-19 03:41:33'),(12,51,29,12,'minhkhai',5,'','2026-04-19 03:41:35'),(13,52,29,12,'minhkhai',5,'','2026-04-19 03:41:37'),(14,53,29,12,'minhkhai',5,'','2026-04-19 03:41:39'),(15,48,30,13,'vanthang',5,'Bánh rất ngon sẽ ủng hộ lần sau','2026-04-19 03:50:32');
+/*!40000 ALTER TABLE `product_reviews` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `promotions`
+--
+
+DROP TABLE IF EXISTS `promotions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `promotions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `banh_id` int(11) NOT NULL,
+  `gia_khuyen_mai` decimal(10,2) NOT NULL,
+  `ngay_bat_dau` date NOT NULL,
+  `ngay_ket_thuc` date NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `banh_id` (`banh_id`),
+  CONSTRAINT `promotions_ibfk_1` FOREIGN KEY (`banh_id`) REFERENCES `banh` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `promotions`
+--
+
+LOCK TABLES `promotions` WRITE;
+/*!40000 ALTER TABLE `promotions` DISABLE KEYS */;
+INSERT INTO `promotions` VALUES (10,39,200000.00,'2026-04-13','2026-04-20'),(11,32,85000.00,'2026-04-13','2026-04-20'),(12,27,30000.00,'2026-04-13','2026-04-20'),(13,36,130000.00,'2026-04-17','2026-04-30');
+/*!40000 ALTER TABLE `promotions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reviews`
+--
+
+DROP TABLE IF EXISTS `reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `text` text NOT NULL,
+  `stars` varchar(10) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `timestamp` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reviews`
+--
+
+LOCK TABLES `reviews` WRITE;
+/*!40000 ALTER TABLE `reviews` DISABLE KEYS */;
+INSERT INTO `reviews` VALUES (4,'nhatanh','Website rất dễ sử dụng và đặt bánh nhanh chóng. Tôi chọn bánh socola không trứng và hương vị vượt mong đợi. Bánh mềm, không quá ngọt và giao hàng đúng giờ.','★★★★★',7,'approved',1775623388507),(5,'thanhnhan','Tôi rất hài lòng với dịch vụ đặt bánh online ở đây. Bánh được đóng gói cẩn thận, hình thức đẹp và vị rất ngon. Sẽ tiếp tục đặt trong những dịp đặc biệt.','★★★★★',8,'approved',1775623600842),(6,'phuonganh','Lần đầu đặt bánh trên website nhưng trải nghiệm rất tốt. Nhiều mẫu bánh để lựa chọn và quy trình thanh toán đơn giản. Bánh tươi và thơm, cả gia đình đều thích.','★★★★',9,'approved',1775623744187);
+/*!40000 ALTER TABLE `reviews` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `remember_token` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `phone` varchar(20) DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (7,'nhatanh','$2y$10$AL35npovKcMiNd8hQBIGKuLvGqMFpWJbMEghsnOO/vfLc2NOdsjV2','nhatanhvo741@gmail.com',NULL,'2026-03-23 05:15:18','','1775198929_7.jpg'),(8,'thanhnhan','$2y$10$qLdwxW.Repqi1pZNr1zjvuk0XtCP1ASTCqOZUCxnbZVfcPCIoZs/i','nhandang@gmail.com',NULL,'2026-04-08 04:45:52','','1775623573_8.jpg'),(9,'phuonganh','$2y$10$125SGeYQSXaJw6SOXz86FebzlZD5uSKlmircdtkGmIh4Gn542PVq.','llpanh@gmail.com',NULL,'2026-04-08 04:48:33',NULL,NULL),(10,'myduyen','$2y$10$IAySSfpMG1Y49Xi06agP3ur3DBMw7yULHcZjrFWyO/x4Vx8/ao28O','myduyen2524@gmail.com',NULL,'2026-04-19 03:15:29',NULL,NULL),(11,'huutho','$2y$10$d8YinZXFWqyesFxWTurWmOP9yUc3cHcEcCH6Zy2IBMUTpYbDzH97K','huutho521@gmail.com',NULL,'2026-04-19 03:22:07',NULL,NULL),(12,'minhkhai','$2y$10$gFonIvu908mJkkHCRb5Cbe.IZIPrkcNiK2nU/Es8ESmgDpQtOoRMC','mkhai456@gmail.com',NULL,'2026-04-19 03:35:57',NULL,NULL),(13,'vanthang','$2y$10$N.KCo4fuhwcUS9LY6LlK8e9qJC7DLj5aKFajQ66glaHKgYCc97yo2','vthang532@gmail.com',NULL,'2026-04-19 03:45:21',NULL,NULL);
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'banh_store'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-04-22 10:40:09

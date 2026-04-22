@@ -428,7 +428,7 @@ if (isset($_POST['cancel_order'])) {
         $error = 'Đơn hàng không hợp lệ.';
     } else {
         $stmt = $conn->prepare(
-            "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND status = 'pending'"
+            "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'cod_not_deposited')"
         );
         $stmt->bind_param('ii', $orderId, $user_id);
         $stmt->execute();
@@ -949,6 +949,8 @@ foreach ($orders as $order) {
                                                         $statusData = match (strtolower($o['status'])) {
                                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                                             'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
+                                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Ch&#432;a &#273;&#7863;t c&#7885;c'],
+                                                            'cod_deposited' => ['badge' => 'primary', 'label' => '&#272;&#227; &#273;&#7863;t c&#7885;c'],
                                                             'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                                             'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                                             'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -965,7 +967,7 @@ foreach ($orders as $order) {
                                                     <td>
                                                         <a href="/cakev0/pages/order-detail.php?id=<?= $o['id'] ?>"
                                                             class="btn btn-sm btn-outline-primary">Xem</a>
-                                                        <?php if (strtolower($o['status']) === 'pending'): ?>
+                                                        <?php if (in_array(strtolower($o['status']), ['pending', 'cod_not_deposited'], true)): ?>
                                                             <button type="button"
                                                                 class="btn btn-sm btn-outline-danger cancel-order-btn"
                                                                 data-order-id="<?= $o['id'] ?>">

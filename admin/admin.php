@@ -36,6 +36,19 @@ function redirectToTab(string $tab): void
     exit;
 }
 
+function isCodPaymentMethod(?string $paymentMethod): bool
+{
+    $normalized = strtolower(trim((string) $paymentMethod));
+    if ($normalized === '') {
+        return false;
+    }
+
+    return $normalized === 'tiền mặt'
+        || $normalized === 'tien mat'
+        || $normalized === 'cod'
+        || str_contains($normalized, 'cod');
+}
+
 // Hàm xử lý đường dẫn ảnh (Kết hợp logic từ nguồn)
 function buildImageUrl(string $relativePath): array
 {
@@ -439,7 +452,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
 
     /* --- XỬ LÝ ĐƠN HÀNG (Cập nhật trạng thái hàng loạt) --- */
     if (isset($_POST['update_order_statuses']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        $allowed_statuses = ['pending', 'paid', 'approved', 'delivering', 'delivered', 'completed', 'cancelled', 'failed'];
+        $commonAllowedStatuses = ['pending', 'paid', 'approved', 'delivering', 'delivered', 'completed', 'cancelled', 'failed'];
+        $codOnlyStatuses = ['cod_not_deposited', 'cod_deposited'];
+        $allowedStatuses = array_merge($commonAllowedStatuses, $codOnlyStatuses);
         $selected = $_POST['selected_orders'] ?? [];
         $order_statuses = $_POST['order_status'] ?? [];
 
@@ -450,18 +465,34 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         }
 
         $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $paymentStmt = $conn->prepare("SELECT payment_method FROM orders WHERE id = ? LIMIT 1");
         $updated = 0;
 
         foreach ($selected as $id) {
             $id = (int) $id;
-            $status = $order_statuses[$id] ?? '';
-            if ($id > 0 && in_array($status, $allowed_statuses, true)) {
-                $stmt->bind_param("si", $status, $id);
-                $stmt->execute();
-                $updated++;
+            $status = strtolower(trim((string) ($order_statuses[$id] ?? '')));
+            if ($id <= 0 || !in_array($status, $allowedStatuses, true)) {
+                continue;
             }
+
+            $paymentStmt->bind_param("i", $id);
+            $paymentStmt->execute();
+            $orderMeta = $paymentStmt->get_result()->fetch_assoc();
+            if (!$orderMeta) {
+                continue;
+            }
+
+            $isCodOrder = isCodPaymentMethod((string) ($orderMeta['payment_method'] ?? ''));
+            if (in_array($status, $codOnlyStatuses, true) && !$isCodOrder) {
+                continue;
+            }
+
+            $stmt->bind_param("si", $status, $id);
+            $stmt->execute();
+            $updated++;
         }
 
+        $paymentStmt->close();
         $stmt->close();
         setAdminToast("Đã cập nhật trạng thái cho $updated đơn hàng");
         regenerateCsrfToken();
@@ -820,7 +851,7 @@ foreach ($orders as $o) {
             }
         }
     }
-    if ($status === 'pending') {
+    if (in_array($status, ['pending', 'cod_not_deposited'], true)) {
         $pending_count++;
     }
 }
@@ -1439,6 +1470,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                         $statusData = match (strtolower($o['status'])) {
                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                             'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
+                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Ch&#432;a &#273;&#7863;t c&#7885;c'],
+                                            'cod_deposited' => ['badge' => 'primary', 'label' => '&#272;&#227; &#273;&#7863;t c&#7885;c'],
                                             'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                             'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                             'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -1502,6 +1535,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             $statusData = match (strtolower($o['status'])) {
                                                 'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                                 'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
+                                                'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Ch&#432;a &#273;&#7863;t c&#7885;c'],
+                                                'cod_deposited' => ['badge' => 'primary', 'label' => '&#272;&#227; &#273;&#7863;t c&#7885;c'],
                                                 'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                                 'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                                 'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -1518,6 +1553,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             <select name="order_status[<?= $o['id'] ?>]" class="form-select form-select-sm"
                                                 style="min-width: 160px;">
                                                 <?php
+                                                $currentStatus = strtolower((string) $o['status']);
+                                                $isCodOrder = isCodPaymentMethod((string) ($o['payment_method'] ?? ''));
                                                 $statusOptions = [
                                                     'pending' => 'Đang chờ',
                                                     'paid' => 'Đã thanh toán',
@@ -1528,8 +1565,17 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                     'cancelled' => 'Đã hủy',
                                                     'failed' => 'Thanh toán lỗi'
                                                 ];
+                                                if ($isCodOrder) {
+                                                    $statusOptions = [
+                                                        'cod_not_deposited' => 'Ch&#432;a &#273;&#7863;t c&#7885;c',
+                                                        'cod_deposited' => '&#272;&#227; &#273;&#7863;t c&#7885;c'
+                                                    ] + $statusOptions;
+                                                }
+                                                if (!isset($statusOptions[$currentStatus])) {
+                                                    $statusOptions = [$currentStatus => ucfirst((string) $o['status'])] + $statusOptions;
+                                                }
                                                 foreach ($statusOptions as $value => $label):
-                                                    $selected = (strtolower($o['status']) === $value) ? 'selected' : '';
+                                                    $selected = ($currentStatus === $value) ? 'selected' : '';
                                                     ?>
                                                     <option value="<?= $value ?>" <?= $selected ?>><?= $label ?></option>
                                                 <?php endforeach; ?>
@@ -2518,7 +2564,9 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 function formatStatus(status) {
                     const map = {
                         completed: 'Hoàn tất',
-                        pending: 'Đang chờ xác nhận',
+                        pending: '&#272;ang ch&#7901; x&#225;c nh&#7853;n',
+                        cod_not_deposited: 'Ch&#432;a &#273;&#7863;t c&#7885;c',
+                        cod_deposited: '&#272;&#227; &#273;&#7863;t c&#7885;c',
                         paid: 'Đã thanh toán',
                         approved: 'Đã xác nhận',
                         confirmed: 'Đã xác nhận',

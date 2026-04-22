@@ -79,6 +79,8 @@ function slugify(string $value, ?int $id = null): string {
 $status = strtolower($order['status']);
 $statusClass = match ($status) {
     'completed', 'thanh cong' => 'success',
+    'cod_not_deposited' => 'warning text-dark',
+    'cod_deposited' => 'primary',
     'paid' => 'primary',
     'approved', 'confirmed' => 'info',
     'delivering' => 'info',
@@ -97,11 +99,13 @@ $statusLabel = match ($status) {
     'failed' => 'Thất bại',
     'cancelled', 'huy' => 'Đã hủy',
     'pending', 'cho xac nhan' => 'Chờ xác nhận',
+    'cod_not_deposited' => 'Ch&#432;a &#273;&#7863;t c&#7885;c',
+    'cod_deposited' => '&#272;&#227; &#273;&#7863;t c&#7885;c',
     default => ucfirst($order['status'])
 };
 
 $allowedReviewStatuses = ['completed'];
-$editableOrderStatuses = ['pending', 'paid', 'approved'];
+$editableOrderStatuses = ['pending', 'cod_not_deposited', 'cod_deposited', 'paid', 'approved'];
 $canEditOrderInfo = in_array($status, $editableOrderStatuses, true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_info'])) {
@@ -130,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_info']))
 
     $stmt = $conn->prepare(
         "UPDATE orders SET recipient_name = ?, phone = ?, address = ?, note = ?
-         WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'paid', 'approved')"
+         WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'cod_not_deposited', 'cod_deposited', 'paid', 'approved')"
     );
     $stmt->bind_param('ssssii', $recipientName, $phone, $address, $note, $order_id, $user_id);
     $stmt->execute();
@@ -144,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_info']))
 // --- HỦY ĐƠN HÀNG (CHỈ KHI ĐANG CHỜ) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order'])) {
     $stmt = $conn->prepare(
-        "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND status = 'pending'"
+        "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'cod_not_deposited')"
     );
     $stmt->bind_param('ii', $order_id, $user_id);
     $stmt->execute();
@@ -561,7 +565,7 @@ body {
                     <i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa thông tin
                 </button>
             <?php endif; ?>
-            <?php if ($status === 'pending'): ?>
+            <?php if (in_array($status, ['pending', 'cod_not_deposited'], true)): ?>
                 <button type="button" id="cancelOrderBtn" class="btn btn-outline-danger btn-pill">
                     <i class="fa-regular fa-circle-xmark"></i> Hủy đơn
                 </button>

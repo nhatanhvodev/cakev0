@@ -139,8 +139,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         try {
             // A. Lưu vào bảng orders
-            $stmt = $conn->prepare("INSERT INTO orders(user_id, recipient_name, phone, address, note, payment_method, total_amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())");
-            $stmt->bind_param("isssssd", $user_id, $name, $phone, $address, $note, $payment, $total);
+            $orderStatus = ($payment === 'Tiền mặt') ? 'cod_not_deposited' : 'pending';
+            $stmt = $conn->prepare("INSERT INTO orders(user_id, recipient_name, phone, address, note, payment_method, total_amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->bind_param("isssssds", $user_id, $name, $phone, $address, $note, $payment, $total, $orderStatus);
             $stmt->execute();
             $order_id = $conn->insert_id;
 

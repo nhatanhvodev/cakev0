@@ -1429,7 +1429,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials"
                     onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
                 <a class="nav-link" href="admin.php?tab=password-requests#password-requests" data-tab="password-requests"
-                    onclick="showTab(event, 'password-requests')"><i class="bi bi-shield-lock"></i> Duyet doi mat khau</a>
+                    onclick="showTab(event, 'password-requests')"><i class="bi bi-shield-lock"></i> Duyệt đổi mật khẩu</a>
                 <a class="nav-link" href="admin.php?tab=users#users" data-tab="users" onclick="showTab(event, 'users')"><i
                         class="bi bi-people"></i> Khách hàng</a>
                 <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions"
@@ -1987,12 +1987,12 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nguoi dung</th>
+                                <th>Người dùng</th>
                                 <th>Email</th>
-                                <th>Trang thai</th>
-                                <th>Yeu cau luc</th>
-                                <th>Phe duyet luc</th>
-                                <th>Hanh dong</th>
+                                <th>Trạng thái</th>
+                                <th>Yêu cầu lúc</th>
+                                <th>Phê duyệt lúc</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>

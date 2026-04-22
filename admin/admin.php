@@ -858,9 +858,9 @@ $contactRequestsQuery = $conn->query("SELECT * FROM contact_requests ORDER BY cr
 $contactRequests = $contactRequestsQuery ? $contactRequestsQuery->fetch_all(MYSQLI_ASSOC) : [];
 
 $passwordRequestLabels = [
-    'pending' => ['label' => 'Cho duyet', 'class' => 'warning text-dark'],
-    'approved' => ['label' => 'Da duyet', 'class' => 'success'],
-    'rejected' => ['label' => 'Da tu choi', 'class' => 'danger'],
+    'pending' => ['label' => 'Chờ duyệt', 'class' => 'warning text-dark'],
+    'approved' => ['label' => 'Đã duyệt', 'class' => 'success'],
+    'rejected' => ['label' => 'Đã từ chối', 'class' => 'danger'],
 ];
 $passwordRequestsQuery = $conn->query(
     "SELECT r.id, r.user_id, r.status, r.created_at, r.approved_at, u.username, u.email
@@ -2011,7 +2011,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                     <td><small><?= htmlspecialchars((string) ($request['created_at'] ?? '')) ?></small></td>
                                     <td>
                                         <small>
-                                            <?= !empty($request['approved_at']) ? htmlspecialchars((string) $request['approved_at']) : '<span class="text-muted">Chua xu ly</span>' ?>
+                                            <?= !empty($request['approved_at']) ? htmlspecialchars((string) $request['approved_at']) : '<span class="text-muted">Chưa xử lý</span>' ?>
                                         </small>
                                     </td>
                                     <td>

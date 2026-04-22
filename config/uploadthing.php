@@ -63,6 +63,11 @@ if (!function_exists('uploadthing_bootstrap_env')) {
         $_ENV['UPLOADTHING_API_VERSION'] = $apiVersion;
         $_SERVER['UPLOADTHING_API_VERSION'] = $apiVersion;
 
+        $timeout = (string) env_value('UPLOADTHING_TIMEOUT', '8');
+        putenv('UPLOADTHING_TIMEOUT=' . $timeout);
+        $_ENV['UPLOADTHING_TIMEOUT'] = $timeout;
+        $_SERVER['UPLOADTHING_TIMEOUT'] = $timeout;
+
         return true;
     }
 }

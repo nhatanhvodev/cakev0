@@ -127,7 +127,14 @@ function prepareAvatarUploadPayload(string $tmpPath, string $ext): array
 
     $width = (int) $imageInfo[0];
     $height = (int) $imageInfo[1];
+    $pixelCount = $width * $height;
     $maxSide = 1200;
+
+    // Skip server-side optimization for very large images to avoid exhausting
+    // memory on small production containers (for example Render free instances).
+    if ($width <= 0 || $height <= 0 || $pixelCount > 4_000_000 || $width > 2200 || $height > 2200) {
+        return $result;
+    }
 
     $createMap = [
         'jpg' => 'imagecreatefromjpeg',
@@ -272,6 +279,11 @@ function storeAvatarUploadLocally(array $avatarFile, int $userId, string $ext): 
     return $storedPath;
 }
 
+function allowLocalAvatarFallback(): bool
+{
+    return strtolower((string) env_value('APP_ENV', 'development')) !== 'production';
+}
+
 /* =================================================================================
    PHẦN 2: XỬ LÝ FORM (POST REQUESTS)
    ================================================================================= */
@@ -318,26 +330,14 @@ if (isset($_POST['update_profile'])) {
 
         if (empty($error) && in_array($ext, $allow, true)) { //
             $oldAvatar = $avatar_name;
-            $storedAvatarPath = null;
-            $skipRemoteAvatarUpload = false;
             $new_name = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
             $tmpAvatarPath = (string) ($avatarFile['tmp_name'] ?? '');
             if ($tmpAvatarPath === '' || !is_uploaded_file($tmpAvatarPath)) {
                 $error = 'Tệp tải lên không hợp lệ, vui lòng thử lại.';
             }
 
-            if (empty($error)) {
-                $storedAvatarPath = storeAvatarUploadLocally($avatarFile, $user_id, $ext);
-                if ($storedAvatarPath !== null) {
-                    $avatar_name = $storedAvatarPath;
-                    $skipRemoteAvatarUpload = true;
-                } else {
-                    $error = 'Khong the luu file anh.';
-                }
-            }
-
             $uploadedUrl = null;
-            if (empty($error) && !$skipRemoteAvatarUpload) {
+            if (empty($error)) {
                 $preparedUpload = [
                     'path' => $tmpAvatarPath,
                     'mime' => (string) ($avatarFile['type'] ?? ''),
@@ -365,23 +365,18 @@ if (isset($_POST['update_profile'])) {
                     }
                 }
             }
-
             if ($uploadedUrl !== null) {
                 $avatar_name = $uploadedUrl;
-            } elseif (!$skipRemoteAvatarUpload) {
-                $uploadDirFs = __DIR__ . '/uploads';
-                if (!is_dir($uploadDirFs)) {
-                    mkdir($uploadDirFs, 0777, true);
-                }
-
-                $targetPath = rtrim($uploadDirFs, '/\\') . '/' . $new_name;
-                if ($tmpAvatarPath !== '' && move_uploaded_file($tmpAvatarPath, $targetPath)) {
-                    $avatar_name = 'uploads/' . $new_name;
+            } elseif (empty($error) && allowLocalAvatarFallback()) {
+                $storedAvatarPath = storeAvatarUploadLocally($avatarFile, $user_id, $ext);
+                if ($storedAvatarPath !== null) {
+                    $avatar_name = $storedAvatarPath;
                 } else {
-                    $error = 'Không thể lưu file ảnh.';
+                    $error = 'Khong the luu file anh.';
                 }
+            } elseif (empty($error)) {
+                $error = 'Khong the tai avatar len UploadThing. Vui long thu lai voi anh nho hon.';
             }
-
             if (empty($error) && $oldAvatar !== $avatar_name) {
                 $oldAvatarPath = resolveAvatarLocalPath($oldAvatar);
                 if ($oldAvatarPath !== null && is_file($oldAvatarPath)) {

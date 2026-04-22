@@ -138,23 +138,6 @@ LOCK TABLES `favorites` WRITE;
 INSERT INTO `favorites` VALUES (10,7,37,'2026-04-17 19:09:22'),(11,7,47,'2026-04-17 19:09:22'),(12,7,17,'2026-04-17 19:09:26'),(13,7,31,'2026-04-17 19:09:28'),(14,7,27,'2026-04-17 19:09:32'),(15,7,25,'2026-04-17 19:09:33'),(16,7,13,'2026-04-17 19:09:39'),(17,7,41,'2026-04-17 19:09:41'),(18,7,43,'2026-04-17 19:09:42');
 /*!40000 ALTER TABLE `favorites` ENABLE KEYS */;
 UNLOCK TABLES;
-DROP TABLE IF EXISTS `likes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `likes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `created_at` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-LOCK TABLES `likes` WRITE;
-/*!40000 ALTER TABLE `likes` DISABLE KEYS */;
-/*!40000 ALTER TABLE `likes` ENABLE KEYS */;
-UNLOCK TABLES;
 DROP TABLE IF EXISTS `login_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

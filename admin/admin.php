@@ -592,11 +592,6 @@ if (isset($_SESSION['admin_logged_in'])) {
         try {
             $conn->begin_transaction();
 
-            $stmt = $conn->prepare("DELETE FROM likes WHERE user_id = ?");
-            $stmt->bind_param("i", $userId);
-            $stmt->execute();
-            $stmt->close();
-
             $stmt = $conn->prepare("DELETE FROM login_logs WHERE user_id = ?");
             $stmt->bind_param("i", $userId);
             $stmt->execute();

@@ -32,38 +32,8 @@ CREATE TABLE IF NOT EXISTS `contact_requests` (
   KEY `idx_contact_requests_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Remove dependency from likes -> blogs if still exists.
-SELECT
-  IF(
-    COUNT(*) > 0,
-    'ALTER TABLE `likes` DROP FOREIGN KEY `likes_ibfk_2`',
-    'SELECT 1'
-  ) INTO @sql_stmt
-FROM information_schema.TABLE_CONSTRAINTS
-WHERE CONSTRAINT_SCHEMA = @db_name
-  AND TABLE_NAME = 'likes'
-  AND CONSTRAINT_NAME = 'likes_ibfk_2'
-  AND CONSTRAINT_TYPE = 'FOREIGN KEY';
-PREPARE dyn_stmt FROM @sql_stmt;
-EXECUTE dyn_stmt;
-DEALLOCATE PREPARE dyn_stmt;
-
--- Remove unused likes.blog_id if present.
-SELECT
-  IF(
-    COUNT(*) > 0,
-    'ALTER TABLE `likes` DROP COLUMN `blog_id`',
-    'SELECT 1'
-  ) INTO @sql_stmt
-FROM information_schema.COLUMNS
-WHERE TABLE_SCHEMA = @db_name
-  AND TABLE_NAME = 'likes'
-  AND COLUMN_NAME = 'blog_id';
-PREPARE dyn_stmt FROM @sql_stmt;
-EXECUTE dyn_stmt;
-DEALLOCATE PREPARE dyn_stmt;
-
--- Drop truly unused blog/comment tables.
+-- Drop truly unused blog/comment/like tables.
+DROP TABLE IF EXISTS `likes`;
 DROP TABLE IF EXISTS `comments`;
 DROP TABLE IF EXISTS `blogs`;
 
@@ -109,4 +79,3 @@ WHERE TABLE_SCHEMA = @db_name
 PREPARE dyn_stmt FROM @sql_stmt;
 EXECUTE dyn_stmt;
 DEALLOCATE PREPARE dyn_stmt;
-

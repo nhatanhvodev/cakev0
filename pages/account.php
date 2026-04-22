@@ -870,6 +870,72 @@ foreach ($orders as $order) {
                 padding: 8px 12px;
                 font-size: 13px;
             }
+
+            .account-table-wrap {
+                overflow: visible;
+            }
+
+            .account-orders-table {
+                min-width: 0;
+            }
+
+            .account-orders-table thead {
+                display: none;
+            }
+
+            .account-orders-table tbody,
+            .account-orders-table tr,
+            .account-orders-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .account-orders-table tbody {
+                display: grid;
+                gap: 14px;
+            }
+
+            .account-orders-table tr {
+                border: 1px solid var(--caramel);
+                border-radius: 18px;
+                padding: 14px;
+                background: #fffdf8;
+                box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
+            }
+
+            .account-orders-table td {
+                border: 0;
+                padding: 8px 0;
+            }
+
+            .account-orders-table td[data-label] {
+                display: grid;
+                grid-template-columns: minmax(84px, 96px) minmax(0, 1fr);
+                gap: 10px;
+                align-items: start;
+            }
+
+            .account-orders-table td[data-label]::before {
+                content: attr(data-label);
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--brown-700);
+            }
+
+            .account-orders-table .order-action-cell {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding-top: 12px;
+                border-top: 1px dashed var(--caramel);
+                margin-top: 4px;
+            }
+
+            .account-orders-table .order-action-cell::before {
+                display: none;
+            }
         }
 
         .scroll-top {
@@ -985,8 +1051,8 @@ foreach ($orders as $order) {
                         <div class="tab-pane fade show active" id="orders-tab">
                             <h5 class="section-title">Lịch sử mua hàng</h5>
                             <?php if (count($orders) > 0): ?>
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle">
+                                <div class="table-responsive account-table-wrap">
+                                    <table class="table table-hover align-middle account-orders-table">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Mã ĐH</th>
@@ -999,11 +1065,11 @@ foreach ($orders as $order) {
                                         <tbody>
                                             <?php foreach ($orders as $o): ?>
                                                 <tr>
-                                                    <td><span class="badge bg-secondary">#<?= $o['id'] ?></span></td>
-                                                    <td><?= date("d/m/Y", strtotime($o['created_at'])) ?></td>
-                                                    <td class="fw-bold text-success"><?= number_format($o['total_amount']) ?> đ
+                                                    <td data-label="Mã ĐH"><span class="badge bg-secondary">#<?= $o['id'] ?></span></td>
+                                                    <td data-label="Ngày đặt"><?= date("d/m/Y", strtotime($o['created_at'])) ?></td>
+                                                    <td data-label="Tổng tiền" class="fw-bold text-success"><?= number_format($o['total_amount']) ?> đ
                                                     </td>
-                                                    <td>
+                                                    <td data-label="Trạng thái">
                                                         <?php
                                                         $statusData = match (strtolower($o['status'])) {
                                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
@@ -1023,7 +1089,7 @@ foreach ($orders as $order) {
                                                             <?= $statusData['label'] ?>
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td data-label="Thao tác" class="order-action-cell">
                                                         <a href="/cakev0/pages/order-detail.php?id=<?= $o['id'] ?>"
                                                             class="btn btn-sm btn-outline-primary">Xem</a>
                                                         <?php if (in_array(strtolower($o['status']), ['pending', 'cod_not_deposited'], true)): ?>

@@ -342,6 +342,88 @@ if (!empty($cartItems) && $couponInput !== '') {
             .summary-box {
                 padding: 18px;
             }
+
+            .cart-table-wrap {
+                overflow: visible;
+                margin: 0;
+            }
+
+            .cart-table {
+                min-width: 0;
+            }
+
+            .cart-table thead {
+                display: none;
+            }
+
+            .cart-table tbody,
+            .cart-table tr.cart-item-row,
+            .cart-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .cart-table tbody {
+                display: grid;
+                gap: 14px;
+            }
+
+            .cart-table tr.cart-item-row {
+                position: relative;
+                padding: 16px 14px 14px;
+                border: 1px solid #f3e0be;
+                border-radius: 18px;
+                background: #fffdf8;
+                box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
+            }
+
+            .cart-table td {
+                border: 0;
+                padding: 8px 0;
+                text-align: left;
+            }
+
+            .cart-table td[data-label] {
+                display: grid;
+                grid-template-columns: minmax(74px, 92px) minmax(0, 1fr);
+                gap: 10px;
+                align-items: center;
+            }
+
+            .cart-table td[data-label]::before {
+                content: attr(data-label);
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #6a2d22;
+            }
+
+            .cart-table .cart-remove-cell {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                width: auto;
+                padding: 0;
+            }
+
+            .cart-table .cart-remove-cell::before {
+                display: none;
+            }
+
+            .cart-table .cart-remove-cell .btn-remove {
+                min-width: 40px;
+            }
+
+            .cart-table .cart-image-cell img {
+                width: 72px;
+                height: 72px;
+                object-fit: cover;
+            }
+
+            .cart-table .cart-qty-cell > div {
+                justify-content: flex-start !important;
+            }
         }
 
         .scroll-top {
@@ -387,8 +469,8 @@ if (!empty($cartItems) && $couponInput !== '') {
         <div class="cart-card">
             <div class="cart-title">Giỏ hàng của bạn</div>
 
-            <div class="table-responsive mb-4">
-                <table class="table align-middle text-center">
+            <div class="table-responsive cart-table-wrap mb-4">
+                <table class="table align-middle text-center cart-table">
                     <thead>
                         <tr>
                             <th><i class="fa-solid fa-circle-xmark" style="color: #000000;"></i></th>
@@ -413,21 +495,21 @@ if (!empty($cartItems) && $couponInput !== '') {
                             <?php foreach ($cartItems as $item): 
                                 $rowTotal = $item['gia'] * $item['quantity'];
                             ?>
-                            <tr>
+                            <tr class="cart-item-row">
                                 
-                                <td>
+                                <td class="cart-remove-cell">
                                     <button class="btn btn-sm btn-danger btn-remove" data-id="<?= $item['cart_id'] ?>"><i class="fa-solid fa-trash-can"></i>️</button>
                                 </td>
                                 
-                                <td>
+                                <td class="cart-image-cell" data-label="Ảnh">
                                     <img src="<?= buildImageUrl($item['hinh_anh']) ?>" width="70" alt="Bánh">
                                 </td>
                                 
-                                <td><?= htmlspecialchars($item['ten_banh']) ?></td>
+                                <td data-label="Sản phẩm"><?= htmlspecialchars($item['ten_banh']) ?></td>
                                 
-                                <td><?= number_format($item['gia'], 0, ',', '.') ?> VNĐ</td>
+                                <td data-label="Đơn giá"><?= number_format($item['gia'], 0, ',', '.') ?> VNĐ</td>
                                 
-                                <td>
+                                <td class="cart-qty-cell" data-label="Số lượng">
                                     <div class="d-flex justify-content-center align-items-center gap-2">
                                         <button class="btn btn-sm btn-outline-secondary qty-btn btn-decrease" data-id="<?= $item['cart_id'] ?>">−</button>
                                         <span class="fw-bold" style="min-width:20px;"><?= $item['quantity'] ?></span>
@@ -436,7 +518,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                                     </div>
                                 </td>
                                 
-                                <td class="fw-bold text-success">
+                                <td class="fw-bold text-success" data-label="Tổng">
                                     <?= number_format($rowTotal, 0, ',', '.') ?> VNĐ
                                 </td>
                             </tr>

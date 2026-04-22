@@ -499,6 +499,68 @@ body {
     .order-total {
         font-size: 16px;
     }
+
+    .order-table-wrap {
+        overflow: visible;
+    }
+
+    .order-table {
+        min-width: 0;
+    }
+
+    .order-table thead {
+        display: none;
+    }
+
+    .order-table tbody,
+    .order-table tr.order-table-row,
+    .order-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .order-table tbody {
+        display: grid;
+        gap: 14px;
+    }
+
+    .order-table tr.order-table-row {
+        border: 1px solid #f3e0be;
+        border-radius: 18px;
+        padding: 14px;
+        background: #fffdf8;
+        box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
+    }
+
+    .order-table td {
+        border: 0;
+        padding: 8px 0;
+    }
+
+    .order-table td[data-label] {
+        display: grid;
+        grid-template-columns: minmax(88px, 104px) minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+    }
+
+    .order-table td[data-label]::before {
+        content: attr(data-label);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6a2d22;
+    }
+
+    .order-table .review-cell::before {
+        align-self: center;
+    }
+
+    .order-table .review-cell form,
+    .order-table .review-cell .d-flex {
+        flex-wrap: wrap;
+    }
 }
 
 @media print {
@@ -603,7 +665,7 @@ body {
 
     <div class="order-panel">
         <h4><i class="fa-solid fa-cake-candles"></i> Sản phẩm đã đặt</h4>
-        <div class="table-responsive">
+        <div class="table-responsive order-table-wrap">
             <table class="table align-middle order-table">
                 <thead>
                 <tr>
@@ -615,11 +677,11 @@ body {
                 </thead>
                 <tbody>
                 <?php foreach($items as $it): ?>
-                <tr>
-                    <td><?= htmlspecialchars($it['ten_banh']) ?></td>
-                    <td><?= $it['quantity'] ?></td>
-                    <td><?= number_format($it['price']) ?> đ</td>
-                    <td class="fw-bold text-danger">
+                <tr class="order-table-row">
+                    <td data-label="Tên bánh"><?= htmlspecialchars($it['ten_banh']) ?></td>
+                    <td data-label="Số lượng"><?= $it['quantity'] ?></td>
+                    <td data-label="Giá"><?= number_format($it['price']) ?> đ</td>
+                    <td data-label="Thành tiền" class="fw-bold text-danger">
                         <?= number_format($it['price']*$it['quantity']) ?> đ
                     </td>
                 </tr>
@@ -639,7 +701,7 @@ body {
         <?php if (!in_array($status, $allowedReviewStatuses, true)): ?>
             <p>Đơn hàng chỉ có thể đánh giá khi đã hoàn tất.</p>
         <?php else: ?>
-            <div class="table-responsive">
+            <div class="table-responsive order-table-wrap">
                 <table class="table align-middle order-table">
                     <thead>
                     <tr>
@@ -651,8 +713,8 @@ body {
                     <?php foreach($items as $it):
                         $productSlug = !empty($it['slug']) ? $it['slug'] : slugify($it['ten_banh'], (int) $it['id']);
                     ?>
-                        <tr>
-                            <td>
+                        <tr class="order-table-row">
+                            <td data-label="Sản phẩm">
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="<?= imgPath($it['hinh_anh']) ?>" alt="<?= htmlspecialchars($it['ten_banh']) ?>" width="50" height="50" style="object-fit:cover;border-radius:10px;">
                                     <a href="/cakev0/product/<?= urlencode($productSlug) ?>" class="text-decoration-none">
@@ -660,7 +722,7 @@ body {
                                     </a>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Đánh giá" class="review-cell">
                                 <?php if (!empty($reviewedProducts[(int) $it['id']])): ?>
                                     <span class="badge bg-success">Đã đánh giá</span>
                                 <?php else: ?>

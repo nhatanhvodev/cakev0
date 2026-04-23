@@ -301,6 +301,29 @@ if (!empty($cartItems) && $couponInput !== '') {
         }
         .summary-box h5 { font-weight: 700; color: #4a1d1f; display: flex; align-items: center; gap: 8px; }
 
+        .cart-product-name {
+            font-weight: 600;
+            color: #2f1415;
+            line-height: 1.45;
+        }
+
+        .cart-price-text {
+            color: #5b5b5b;
+            font-weight: 500;
+        }
+
+        .cart-total-text {
+            color: #109c63;
+            font-weight: 700;
+        }
+
+        .cart-qty-value {
+            min-width: 20px;
+            text-align: center;
+            font-weight: 700;
+            color: #2f1415;
+        }
+
         .checkout-btn {
             background: #4a1d1f;
             border: none; box-shadow: 0 12px 24px rgba(74, 29, 31, 0.25);
@@ -379,6 +402,10 @@ if (!empty($cartItems) && $couponInput !== '') {
 
             .cart-table tr.cart-item-row {
                 position: relative;
+                display: grid;
+                grid-template-columns: 84px minmax(0, 1fr);
+                gap: 12px 14px;
+                align-items: start;
                 padding: 16px 14px 14px;
                 border: 1px solid #f3e0be;
                 border-radius: 18px;
@@ -388,15 +415,12 @@ if (!empty($cartItems) && $couponInput !== '') {
 
             .cart-table td {
                 border: 0;
-                padding: 8px 0;
+                padding: 0;
                 text-align: left;
             }
 
             .cart-table td[data-label] {
-                display: grid;
-                grid-template-columns: minmax(74px, 92px) minmax(0, 1fr);
-                gap: 10px;
-                align-items: center;
+                display: block;
             }
 
             .cart-table td[data-label]::before {
@@ -406,6 +430,8 @@ if (!empty($cartItems) && $couponInput !== '') {
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 color: #6a2d22;
+                display: block;
+                margin-bottom: 6px;
             }
 
             .cart-table .cart-remove-cell {
@@ -424,14 +450,96 @@ if (!empty($cartItems) && $couponInput !== '') {
                 min-width: 40px;
             }
 
-            .cart-table .cart-image-cell img {
-                width: 72px;
-                height: 72px;
+            .cart-table .cart-image-cell,
+            .cart-table td:nth-child(2) {
+                grid-column: 1;
+                grid-row: 1 / span 3;
+                align-self: start;
+            }
+
+            .cart-table .cart-image-cell img,
+            .cart-table td:nth-child(2) img {
+                width: 84px;
+                height: 84px;
                 object-fit: cover;
+                border-radius: 16px;
+            }
+
+            .cart-table .cart-product-cell,
+            .cart-table td:nth-child(3) {
+                grid-column: 2;
+                grid-row: 1;
+                padding-right: 42px;
+            }
+
+            .cart-table .cart-price-cell,
+            .cart-table td:nth-child(4),
+            .cart-table .cart-total-cell,
+            .cart-table td:nth-child(6),
+            .cart-table .cart-qty-cell {
+                background: #ffffff;
+                border: 1px solid rgba(243, 224, 190, 0.9);
+                border-radius: 14px;
+                padding: 10px 12px;
+            }
+
+            .cart-table .cart-price-cell,
+            .cart-table td:nth-child(4) {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            .cart-table .cart-total-cell,
+            .cart-table td:nth-child(6) {
+                grid-column: 2;
+                grid-row: 2;
+            }
+
+            .cart-table .cart-qty-cell {
+                grid-column: 1 / -1;
+                grid-row: 3;
+            }
+
+            .cart-table td:nth-child(2)::before {
+                display: none;
+            }
+
+            .cart-table td:nth-child(3) {
+                font-size: 18px;
+                font-weight: 600;
+                color: #2f1415;
+                line-height: 1.45;
+            }
+
+            .cart-table td:nth-child(4) {
+                color: #5b5b5b;
+                font-weight: 500;
+            }
+
+            .cart-table td:nth-child(6) {
+                color: #109c63;
+                font-weight: 700;
             }
 
             .cart-table .cart-qty-cell > div {
-                justify-content: flex-start !important;
+                justify-content: space-between !important;
+                max-width: 176px;
+            }
+
+            .cart-table .cart-qty-cell span {
+                min-width: 20px;
+                text-align: center;
+                font-weight: 700;
+                color: #2f1415;
+            }
+
+            .cart-product-name {
+                font-size: 18px;
+            }
+
+            .cart-price-text,
+            .cart-total-text {
+                font-size: 16px;
             }
         }
 
@@ -456,30 +564,47 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
 
             .cart-table tr.cart-item-row {
+                grid-template-columns: 76px minmax(0, 1fr);
+                gap: 10px 12px;
                 padding: 14px 12px 12px;
             }
 
-            .cart-table td[data-label] {
-                grid-template-columns: 1fr;
-                gap: 4px;
-            }
-
-            .cart-table td[data-label]::before {
-                margin-bottom: 2px;
-            }
-
-            .cart-table .cart-image-cell img {
-                width: 84px;
-                height: 84px;
+            .cart-table .cart-image-cell img,
+            .cart-table td:nth-child(2) img {
+                width: 76px;
+                height: 76px;
             }
 
             .cart-table .cart-qty-cell > div {
                 gap: 8px !important;
+                max-width: 156px;
             }
 
             .qty-btn {
                 width: 30px;
                 height: 30px;
+            }
+
+            .cart-product-name {
+                font-size: 16px;
+            }
+
+            .cart-table td:nth-child(3) {
+                font-size: 16px;
+            }
+
+            .cart-table .cart-price-cell,
+            .cart-table td:nth-child(4),
+            .cart-table .cart-total-cell,
+            .cart-table td:nth-child(6),
+            .cart-table .cart-qty-cell {
+                padding: 9px 10px;
+                border-radius: 12px;
+            }
+
+            .cart-price-text,
+            .cart-total-text {
+                font-size: 15px;
             }
 
             .summary-box {

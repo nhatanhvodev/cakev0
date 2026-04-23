@@ -789,6 +789,119 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
   }
 
+  @media (max-width: 480px) {
+    .header-inner {
+      width: calc(100% - 20px);
+      gap: 8px;
+    }
+
+    .header-top,
+    .header-actions {
+      gap: 8px;
+    }
+
+    .logo a {
+      font-size: 15px;
+      letter-spacing: 0.05em;
+    }
+
+    .search-box input {
+      padding: 0 42px 0 12px;
+      height: 38px;
+      font-size: 13px;
+      border-radius: 20px;
+    }
+
+    .search-box button {
+      width: 38px;
+      height: 38px;
+      border-radius: 20px;
+    }
+
+    #user-actions {
+      gap: 7px;
+    }
+
+    #user-actions a,
+    .notify-box > i {
+      font-size: 17px;
+    }
+
+    .cart-badge,
+    .favorite-badge {
+      top: -6px;
+      right: -8px;
+      min-width: 16px;
+      font-size: 10px;
+      padding: 1px 5px;
+    }
+
+    .menu-container #main-nav {
+      width: calc(100% - 20px);
+    }
+
+    .menu-tag-list {
+      margin-left: 6px;
+    }
+
+    .menu-search-tag {
+      padding: 6px 9px;
+      font-size: 11px;
+    }
+
+    .cate-panel-inner {
+      width: calc(100% - 20px);
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .cate-panel-col:nth-child(2),
+    .cate-panel-col:nth-child(3) {
+      border: 0;
+      padding: 0;
+      grid-column: auto;
+    }
+
+    .cate-panel-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .notify-list {
+      right: -6px;
+      min-width: min(230px, calc(100vw - 24px));
+    }
+  }
+
+  @media (max-width: 380px) {
+    .header-inner {
+      width: calc(100% - 16px);
+    }
+
+    .logo a {
+      font-size: 14px;
+      letter-spacing: 0.03em;
+    }
+
+    .search-box input {
+      font-size: 12px;
+      padding-left: 10px;
+    }
+
+    #user-actions {
+      gap: 6px;
+    }
+
+    #user-actions a,
+    .notify-box > i {
+      font-size: 16px;
+    }
+
+    .menu-container #main-nav,
+    .cate-panel-inner {
+      width: calc(100% - 16px);
+    }
+  }
+
   .cart-badge.pop {
     transform: scale(1.3);
   }

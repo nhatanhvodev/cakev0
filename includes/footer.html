@@ -43,38 +43,40 @@
 
   @media (max-width: 900px) {
     .footer-inner {
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       gap: 12px;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .footer-brand {
       order: 1;
-      font-size: 13px;
-      white-space: nowrap;
+      font-size: 16px;
+      white-space: normal;
     }
 
     .footer-nav {
       order: 2;
-      flex: 1 1 auto;
-      overflow-x: auto;
-      flex-wrap: nowrap;
-      white-space: nowrap;
+      width: 100%;
+      overflow-x: visible;
+      flex-wrap: wrap;
+      white-space: normal;
       gap: 12px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .footer-nav::-webkit-scrollbar {
-      display: none;
     }
 
   }
 
   @media (max-width: 600px) {
-    .footer-nav {
-      font-size: 11px;
+    #site-footer {
+      padding: 16px 14px;
+    }
+
+    .footer-inner {
       gap: 10px;
+    }
+
+    .footer-nav {
+      font-size: 13px;
+      gap: 8px 12px;
     }
   }
 

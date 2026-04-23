@@ -246,6 +246,7 @@ if (!empty($cartItems) && $couponInput !== '') {
 <head>
     <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?></title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -431,6 +432,85 @@ if (!empty($cartItems) && $couponInput !== '') {
 
             .cart-table .cart-qty-cell > div {
                 justify-content: flex-start !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cart-page {
+                padding: 16px 0 20px;
+            }
+
+            .cart-card {
+                margin-top: 12px;
+                padding: 14px;
+                border-radius: 18px;
+            }
+
+            .cart-title {
+                font-size: 20px;
+                margin-bottom: 18px;
+            }
+
+            .cart-table tbody {
+                gap: 12px;
+            }
+
+            .cart-table tr.cart-item-row {
+                padding: 14px 12px 12px;
+            }
+
+            .cart-table td[data-label] {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+
+            .cart-table td[data-label]::before {
+                margin-bottom: 2px;
+            }
+
+            .cart-table .cart-image-cell img {
+                width: 84px;
+                height: 84px;
+            }
+
+            .cart-table .cart-qty-cell > div {
+                gap: 8px !important;
+            }
+
+            .qty-btn {
+                width: 30px;
+                height: 30px;
+            }
+
+            .summary-box {
+                margin-top: 4px;
+                padding: 16px;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-group > .form-control,
+            .input-group > .btn {
+                width: 100%;
+                border-radius: 12px !important;
+            }
+
+            .input-group > .btn + .btn,
+            .input-group > .form-control + .btn,
+            .input-group > .btn + .form-control {
+                margin-top: 8px;
+            }
+
+            .summary-box .d-flex {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 10px;
+            }
+
+            .summary-box .d-flex .btn {
+                width: 100%;
             }
         }
 

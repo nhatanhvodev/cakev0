@@ -245,6 +245,7 @@ foreach ($reviewRows as $row) {
 <head>
     <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chi tiết đơn hàng #<?= $order_id ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -565,6 +566,94 @@ body {
     .order-table .review-cell form,
     .order-table .review-cell .d-flex {
         flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .order-shell {
+        padding: 0 12px;
+        margin: 12px auto 28px;
+        gap: 16px;
+    }
+
+    .order-hero,
+    .order-panel,
+    .order-total {
+        border-radius: 18px;
+    }
+
+    .order-hero {
+        padding: 16px;
+    }
+
+    .order-hero h1 {
+        font-size: 20px;
+        line-height: 1.3;
+    }
+
+    .order-meta {
+        gap: 8px;
+    }
+
+    .order-actions {
+        width: 100%;
+        gap: 8px;
+    }
+
+    .order-actions .btn,
+    .order-actions a {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-pill {
+        padding: 10px 14px;
+    }
+
+    .order-panel {
+        padding: 16px;
+    }
+
+    .order-panel h4 {
+        font-size: 17px;
+        margin-bottom: 12px;
+    }
+
+    .order-list {
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .order-map {
+        height: 150px;
+        border-radius: 14px;
+    }
+
+    .order-table td[data-label] {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .order-total {
+        padding: 14px 16px;
+        font-size: 17px;
+    }
+
+    .confirm-modal-actions {
+        flex-direction: column;
+    }
+
+    .confirm-modal-actions .btn,
+    .order-edit-box .btn {
+        width: 100%;
+    }
+
+    .modal-box,
+    .confirm-modal-box,
+    .order-edit-box {
+        width: calc(100% - 24px);
+        padding: 18px;
+        border-radius: 18px;
     }
 }
 

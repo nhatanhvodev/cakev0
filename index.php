@@ -127,6 +127,9 @@ if (isset($_POST['search_products'])) {
         'banhngot' => 'ngot'
     ];
 
+    $normalizedPhrase = implode('', $normalized);
+    $matchedCategory = $categoryMap[$normalizedPhrase] ?? null;
+
     $whereParts = [];
     $categoryParts = [];
     $nameParts = [];
@@ -138,8 +141,7 @@ if (isset($_POST['search_products'])) {
 
     foreach ($normalized as $index => $term) {
         if ($termCount === 1 && isset($categoryMap[$term])) {
-            $categoryParts[] = 'b.loai = ?';
-            $categoryParams[] = $categoryMap[$term];
+            $matchedCategory = $categoryMap[$term];
         }
         if (!empty($terms[$index])) {
             $nameParts[] = 'b.ten_banh COLLATE utf8mb4_unicode_ci LIKE ?';
@@ -155,7 +157,12 @@ if (isset($_POST['search_products'])) {
         $params = array_merge($params, $nameParams);
     }
 
-    if ($termCount === 1 && !empty($categoryParts)) {
+    if ($matchedCategory !== null) {
+        $categoryParts[] = 'b.loai = ?';
+        $categoryParams[] = $matchedCategory;
+    }
+
+    if (!empty($categoryParts)) {
         $whereParts = array_merge($whereParts, $categoryParts);
         $params = array_merge($params, $categoryParams);
     }

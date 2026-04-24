@@ -162,6 +162,9 @@ if ($search !== '') {
         'banhngot' => 'ngot'
     ];
 
+    $normalizedPhrase = implode('', $normalizedTerms);
+    $matchedCategory = $categoryMap[$normalizedPhrase] ?? null;
+
     $whereParts = [];
     $categoryParts = [];
     $keywordParts = [];
@@ -173,8 +176,7 @@ if ($search !== '') {
 
     foreach ($normalizedTerms as $index => $term) {
         if ($termCount === 1 && isset($categoryMap[$term])) {
-            $categoryParts[] = "b.loai = ?";
-            $categoryParams[] = $categoryMap[$term];
+            $matchedCategory = $categoryMap[$term];
         }
         if (!empty($terms[$index])) {
             $keywordParts[] = "(b.ten_banh COLLATE utf8mb4_unicode_ci LIKE ? OR b.mo_ta COLLATE utf8mb4_unicode_ci LIKE ?)";
@@ -193,7 +195,12 @@ if ($search !== '') {
         $types .= str_repeat('s', count($keywordParams));
     }
 
-    if ($termCount === 1 && !empty($categoryParts)) {
+    if ($matchedCategory !== null) {
+        $categoryParts[] = "b.loai = ?";
+        $categoryParams[] = $matchedCategory;
+    }
+
+    if (!empty($categoryParts)) {
         $whereParts = array_merge($whereParts, $categoryParts);
         $params = array_merge($params, $categoryParams);
         $types .= str_repeat('s', count($categoryParams));

@@ -1066,7 +1066,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
         </button>
       </li>
       <li class="menu-tag-list" aria-label="Danh mục tìm kiếm nhanh">
-        <button type="button" class="menu-search-tag" data-search-keyword="Bánh Kem">Bánh Kem Sinh Nhật</button>
+        <button type="button" class="menu-search-tag" data-search-keyword="Bánh Kem">Bánh Kem</button>
         <button type="button" class="menu-search-tag" data-search-keyword="Bánh Kem Bắp">Bánh Kem Bắp</button>
         <button type="button" class="menu-search-tag" data-search-keyword="Cheese Cake">CheeseCake</button>
         <button type="button" class="menu-search-tag" data-search-keyword="Bánh Cưới">Bánh Cưới</button>
@@ -1150,6 +1150,9 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   })();
 
   $(document).ready(function () {
+    const searchEndpoint = <?= json_encode(base_url('index.php')) ?>;
+    const productBaseUrl = <?= json_encode(rtrim(BASE_URL, '/') . '/product/') ?>;
+
     function doAutocomplete() {
       let keyword = $("#searchInput").val().trim();
       if (keyword.length < 2) {
@@ -1158,7 +1161,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       }
 
       $.ajax({
-        url: "/cakev0/index.php",
+        url: searchEndpoint,
         method: "POST",
         data: {
           search_products: true,
@@ -1170,7 +1173,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
             let html = "";
             res.products.forEach(p => {
               html += `
-<a class="search-item" href="/cakev0/product/${encodeURIComponent(p.slug)}">
+<a class="search-item" href="${productBaseUrl}${encodeURIComponent(p.slug)}">
   <img src="${p.hinh_anh}" alt="${p.ten_banh}">
   <div class="search-info">
     <div class="search-name">${p.ten_banh}</div>
@@ -1197,13 +1200,15 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       window.location.href = "<?= BASE_URL ?>pages/product.php?search=" + encodeURIComponent(keyword);
     }
 
-    $("#searchInput").on("keyup", function (e) {
-      if (e.which === 13) {
+    $("#searchInput").on("input", function () {
+      doAutocomplete();
+    });
+
+    $("#searchInput").on("keydown", function (e) {
+      if (e.key === "Enter" || e.which === 13) {
         e.preventDefault();
         submitSearch();
-        return;
       }
-      doAutocomplete();
     });
 
     $("#searchBtn").on("click", function (e) {

@@ -415,11 +415,27 @@ if (!empty($cartItems) && $couponInput !== '') {
                 box-shadow: 0 14px 30px rgba(74, 29, 31, 0.1);
             }
 
+            .cart-table tr.cart-item-row::after {
+                content: "";
+                position: absolute;
+                left: 14px;
+                right: 14px;
+                top: 108px;
+                bottom: 14px;
+                border: 1px solid rgba(243, 224, 190, 0.9);
+                border-radius: 18px;
+                background: #ffffff;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+                z-index: 0;
+            }
+
             .cart-table td {
                 border: 0;
                 padding: 0;
                 text-align: left;
                 min-width: 0;
+                position: relative;
+                z-index: 1;
             }
 
             .cart-table td[data-label] {
@@ -494,11 +510,11 @@ if (!empty($cartItems) && $couponInput !== '') {
             .cart-table .cart-total-cell,
             .cart-table td:nth-child(6),
             .cart-table .cart-qty-cell {
-                background: #ffffff;
-                border: 1px solid rgba(243, 224, 190, 0.9);
-                border-radius: 16px;
-                padding: 12px;
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+                background: transparent;
+                border: 0;
+                border-radius: 0;
+                padding: 12px 12px 0;
+                box-shadow: none;
             }
 
             .cart-table .cart-price-cell,
@@ -516,6 +532,18 @@ if (!empty($cartItems) && $couponInput !== '') {
             .cart-table .cart-qty-cell {
                 grid-column: 1 / -1;
                 grid-row: 4;
+                padding-bottom: 12px;
+            }
+
+            .cart-table td:nth-child(6) {
+                padding-top: 10px;
+                border-top: 1px solid rgba(243, 224, 190, 0.7);
+            }
+
+            .cart-table .cart-qty-cell {
+                margin-top: 10px;
+                border-top: 1px solid rgba(243, 224, 190, 0.7);
+                padding-top: 12px;
             }
 
             .cart-table td:nth-child(2)::before {
@@ -625,6 +653,14 @@ if (!empty($cartItems) && $couponInput !== '') {
                 border-radius: 20px;
             }
 
+            .cart-table tr.cart-item-row::after {
+                left: 12px;
+                right: 12px;
+                top: 96px;
+                bottom: 12px;
+                border-radius: 16px;
+            }
+
             .cart-table .cart-image-cell img,
             .cart-table td:nth-child(2) img {
                 width: 72px;
@@ -656,8 +692,11 @@ if (!empty($cartItems) && $couponInput !== '') {
             .cart-table .cart-total-cell,
             .cart-table td:nth-child(6),
             .cart-table .cart-qty-cell {
-                padding: 9px 10px;
-                border-radius: 12px;
+                padding: 10px 10px 0;
+            }
+
+            .cart-table .cart-qty-cell {
+                padding-bottom: 10px;
             }
 
             .cart-price-text,

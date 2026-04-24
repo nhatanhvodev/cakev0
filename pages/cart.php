@@ -419,6 +419,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                 border: 0;
                 padding: 0;
                 text-align: left;
+                min-width: 0;
             }
 
             .cart-table td[data-label] {
@@ -467,7 +468,7 @@ if (!empty($cartItems) && $couponInput !== '') {
             .cart-table .cart-image-cell,
             .cart-table td:nth-child(2) {
                 grid-column: 1;
-                grid-row: 1 / span 3;
+                grid-row: 1 / span 2;
                 align-self: start;
             }
 
@@ -485,6 +486,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                 grid-column: 2;
                 grid-row: 1;
                 padding-right: 42px;
+                min-width: 0;
             }
 
             .cart-table .cart-price-cell,
@@ -501,19 +503,19 @@ if (!empty($cartItems) && $couponInput !== '') {
 
             .cart-table .cart-price-cell,
             .cart-table td:nth-child(4) {
-                grid-column: 1;
+                grid-column: 1 / -1;
                 grid-row: 2;
             }
 
             .cart-table .cart-total-cell,
             .cart-table td:nth-child(6) {
-                grid-column: 2;
-                grid-row: 2;
+                grid-column: 1 / -1;
+                grid-row: 3;
             }
 
             .cart-table .cart-qty-cell {
                 grid-column: 1 / -1;
-                grid-row: 3;
+                grid-row: 4;
             }
 
             .cart-table td:nth-child(2)::before {
@@ -526,6 +528,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                 color: #2f1415;
                 line-height: 1.45;
                 padding-top: 2px;
+                overflow-wrap: anywhere;
             }
 
             .cart-table td:nth-child(4) {
@@ -538,10 +541,19 @@ if (!empty($cartItems) && $couponInput !== '') {
                 font-weight: 700;
             }
 
+            .cart-table .cart-price-cell,
+            .cart-table td:nth-child(4),
+            .cart-table .cart-total-cell,
+            .cart-table td:nth-child(6),
+            .cart-table .cart-qty-cell {
+                width: 100%;
+            }
+
             .cart-table .cart-qty-cell > div {
                 justify-content: space-between !important;
-                max-width: 176px;
-                gap: 10px !important;
+                width: min(180px, 100%);
+                max-width: 180px;
+                gap: 8px !important;
                 padding: 4px;
                 border-radius: 999px;
                 background: #fff7ea;
@@ -549,16 +561,17 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
 
             .cart-table .cart-qty-cell span {
-                min-width: 34px;
+                min-width: 28px;
                 text-align: center;
                 font-weight: 700;
                 color: #2f1415;
-                font-size: 16px;
+                font-size: 15px;
+                line-height: 1;
             }
 
             .cart-table .cart-qty-cell .qty-btn {
-                width: 36px;
-                height: 36px;
+                width: 34px;
+                height: 34px;
                 border-radius: 50%;
                 border-color: rgba(74, 29, 31, 0.18);
                 background: #fff;
@@ -580,6 +593,8 @@ if (!empty($cartItems) && $couponInput !== '') {
             .cart-price-text,
             .cart-total-text {
                 font-size: 16px;
+                line-height: 1.35;
+                overflow-wrap: anywhere;
             }
         }
 
@@ -604,26 +619,27 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
 
             .cart-table tr.cart-item-row {
-                grid-template-columns: 76px minmax(0, 1fr);
-                gap: 10px 12px;
+                grid-template-columns: 72px minmax(0, 1fr);
+                gap: 10px 10px;
                 padding: 14px 12px 12px;
                 border-radius: 20px;
             }
 
             .cart-table .cart-image-cell img,
             .cart-table td:nth-child(2) img {
-                width: 76px;
-                height: 76px;
+                width: 72px;
+                height: 72px;
             }
 
             .cart-table .cart-qty-cell > div {
-                gap: 8px !important;
-                max-width: 156px;
+                max-width: 154px;
+                padding: 3px;
             }
 
-            .qty-btn {
-                width: 32px;
-                height: 32px;
+            .cart-table .cart-qty-cell .qty-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
             }
 
             .cart-product-name {
@@ -632,6 +648,7 @@ if (!empty($cartItems) && $couponInput !== '') {
 
             .cart-table td:nth-child(3) {
                 font-size: 16px;
+                padding-right: 38px;
             }
 
             .cart-table .cart-price-cell,
@@ -645,7 +662,11 @@ if (!empty($cartItems) && $couponInput !== '') {
 
             .cart-price-text,
             .cart-total-text {
-                font-size: 15px;
+                font-size: 14px;
+            }
+
+            .cart-table .cart-qty-cell span {
+                font-size: 14px;
             }
 
             .cart-table td[data-label]::before {

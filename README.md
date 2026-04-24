@@ -182,6 +182,26 @@ MAIL_FROM_ADDRESS=
 MAIL_FROM_NAME=
 ```
 
+## Bảo mật hiện có
+
+Các cơ chế bảo mật đang có trong codebase:
+
+- Hash mật khẩu bằng `password_hash()` và xác thực bằng `password_verify()`.
+- Chống CSRF cho các form quan trọng như đăng nhập, quên mật khẩu và nhiều thao tác trong trang admin bằng token sinh từ `random_bytes()` và kiểm tra với `hash_equals()`.
+- Chống SQL Injection ở nhiều luồng chính bằng `prepared statements` với `prepare()` và `bind_param()`.
+- Tái tạo session khi đăng nhập thành công bằng `session_regenerate_id(true)` để giảm rủi ro session fixation.
+- Phân quyền truy cập khu vực quản trị bằng session `admin_logged_in` và `role = admin`.
+- Token ngẫu nhiên cho các chức năng nhạy cảm như remember login, CSRF và yêu cầu đổi mật khẩu.
+- Escape dữ liệu đầu ra bằng `htmlspecialchars()` ở nhiều vị trí để giảm nguy cơ XSS khi hiển thị dữ liệu người dùng.
+- Kiểm tra định dạng email bằng `filter_var(..., FILTER_VALIDATE_EMAIL)` ở luồng đăng ký.
+- Ghi nhật ký đăng nhập qua bảng `login_logs`.
+- Kiểm soát upload ảnh sản phẩm theo phần mở rộng cho phép (`jpg`, `jpeg`, `png`, `webp`) và dùng tên file ngẫu nhiên khi lưu.
+
+Lưu ý hiện trạng:
+
+- README này mô tả các cơ chế đang có sẵn trong mã nguồn hiện tại, không có nghĩa là hệ thống đã đạt mức hardening hoàn chỉnh.
+- Một số phần vẫn nên tăng cường thêm như cookie `Secure`/`SameSite`, rate limiting cho đăng nhập, CSP/security headers và kiểm tra MIME upload chặt hơn.
+
 ## Điểm vào chính của ứng dụng
 
 - Trang chủ: `index.php`

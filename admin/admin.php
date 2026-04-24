@@ -894,7 +894,8 @@ foreach ($bestSalesRows as $row) {
 // --- LOGIC THỐNG KÊ & BIỂU ĐỒ ---
 $chart_data = [];
 if ($chart_view === 'month') {
-    $days_in_month = cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year);
+    $days_in_month = (int) (new DateTimeImmutable(sprintf('%04d-%02d-01', $selected_year, $selected_month)))
+        ->format('t');
     for ($day = 1; $day <= $days_in_month; $day++) {
         $chart_data[$day] = 0;
     }

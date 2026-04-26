@@ -1512,7 +1512,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 12px 14px;
+            padding: 14px 16px;
             border-radius: 16px;
             background: rgba(255, 255, 255, 0.72);
             border: 1px solid #f0dfc6;
@@ -1524,16 +1524,59 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
         .best-selling-toggle-title {
             margin: 0;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             color: #2f1415;
         }
 
         .best-selling-toggle-desc {
             margin: 4px 0 0;
-            font-size: 13px;
-            line-height: 1.45;
-            color: #7a6255;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #8a7365;
+        }
+
+        .best-selling-checkbox {
+            width: 56px;
+            height: 30px;
+            margin: 0;
+            cursor: pointer;
+            border-radius: 999px !important;
+            border: 1px solid #d8c1a3;
+            background-color: #fff;
+            box-shadow: inset 0 0 0 1px rgba(74, 29, 31, 0.04);
+            appearance: none;
+            -webkit-appearance: none;
+            position: relative;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .best-selling-checkbox::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #8b5e34;
+            box-shadow: 0 2px 6px rgba(74, 29, 31, 0.18);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .best-selling-checkbox:checked {
+            background-color: #4a1d1f;
+            border-color: #4a1d1f;
+        }
+
+        .best-selling-checkbox:checked::before {
+            transform: translateX(26px);
+            background: #fbedcd;
+        }
+
+        .best-selling-checkbox:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(74, 29, 31, 0.12);
         }
 
         .best-selling-rank {
@@ -2248,7 +2291,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             <div class="best-selling-toggle">
                                                 <div class="best-selling-toggle-copy">
                                                     <p class="best-selling-toggle-title">Hiển thị thủ công</p>
-                                                    <p class="best-selling-toggle-desc">Bật để ưu tiên sản phẩm này trong mục Best Selling ở trang chủ.</p>
+                                                    <p class="best-selling-toggle-desc">Ưu tiên xuất hiện ngoài trang chủ</p>
                                                 </div>
                                                 <input
                                                     class="form-check-input best-selling-checkbox"

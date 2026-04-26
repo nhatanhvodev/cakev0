@@ -86,7 +86,7 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
         }
 
         .btn:hover {
-            background: #ff8fb3;
+            background: #6a2d22
         }
     </style>
 </head>

@@ -1053,6 +1053,11 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 
             .strip-track {
                 width: 100%;
+                overflow-x: auto;
+            }
+
+            .strip-marquee {
+                animation-duration: 28s;
             }
         }
 
@@ -1155,6 +1160,18 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 height: 130px;
             }
 
+            .hero::before {
+                width: 560px;
+                height: 560px;
+                right: -120px;
+                top: -40px;
+                filter: blur(140px);
+            }
+
+            .strip-marquee {
+                animation: none;
+            }
+
             .best-card {
                 width: 210px;
             }
@@ -1185,6 +1202,19 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 
             .testimonial-form {
                 padding: 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero::before {
+                filter: blur(120px);
+            }
+
+            .strip-marquee,
+            .hero-slide,
+            .testimonial-item {
+                animation: none !important;
+                transition: none !important;
             }
         }
 
@@ -1436,6 +1466,8 @@ $heroStripImages = [
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const isCompactViewport = window.innerWidth <= 540;
         const heroSlider = document.getElementById('heroSlider');
         const heroSlides = heroSlider ? Array.from(heroSlider.querySelectorAll('.hero-slide')) : [];
         const heroDots = Array.from(document.querySelectorAll('.hero-dot'));
@@ -1456,7 +1488,9 @@ $heroStripImages = [
                 });
             });
 
-            setInterval(() => showHero(heroIndex + 1), 5000);
+            if (!reduceMotion && !isCompactViewport) {
+                setInterval(() => showHero(heroIndex + 1), 5000);
+            }
         }
 
         const bestList = document.querySelector('.best-list');
@@ -1509,10 +1543,12 @@ $heroStripImages = [
             dot.addEventListener('click', () => activate(i));
         });
 
-        setInterval(() => {
-            const nextIndex = (activeIndex + 1) % items.length;
-            activate(nextIndex);
-        }, 6000);
+        if (!reduceMotion && !isCompactViewport) {
+            setInterval(() => {
+                const nextIndex = (activeIndex + 1) % items.length;
+                activate(nextIndex);
+            }, 6000);
+        }
     });
 </script>
 

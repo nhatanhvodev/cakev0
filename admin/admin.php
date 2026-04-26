@@ -1317,6 +1317,280 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             border: 1px solid var(--caramel);
         }
 
+        .best-selling-panel {
+            display: grid;
+            gap: 18px;
+        }
+
+        .best-selling-hero {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .best-selling-copy {
+            max-width: 760px;
+        }
+
+        .best-selling-copy h5 {
+            margin: 0 0 8px;
+            color: var(--brown-800);
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .best-selling-copy p {
+            margin: 0;
+            color: #6f5a4f;
+            line-height: 1.65;
+        }
+
+        .best-selling-stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .best-selling-stat {
+            min-width: 132px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #fff8ea 0%, #fffdf8 100%);
+            border: 1px solid #f1dec0;
+            box-shadow: 0 10px 18px rgba(74, 29, 31, 0.06);
+        }
+
+        .best-selling-stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #8d7159;
+            margin-bottom: 6px;
+        }
+
+        .best-selling-stat-value {
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 800;
+            color: var(--brown-800);
+        }
+
+        .best-selling-tips {
+            display: grid;
+            gap: 10px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: #fff9ef;
+            border: 1px dashed #e7cc9f;
+            color: #745743;
+        }
+
+        .best-selling-tips strong {
+            color: var(--brown-800);
+        }
+
+        .best-selling-toolbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(180px, 0.8fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .best-selling-field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .best-selling-field label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6d5447;
+        }
+
+        .best-selling-field input,
+        .best-selling-field select {
+            border-radius: 12px;
+            border: 1px solid #ead6b8;
+            padding: 11px 13px;
+            font-size: 14px;
+            color: #2f1415;
+            background: #fffdfa;
+        }
+
+        .best-selling-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+        }
+
+        .best-selling-card {
+            position: relative;
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #ffffff 0%, #fff9f0 100%);
+            border: 1px solid #f1dec0;
+            box-shadow: 0 14px 28px rgba(74, 29, 31, 0.08);
+        }
+
+        .best-selling-card.is-selected {
+            border-color: #8b5e34;
+            box-shadow: 0 18px 32px rgba(74, 29, 31, 0.14);
+        }
+
+        .best-selling-card.is-hidden {
+            display: none;
+        }
+
+        .best-selling-card-top {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .best-selling-card-thumb {
+            width: 72px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 8px 18px rgba(74, 29, 31, 0.12);
+        }
+
+        .best-selling-card-info {
+            min-width: 0;
+        }
+
+        .best-selling-card-name {
+            margin: 0 0 8px;
+            font-size: 18px;
+            line-height: 1.4;
+            font-weight: 700;
+            color: #2f1415;
+            overflow-wrap: anywhere;
+        }
+
+        .best-selling-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .best-selling-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .best-selling-badge.type {
+            background: #fff0d8;
+            color: #8b5e34;
+        }
+
+        .best-selling-badge.sales {
+            background: #eef9f0;
+            color: #257249;
+        }
+
+        .best-selling-controls {
+            display: grid;
+            gap: 12px;
+        }
+
+        .best-selling-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid #f0dfc6;
+        }
+
+        .best-selling-toggle-copy {
+            min-width: 0;
+        }
+
+        .best-selling-toggle-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #2f1415;
+        }
+
+        .best-selling-toggle-desc {
+            margin: 4px 0 0;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #7a6255;
+        }
+
+        .best-selling-rank {
+            display: grid;
+            gap: 8px;
+        }
+
+        .best-selling-rank label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6d5447;
+        }
+
+        .best-selling-rank input {
+            border-radius: 12px;
+            border-color: #ead6b8;
+            padding: 10px 12px;
+            font-weight: 600;
+        }
+
+        .best-selling-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            padding-top: 4px;
+        }
+
+        .best-selling-note {
+            font-size: 13px;
+            color: #7a6255;
+        }
+
+        @media (max-width: 768px) {
+            .best-selling-hero {
+                flex-direction: column;
+            }
+
+            .best-selling-stats {
+                width: 100%;
+            }
+
+            .best-selling-stat {
+                flex: 1 1 140px;
+            }
+
+            .best-selling-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .best-selling-toolbar {
+                grid-template-columns: 1fr;
+            }
+        }
+
         table {
             width: 100%;
             min-width: 800px;
@@ -1865,52 +2139,149 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
             <!-- TAB 4B: BEST SELLING -->
             <div id="best-selling" class="tab-content">
+                <?php
+                $manualSelectedCount = 0;
+                $topSoldProductCount = 0;
+                foreach ($products as $bestProduct) {
+                    if (!empty($bestProduct['is_best_manual'])) {
+                        $manualSelectedCount++;
+                    }
+                    $bestSoldQty = (int) ($bestSalesMap[(int) $bestProduct['id']] ?? 0);
+                    if ($bestSoldQty > 0) {
+                        $topSoldProductCount++;
+                    }
+                }
+                ?>
                 <h3 class="mb-4" style="color:#4a1d1f;">Best Selling</h3>
 
                 <div class="custom-table mb-4">
-                    <h5 class="mb-3">Chọn thủ công Best Selling</h5>
-                    <form method="POST">
-                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Ảnh</th>
-                                    <th>Tên</th>
-                                    <th>Đã bán</th>
-                                    <th>Thủ công</th>
-                                    <th>Thứ tự</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                    <div class="best-selling-panel">
+                        <div class="best-selling-hero">
+                            <div class="best-selling-copy">
+                                <h5>Chọn thủ công sản phẩm bán chạy</h5>
+                                <p>Tick những bánh bạn muốn ưu tiên hiển thị ở mục Best Selling ngoài trang chủ. Số thứ tự càng nhỏ thì ưu tiên càng cao. Để trống hoặc để <strong>0</strong> nếu bạn chỉ muốn đánh dấu mà không ép thứ tự.</p>
+                            </div>
+                            <div class="best-selling-stats">
+                                <div class="best-selling-stat">
+                                    <div class="best-selling-stat-label">Đã chọn</div>
+                                    <div class="best-selling-stat-value" id="bestSellingSelectedCount"><?= $manualSelectedCount ?></div>
+                                </div>
+                                <div class="best-selling-stat">
+                                    <div class="best-selling-stat-label">Tổng SP</div>
+                                    <div class="best-selling-stat-value"><?= count($products) ?></div>
+                                </div>
+                                <div class="best-selling-stat">
+                                    <div class="best-selling-stat-label">Có lượt bán</div>
+                                    <div class="best-selling-stat-value"><?= $topSoldProductCount ?></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="best-selling-tips">
+                            <div><strong>Gợi ý:</strong> Ưu tiên chọn các sản phẩm có lượt bán tốt và ảnh rõ ràng để section ngoài trang chủ nhìn hấp dẫn hơn.</div>
+                            <div><strong>Quy tắc hiển thị:</strong> Sản phẩm được chọn thủ công sẽ được ưu tiên trước, sau đó hệ thống mới lấy thêm sản phẩm bán tốt tự động.</div>
+                        </div>
+
+                        <form method="POST" id="bestSellingForm">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
+                            <div class="best-selling-toolbar">
+                                <div class="best-selling-field">
+                                    <label for="bestSellingSearch">Tìm sản phẩm</label>
+                                    <input id="bestSellingSearch" type="text" placeholder="Nhập tên bánh để lọc nhanh">
+                                </div>
+                                <div class="best-selling-field">
+                                    <label for="bestSellingFilter">Trạng thái chọn</label>
+                                    <select id="bestSellingFilter">
+                                        <option value="all">Tất cả sản phẩm</option>
+                                        <option value="selected">Đã chọn thủ công</option>
+                                        <option value="unselected">Chưa chọn</option>
+                                    </select>
+                                </div>
+                                <div class="best-selling-field">
+                                    <label for="bestSellingSort">Sắp xếp</label>
+                                    <select id="bestSellingSort">
+                                        <option value="default">Mặc định</option>
+                                        <option value="sold_desc">Đã bán: cao đến thấp</option>
+                                        <option value="sold_asc">Đã bán: thấp đến cao</option>
+                                        <option value="rank_asc">Ưu tiên: thấp đến cao</option>
+                                        <option value="rank_desc">Ưu tiên: cao đến thấp</option>
+                                        <option value="name_asc">Tên: A đến Z</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="best-selling-grid" id="bestSellingGrid">
                                 <?php foreach ($products as $p):
                                     $img = buildImageUrl($p['hinh_anh']);
                                     $soldQty = $bestSalesMap[(int) $p['id']] ?? 0;
+                                    $isSelected = !empty($p['is_best_manual']);
+                                    $typeLabel = match ((string) ($p['loai'] ?? '')) {
+                                        'kem' => 'Bánh kem',
+                                        'ngot' => 'Bánh ngọt',
+                                        'man' => 'Bánh mặn',
+                                        'mi' => 'Bánh mì',
+                                        default => ucfirst((string) ($p['loai'] ?? 'Khác'))
+                                    };
                                     ?>
-                                    <tr>
-                                        <td><img src="<?= $img['url'] ?>" width="46" height="46" style="object-fit:cover"
-                                                class="rounded"></td>
-                                        <td><?= htmlspecialchars($p['ten_banh']) ?></td>
-                                        <td><?= $soldQty ?></td>
-                                        <td>
-                                            <input type="hidden" name="product_ids[]" value="<?= $p['id'] ?>">
-                                            <input class="form-check-input" type="checkbox" name="manual_best[<?= $p['id'] ?>]"
-                                                <?= !empty($p['is_best_manual']) ? 'checked' : '' ?>>
-                                        </td>
-                                        <td style="width: 120px;">
-                                            <input type="number" min="0" name="best_rank[<?= $p['id'] ?>]"
-                                                class="form-control form-control-sm"
-                                                value="<?= (int) ($p['best_rank'] ?? 0) ?>">
-                                        </td>
-                                    </tr>
+                                    <div
+                                        class="best-selling-card <?= $isSelected ? 'is-selected' : '' ?>"
+                                        data-product-name="<?= htmlspecialchars(mb_strtolower($p['ten_banh'], 'UTF-8'), ENT_QUOTES) ?>"
+                                        data-product-sold="<?= (int) $soldQty ?>"
+                                        data-product-rank="<?= (int) ($p['best_rank'] ?? 0) ?>"
+                                        data-product-selected="<?= $isSelected ? '1' : '0' ?>"
+                                        data-product-index="<?= (int) $p['id'] ?>">
+                                        <input type="hidden" name="product_ids[]" value="<?= $p['id'] ?>">
+
+                                        <div class="best-selling-card-top">
+                                            <img src="<?= $img['url'] ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>" class="best-selling-card-thumb">
+                                            <div class="best-selling-card-info">
+                                                <h6 class="best-selling-card-name"><?= htmlspecialchars($p['ten_banh']) ?></h6>
+                                                <div class="best-selling-badges">
+                                                    <span class="best-selling-badge type"><i class="bi bi-bookmark-star"></i> <?= htmlspecialchars($typeLabel) ?></span>
+                                                    <span class="best-selling-badge sales"><i class="bi bi-bar-chart-line"></i> Đã bán <?= (int) $soldQty ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="best-selling-controls">
+                                            <div class="best-selling-toggle">
+                                                <div class="best-selling-toggle-copy">
+                                                    <p class="best-selling-toggle-title">Hiển thị thủ công</p>
+                                                    <p class="best-selling-toggle-desc">Bật để ưu tiên sản phẩm này trong mục Best Selling ở trang chủ.</p>
+                                                </div>
+                                                <input
+                                                    class="form-check-input best-selling-checkbox"
+                                                    type="checkbox"
+                                                    name="manual_best[<?= $p['id'] ?>]"
+                                                    data-best-toggle
+                                                    <?= $isSelected ? 'checked' : '' ?>>
+                                            </div>
+
+                                            <div class="best-selling-rank">
+                                                <label for="best-rank-<?= (int) $p['id'] ?>">Thứ tự ưu tiên</label>
+                                                <input
+                                                    id="best-rank-<?= (int) $p['id'] ?>"
+                                                    type="number"
+                                                    min="0"
+                                                    name="best_rank[<?= $p['id'] ?>]"
+                                                    class="form-control best-selling-rank-input"
+                                                    value="<?= (int) ($p['best_rank'] ?? 0) ?>"
+                                                    <?= $isSelected ? '' : 'disabled' ?>>
+                                            </div>
+                                        </div>
+                                    </div>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                        <div class="d-flex justify-content-end mt-3">
-                            <button name="update_best_selling" class="btn btn-green">
-                                <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
-                            </button>
-                        </div>
-                    </form>
+                            </div>
+
+                            <div class="best-selling-actions">
+                                <div class="best-selling-note">Bạn có thể chọn nhiều sản phẩm, nhưng nên ưu tiên một nhóm ngắn để ngoài trang chủ gọn và rõ.</div>
+                                <button name="update_best_selling" class="btn btn-green">
+                                    <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
             </div>
@@ -2975,6 +3346,128 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     scrollTopBtn.addEventListener('click', function () {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     });
+                }
+
+                const bestSellingCards = document.querySelectorAll('#best-selling .best-selling-card');
+                const bestSellingSelectedCount = document.getElementById('bestSellingSelectedCount');
+                const bestSellingGrid = document.getElementById('bestSellingGrid');
+                const bestSellingSearch = document.getElementById('bestSellingSearch');
+                const bestSellingFilter = document.getElementById('bestSellingFilter');
+                const bestSellingSort = document.getElementById('bestSellingSort');
+                if (bestSellingCards.length) {
+                    const normalizeText = function (value) {
+                        return (value || '')
+                            .toString()
+                            .trim()
+                            .toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '');
+                    };
+
+                    const syncBestSellingUi = function () {
+                        let selected = 0;
+                        bestSellingCards.forEach(function (card) {
+                            const checkbox = card.querySelector('[data-best-toggle]');
+                            const rankInput = card.querySelector('.best-selling-rank-input');
+                            if (!checkbox || !rankInput) return;
+
+                            const active = checkbox.checked;
+                            card.classList.toggle('is-selected', active);
+                            card.dataset.productSelected = active ? '1' : '0';
+                            rankInput.disabled = !active;
+                            if (!active) {
+                                rankInput.value = '0';
+                            } else {
+                                selected += 1;
+                            }
+                            card.dataset.productRank = String(parseInt(rankInput.value || '0', 10) || 0);
+                        });
+
+                        if (bestSellingSelectedCount) {
+                            bestSellingSelectedCount.textContent = String(selected);
+                        }
+                    };
+
+                    const applyBestSellingFilters = function () {
+                        const keyword = normalizeText(bestSellingSearch ? bestSellingSearch.value : '');
+                        const filterValue = bestSellingFilter ? bestSellingFilter.value : 'all';
+
+                        bestSellingCards.forEach(function (card) {
+                            const cardName = normalizeText(card.dataset.productName || '');
+                            const isSelected = card.dataset.productSelected === '1';
+
+                            const matchesKeyword = !keyword || cardName.includes(keyword);
+                            const matchesFilter =
+                                filterValue === 'all' ||
+                                (filterValue === 'selected' && isSelected) ||
+                                (filterValue === 'unselected' && !isSelected);
+
+                            card.classList.toggle('is-hidden', !(matchesKeyword && matchesFilter));
+                        });
+                    };
+
+                    const sortBestSellingCards = function () {
+                        if (!bestSellingGrid || !bestSellingSort) return;
+                        const sortValue = bestSellingSort.value;
+                        const cardsArray = Array.from(bestSellingCards);
+
+                        cardsArray.sort(function (a, b) {
+                            const soldA = parseInt(a.dataset.productSold || '0', 10);
+                            const soldB = parseInt(b.dataset.productSold || '0', 10);
+                            const rankA = parseInt(a.dataset.productRank || '0', 10);
+                            const rankB = parseInt(b.dataset.productRank || '0', 10);
+                            const indexA = parseInt(a.dataset.productIndex || '0', 10);
+                            const indexB = parseInt(b.dataset.productIndex || '0', 10);
+                            const nameA = a.dataset.productName || '';
+                            const nameB = b.dataset.productName || '';
+
+                            if (sortValue === 'sold_desc') return soldB - soldA || indexA - indexB;
+                            if (sortValue === 'sold_asc') return soldA - soldB || indexA - indexB;
+                            if (sortValue === 'rank_asc') {
+                                const safeRankA = rankA === 0 ? Number.MAX_SAFE_INTEGER : rankA;
+                                const safeRankB = rankB === 0 ? Number.MAX_SAFE_INTEGER : rankB;
+                                return safeRankA - safeRankB || indexA - indexB;
+                            }
+                            if (sortValue === 'rank_desc') return rankB - rankA || indexA - indexB;
+                            if (sortValue === 'name_asc') return nameA.localeCompare(nameB, 'vi') || indexA - indexB;
+                            return indexA - indexB;
+                        });
+
+                        cardsArray.forEach(function (card) {
+                            bestSellingGrid.appendChild(card);
+                        });
+                    };
+
+                    const refreshBestSellingView = function () {
+                        syncBestSellingUi();
+                        sortBestSellingCards();
+                        applyBestSellingFilters();
+                    };
+
+                    bestSellingCards.forEach(function (card) {
+                        const checkbox = card.querySelector('[data-best-toggle]');
+                        const rankInput = card.querySelector('.best-selling-rank-input');
+                        if (checkbox) {
+                            checkbox.addEventListener('change', refreshBestSellingView);
+                        }
+                        if (rankInput) {
+                            rankInput.addEventListener('input', refreshBestSellingView);
+                        }
+                    });
+
+                    if (bestSellingSearch) {
+                        bestSellingSearch.addEventListener('input', applyBestSellingFilters);
+                    }
+
+                    if (bestSellingFilter) {
+                        bestSellingFilter.addEventListener('change', applyBestSellingFilters);
+                    }
+
+                    if (bestSellingSort) {
+                        bestSellingSort.addEventListener('change', sortBestSellingCards);
+                    }
+
+                    refreshBestSellingView();
                 }
 
                 const selectAll = document.getElementById('selectAllOrders');

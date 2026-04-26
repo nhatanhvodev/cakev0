@@ -370,14 +370,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         @media (max-width: 768px) {
             .login-left {
+                order: 2;
                 text-align: left;
+            }
+
+            .login-right {
+                order: 1;
+            }
+
+            .login-wrapper {
+                min-height: 100svh;
+                align-items: flex-start;
+            }
+
+            .login-card {
+                box-shadow: 0 18px 48px rgba(74, 29, 31, .14);
+            }
+
+            .visual-stack {
+                margin-top: 6px;
+            }
+
+            .visual-stack img {
+                height: 150px;
+            }
+
+            .float-card {
+                padding: 8px 10px;
+                gap: 8px;
+            }
+
+            .float-card img {
+                width: 28px;
+                height: 28px;
             }
 
             .login-icons i {
                 margin-bottom: 10px;
             }
 
-            /* */
+            .taste-row {
+                gap: 8px;
+            }
+
+            .taste-chip {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
         }
 
         @media (max-width: 600px) {
@@ -400,6 +439,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             .login-right h3 {
                 font-size: 22px;
+            }
+
+            .login-left p {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .login-wrapper {
+                padding: 16px 10px;
+            }
+
+            .login-left,
+            .login-right {
+                padding: 22px 16px;
+            }
+
+            .visual-stack,
+            .float-card {
+                display: none;
             }
         }
     </style>

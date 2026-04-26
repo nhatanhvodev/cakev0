@@ -526,9 +526,14 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
 
             .cart-table .cart-qty-cell > div {
-                justify-content: space-between !important;
-                width: min(176px, 100%);
-                gap: 8px !important;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center !important;
+                width: auto;
+                min-width: 118px;
+                max-width: 100%;
+                gap: 6px !important;
+                margin-left: auto;
                 padding: 4px;
                 border-radius: 999px;
                 background: #fffdf7;
@@ -630,8 +635,9 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
 
             .cart-table .cart-qty-cell > div {
-                width: min(154px, 100%);
+                min-width: 108px;
                 padding: 3px;
+                gap: 4px !important;
             }
 
             .cart-table .cart-qty-cell .qty-btn {

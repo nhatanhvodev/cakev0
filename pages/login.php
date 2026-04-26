@@ -371,6 +371,48 @@ $conn->close();
         @media (max-width: 767px) {
             .login-left { order: 2; }
             .login-right { order: 1; }
+
+            .login-wrapper {
+                min-height: 100svh;
+                align-items: flex-start;
+            }
+
+            .login-card {
+                box-shadow: 0 18px 48px rgba(74, 29, 31, .14);
+            }
+
+            .visual-stack {
+                margin-top: 6px;
+            }
+
+            .visual-stack img {
+                height: 150px;
+            }
+
+            .float-card {
+                padding: 8px 10px;
+                gap: 8px;
+            }
+
+            .float-card img {
+                width: 28px;
+                height: 28px;
+            }
+
+            .taste-row {
+                gap: 8px;
+            }
+
+            .taste-chip {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
+            .login-right form .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px;
+            }
         }
 
         @media (max-width: 600px) {
@@ -379,6 +421,17 @@ $conn->close();
             .login-left, .login-right { padding: 26px 20px; }
             .login-left h2 { font-size: 24px; }
             .login-right h3 { font-size: 22px; }
+            .login-left p { font-size: 14px; }
+        }
+
+        @media (max-width: 420px) {
+            .login-wrapper { padding: 16px 10px; }
+            .login-left,
+            .login-right { padding: 22px 16px; }
+            .visual-stack,
+            .float-card {
+                display: none;
+            }
         }
     </style>
 </head>

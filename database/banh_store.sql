@@ -80,6 +80,8 @@ CREATE TABLE `cart_coupons` (
   `code` varchar(50) NOT NULL,
   `discount_percent` decimal(5,2) NOT NULL,
   `min_subtotal` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `usage_limit` int(11) DEFAULT NULL,
+  `used_count` int(11) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `starts_at` date DEFAULT NULL,
   `ends_at` date DEFAULT NULL,
@@ -91,6 +93,12 @@ CREATE TABLE `cart_coupons` (
 
 LOCK TABLES `cart_coupons` WRITE;
 /*!40000 ALTER TABLE `cart_coupons` DISABLE KEYS */;
+INSERT INTO `cart_coupons` (`id`, `code`, `discount_percent`, `min_subtotal`, `usage_limit`, `used_count`, `is_active`, `starts_at`, `ends_at`, `created_at`) VALUES
+(1,'TEST10',10.00,0.00,NULL,0,1,NULL,NULL,CURRENT_TIMESTAMP()),
+(2,'SAVE15',15.00,0.00,NULL,0,1,NULL,NULL,CURRENT_TIMESTAMP()),
+(3,'SAVE20',20.00,0.00,NULL,0,1,NULL,NULL,CURRENT_TIMESTAMP()),
+(4,'VIP25',25.00,0.00,NULL,0,1,NULL,NULL,CURRENT_TIMESTAMP()),
+(5,'CAKE30',30.00,0.00,NULL,0,1,NULL,NULL,CURRENT_TIMESTAMP());
 /*!40000 ALTER TABLE `cart_coupons` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `contact_requests`;
@@ -212,6 +220,8 @@ CREATE TABLE `orders` (
   `total_amount` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `payment_method` varchar(50) NOT NULL,
+  `coupon_code` varchar(50) DEFAULT NULL,
+  `coupon_discount` decimal(12,2) NOT NULL DEFAULT 0.00,
   `status` varchar(20) DEFAULT 'pending',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
@@ -221,7 +231,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (11,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,80000.00,'2026-03-23 05:16:59','VNPAY','completed'),(12,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,100000.00,'2026-03-23 05:24:52','VNPAY','completed'),(13,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,315000.00,'2026-03-23 05:39:30','Tiền mặt','completed'),(14,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,120000.00,'2026-03-23 06:40:29','VNPAY','completed'),(15,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,120000.00,'2026-03-30 08:42:43','VNPAY','completed'),(16,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,285000.00,'2026-03-30 09:39:33','VNPAY','completed'),(17,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,380000.00,'2026-04-03 09:18:26','VNPAY','completed'),(18,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,15000.00,'2026-04-04 06:41:47','Tiền mặt','completed'),(19,8,'Thanh Nhàn','0123789456','65 Đ. Đào Duy Anh, Phường 9, Đức Nhuận, Hồ Chí Minh, Việt Nam',NULL,60000.00,'2026-04-10 08:24:58','VNPAY','completed'),(20,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,150000.00,'2026-04-12 14:37:57','VNPAY','completed'),(22,7,'Nhật Anh','0917025731','1',NULL,60000.00,'2026-04-13 04:17:13','VNPAY','cancelled'),(23,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh','Giao vào giờ sáng ngày kia',60000.00,'2026-04-13 04:17:27','VNPAY','approved'),(25,9,'Phương Anh','0987654321','885 Nguyễn Kiệm, Phường 3, Hạnh Thông, Hồ Chí Minh, Việt Nam','Ghi chữ \"Chúc mừng sinh nhật mẹ iu\"\r\nNgày sinh: 17/5/1985',280000.00,'2026-04-13 06:13:50','VNPAY','paid'),(26,7,'Nhật Anh','0917025731','a','abc',60000.00,'2026-04-13 08:54:18','Tiền mặt','cancelled');
+INSERT INTO `orders` VALUES (11,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,80000.00,'2026-03-23 05:16:59','VNPAY',NULL,0.00,'completed'),(12,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,100000.00,'2026-03-23 05:24:52','VNPAY',NULL,0.00,'completed'),(13,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,315000.00,'2026-03-23 05:39:30','Tiền mặt',NULL,0.00,'completed'),(14,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,120000.00,'2026-03-23 06:40:29','VNPAY',NULL,0.00,'completed'),(15,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,120000.00,'2026-03-30 08:42:43','VNPAY',NULL,0.00,'completed'),(16,7,'Nhật Anh','0917025731','B14 đường Cây Cám, xã Tân Vĩnh lộc, TP.Hồ Chí Minh',NULL,285000.00,'2026-03-30 09:39:33','VNPAY',NULL,0.00,'completed'),(17,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,380000.00,'2026-04-03 09:18:26','VNPAY',NULL,0.00,'completed'),(18,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,15000.00,'2026-04-04 06:41:47','Tiền mặt',NULL,0.00,'completed'),(19,8,'Thanh Nhàn','0123789456','65 Đ. Đào Duy Anh, Phường 9, Đức Nhuận, Hồ Chí Minh, Việt Nam',NULL,60000.00,'2026-04-10 08:24:58','VNPAY',NULL,0.00,'completed'),(20,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh',NULL,150000.00,'2026-04-12 14:37:57','VNPAY',NULL,0.00,'completed'),(22,7,'Nhật Anh','0917025731','1',NULL,60000.00,'2026-04-13 04:17:13','VNPAY',NULL,0.00,'cancelled'),(23,7,'Nhật Anh','0917025731','B14, đường Cây Cám, xã Tân Vĩnh Lộc, TP.Hồ Chí Minh','Giao vào giờ sáng ngày kia',60000.00,'2026-04-13 04:17:27','VNPAY',NULL,0.00,'approved'),(25,9,'Phương Anh','0987654321','885 Nguyễn Kiệm, Phường 3, Hạnh Thông, Hồ Chí Minh, Việt Nam','Ghi chữ \"Chúc mừng sinh nhật mẹ iu\"\r\nNgày sinh: 17/5/1985',280000.00,'2026-04-13 06:13:50','VNPAY',NULL,0.00,'paid'),(26,7,'Nhật Anh','0917025731','a','abc',60000.00,'2026-04-13 08:54:18','Tiền mặt',NULL,0.00,'cancelled');
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `password_reset_requests`;

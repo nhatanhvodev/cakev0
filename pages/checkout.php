@@ -5,6 +5,7 @@
 session_start();
 // 1. Kết nối Database
 require_once '../config/connect.php';
+require_once '../config/coupons.php';
 $pageTitle = 'Thanh toán';
 $extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 // 2. Bảo mật: CSRF Token
@@ -19,46 +20,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
-function ensureCartCouponsTable(mysqli $conn): void {
-    $sql = "CREATE TABLE IF NOT EXISTS cart_coupons (
-        id INT(11) NOT NULL AUTO_INCREMENT,
-        code VARCHAR(50) NOT NULL,
-        discount_percent DECIMAL(5,2) NOT NULL,
-        min_subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
-        is_active TINYINT(1) NOT NULL DEFAULT 1,
-        starts_at DATE DEFAULT NULL,
-        ends_at DATE DEFAULT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        UNIQUE KEY uniq_cart_coupon_code (code)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
-    $conn->query($sql);
-}
-
-function findCartCoupon(mysqli $conn, string $couponCode, string $today): ?array {
-    $stmt = $conn->prepare(
-        "SELECT code, discount_percent, min_subtotal
-         FROM cart_coupons
-         WHERE UPPER(code) = UPPER(?)
-         AND is_active = 1
-         AND (starts_at IS NULL OR starts_at <= ?)
-         AND (ends_at IS NULL OR ends_at >= ?)
-         LIMIT 1"
-    );
-
-    if (!$stmt) {
-        return null;
-    }
-
-    $stmt->bind_param('sss', $couponCode, $today, $today);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    return $row ?: null;
-}
-
-ensureCartCouponsTable($conn);
+ensureCartCouponInfrastructure($conn);
 
 // 4. Lấy giỏ hàng từ Database (Ưu tiên Source thay vì LocalStorage)
 $sql = "SELECT c.banh_id, b.ten_banh, b.gia, c.quantity 
@@ -84,7 +46,7 @@ foreach ($cart as $item) {
 $couponInputRaw = $_SERVER['REQUEST_METHOD'] === 'POST'
     ? ($_POST['coupon'] ?? '')
     : ($_GET['coupon'] ?? '');
-$couponInput = strtoupper(trim((string) $couponInputRaw));
+$couponInput = normalizeCouponCode((string) $couponInputRaw);
 $appliedCoupon = null;
 $couponError = '';
 $couponSuccess = '';
@@ -103,9 +65,13 @@ if ($couponInput !== '') {
         } else {
             $minSubtotal = (float) ($coupon['min_subtotal'] ?? 0);
             $discountPercent = (float) ($coupon['discount_percent'] ?? 0);
+            $usageLimit = (int) ($coupon['usage_limit'] ?? 0);
+            $usedCount = (int) ($coupon['used_count'] ?? 0);
 
             if ($subtotal < $minSubtotal) {
                 $couponError = 'Đơn hàng tối thiểu ' . number_format($minSubtotal, 0, ',', '.') . ' VNĐ để dùng mã này.';
+            } elseif ($usageLimit > 0 && $usedCount >= $usageLimit) {
+                $couponError = 'Mã giảm giá đã hết lượt sử dụng.';
             } elseif ($discountPercent <= 0) {
                 $couponError = 'Mã giảm giá chưa được cấu hình hợp lệ.';
             } else {
@@ -140,8 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             // A. Lưu vào bảng orders
             $orderStatus = ($payment === 'Tiền mặt') ? 'cod_not_deposited' : 'pending';
-            $stmt = $conn->prepare("INSERT INTO orders(user_id, recipient_name, phone, address, note, payment_method, total_amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->bind_param("isssssds", $user_id, $name, $phone, $address, $note, $payment, $total, $orderStatus);
+            $couponCodeForOrder = $appliedCoupon['code'] ?? null;
+            $stmt = $conn->prepare("INSERT INTO orders(user_id, recipient_name, phone, address, note, payment_method, total_amount, coupon_code, coupon_discount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->bind_param("isssssdsds", $user_id, $name, $phone, $address, $note, $payment, $total, $couponCodeForOrder, $discountAmount, $orderStatus);
             $stmt->execute();
             $order_id = $conn->insert_id;
 
@@ -157,6 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
                 $stmt_clear->bind_param("i", $user_id);
                 $stmt_clear->execute();
+            }
+
+            if ($payment !== 'VNPAY' && !empty($couponCodeForOrder) && $discountAmount > 0) {
+                incrementCouponUsage($conn, (string) $couponCodeForOrder);
             }
 
             $conn->commit(); // Xác nhận giao dịch

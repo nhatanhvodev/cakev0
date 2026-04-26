@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS `cart_coupons` (
   `code` VARCHAR(50) NOT NULL,
   `discount_percent` DECIMAL(5,2) NOT NULL,
   `min_subtotal` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `usage_limit` INT(11) DEFAULT NULL,
+  `used_count` INT(11) NOT NULL DEFAULT 0,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   `starts_at` DATE DEFAULT NULL,
   `ends_at` DATE DEFAULT NULL,
@@ -16,6 +18,10 @@ CREATE TABLE IF NOT EXISTS `cart_coupons` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_cart_coupon_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `orders`
+  ADD COLUMN IF NOT EXISTS `coupon_code` VARCHAR(50) DEFAULT NULL AFTER `payment_method`,
+  ADD COLUMN IF NOT EXISTS `coupon_discount` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `coupon_code`;
 
 CREATE TABLE IF NOT EXISTS `contact_requests` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,

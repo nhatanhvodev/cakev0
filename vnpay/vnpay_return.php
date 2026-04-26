@@ -1,6 +1,9 @@
 <?php
 require_once("config.php");
 require_once("../config/connect.php");
+require_once("../config/coupons.php");
+
+ensureCartCouponInfrastructure($conn);
 
 $vnp_SecureHash = $_GET['vnp_SecureHash'];
 $inputData = array();
@@ -98,6 +101,15 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                 // Thành công
                 $conn->begin_transaction();
                 try {
+                    $stmt_order = $conn->prepare("SELECT user_id, coupon_code, status FROM orders WHERE id = ? LIMIT 1");
+                    $stmt_order->bind_param("i", $order_id);
+                    $stmt_order->execute();
+                    $orderMeta = $stmt_order->get_result()->fetch_assoc();
+                    $stmt_order->close();
+
+                    $previousStatus = (string) ($orderMeta['status'] ?? '');
+                    $couponCode = (string) ($orderMeta['coupon_code'] ?? '');
+
                     $stmt = $conn->prepare("UPDATE orders SET status = 'paid' WHERE id = ?");
                     $stmt->bind_param("i", $order_id);
                     $stmt->execute();
@@ -129,6 +141,10 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                             $stmt_cleanup_cart->bind_param("ii", $user_id, $banh_id);
                             $stmt_cleanup_cart->execute();
                         }
+                    }
+
+                    if ($previousStatus !== 'paid' && $couponCode !== '') {
+                        incrementCouponUsage($conn, $couponCode);
                     }
 
                     $conn->commit();

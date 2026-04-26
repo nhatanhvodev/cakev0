@@ -6,6 +6,7 @@ date_default_timezone_set('Asia/Ho_Chi_Minh');
 $pageTitle = 'Giỏ hàng';
 
 require_once '../config/connect.php';
+require_once '../config/coupons.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -13,46 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = (int)$_SESSION['user_id'];
 
-function ensureCartCouponsTable(mysqli $conn): void {
-    $sql = "CREATE TABLE IF NOT EXISTS cart_coupons (
-        id INT(11) NOT NULL AUTO_INCREMENT,
-        code VARCHAR(50) NOT NULL,
-        discount_percent DECIMAL(5,2) NOT NULL,
-        min_subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
-        is_active TINYINT(1) NOT NULL DEFAULT 1,
-        starts_at DATE DEFAULT NULL,
-        ends_at DATE DEFAULT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        UNIQUE KEY uniq_cart_coupon_code (code)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
-    $conn->query($sql);
-}
-
-function findCartCoupon(mysqli $conn, string $couponCode, string $today): ?array {
-    $stmt = $conn->prepare(
-        "SELECT code, discount_percent, min_subtotal
-         FROM cart_coupons
-         WHERE UPPER(code) = UPPER(?)
-         AND is_active = 1
-         AND (starts_at IS NULL OR starts_at <= ?)
-         AND (ends_at IS NULL OR ends_at >= ?)
-         LIMIT 1"
-    );
-
-    if (!$stmt) {
-        return null;
-    }
-
-    $stmt->bind_param('sss', $couponCode, $today, $today);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    return $row ?: null;
-}
-
-ensureCartCouponsTable($conn);
+ensureCartCouponInfrastructure($conn);
 
 if (isset($_POST['action'])) {
     ob_clean();
@@ -206,7 +168,7 @@ foreach ($cartItems as $item) {
     $subtotal += $item['gia'] * $item['quantity'];
 }
 
-$couponInput = strtoupper(trim((string)($_GET['coupon'] ?? '')));
+$couponInput = normalizeCouponCode((string) ($_GET['coupon'] ?? ''));
 $appliedCoupon = null;
 $couponError = '';
 $couponSuccess = '';
@@ -224,9 +186,13 @@ if (!empty($cartItems) && $couponInput !== '') {
         } else {
             $minSubtotal = (float)($coupon['min_subtotal'] ?? 0);
             $discountPercent = (float)($coupon['discount_percent'] ?? 0);
+            $usageLimit = (int) ($coupon['usage_limit'] ?? 0);
+            $usedCount = (int) ($coupon['used_count'] ?? 0);
 
             if ($subtotal < $minSubtotal) {
                 $couponError = 'Đơn hàng tối thiểu ' . number_format($minSubtotal, 0, ',', '.') . ' VNĐ để dùng mã này.';
+            } elseif ($usageLimit > 0 && $usedCount >= $usageLimit) {
+                $couponError = 'Mã giảm giá đã hết lượt sử dụng.';
             } elseif ($discountPercent <= 0) {
                 $couponError = 'Mã giảm giá chưa được cấu hình hợp lệ.';
             } else {

@@ -10,9 +10,12 @@ if (session_status() === PHP_SESSION_NONE) {
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 require_once '../config/config.php';
+require_once '../config/coupons.php';
 require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
 require_once '../includes/mailer.php';
+
+ensureCartCouponInfrastructure($conn);
 
 // Hàm tạo lại CSRF Token
 function regenerateCsrfToken()
@@ -525,6 +528,122 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         redirectToTab('promotions');
     }
 
+    /* --- XỬ LÝ COUPON --- */
+    if (isset($_POST['add_coupon']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $code = normalizeCouponCode((string) ($_POST['code'] ?? ''));
+        $discountPercent = (float) ($_POST['discount_percent'] ?? 0);
+        $minSubtotal = max(0, (float) ($_POST['min_subtotal'] ?? 0));
+        $usageLimit = parseCouponUsageLimit($_POST['usage_limit'] ?? null);
+        $startsAt = formatCouponDateValue($_POST['starts_at'] ?? null);
+        $endsAt = formatCouponDateValue($_POST['ends_at'] ?? null);
+        $startsAt = $startsAt !== '' ? $startsAt : null;
+        $endsAt = $endsAt !== '' ? $endsAt : null;
+        $isActive = isset($_POST['is_active']) ? 1 : 0;
+
+        if (!preg_match('/^[A-Z0-9_-]{3,30}$/', $code)) {
+            setAdminToast("Mã coupon không hợp lệ", "error");
+            redirectToTab('coupons');
+        }
+
+        if ($discountPercent <= 0 || $discountPercent > 100) {
+            setAdminToast("Phần trăm giảm giá cần nằm trong khoảng 1-100", "error");
+            redirectToTab('coupons');
+        }
+
+        if ($startsAt !== null && $endsAt !== null && strtotime($startsAt) > strtotime($endsAt)) {
+            setAdminToast("Thời gian áp dụng coupon không hợp lệ", "error");
+            redirectToTab('coupons');
+        }
+
+        $stmt = $conn->prepare(
+            "INSERT INTO cart_coupons (code, discount_percent, min_subtotal, usage_limit, is_active, starts_at, ends_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param(
+            "sddiiss",
+            $code,
+            $discountPercent,
+            $minSubtotal,
+            $usageLimit,
+            $isActive,
+            $startsAt,
+            $endsAt
+        );
+
+        if ($stmt->execute()) {
+            setAdminToast("Đã thêm coupon thành công!");
+        } else {
+            setAdminToast("Không thể thêm coupon. Có thể mã đã tồn tại.", "error");
+        }
+        $stmt->close();
+        regenerateCsrfToken();
+        redirectToTab('coupons');
+    }
+
+    if (isset($_POST['update_coupon']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $couponId = (int) ($_POST['coupon_id'] ?? 0);
+        $code = normalizeCouponCode((string) ($_POST['code'] ?? ''));
+        $discountPercent = (float) ($_POST['discount_percent'] ?? 0);
+        $minSubtotal = max(0, (float) ($_POST['min_subtotal'] ?? 0));
+        $usageLimit = parseCouponUsageLimit($_POST['usage_limit'] ?? null);
+        $startsAt = formatCouponDateValue($_POST['starts_at'] ?? null);
+        $endsAt = formatCouponDateValue($_POST['ends_at'] ?? null);
+        $startsAt = $startsAt !== '' ? $startsAt : null;
+        $endsAt = $endsAt !== '' ? $endsAt : null;
+        $isActive = isset($_POST['is_active']) ? 1 : 0;
+
+        if ($couponId <= 0 || !preg_match('/^[A-Z0-9_-]{3,30}$/', $code)) {
+            setAdminToast("Dữ liệu coupon không hợp lệ", "error");
+            redirectToTab('coupons');
+        }
+
+        if ($discountPercent <= 0 || $discountPercent > 100) {
+            setAdminToast("Phần trăm giảm giá cần nằm trong khoảng 1-100", "error");
+            redirectToTab('coupons');
+        }
+
+        if ($startsAt !== null && $endsAt !== null && strtotime($startsAt) > strtotime($endsAt)) {
+            setAdminToast("Thời gian áp dụng coupon không hợp lệ", "error");
+            redirectToTab('coupons');
+        }
+
+        $stmt = $conn->prepare(
+            "UPDATE cart_coupons
+             SET code = ?, discount_percent = ?, min_subtotal = ?, usage_limit = ?, is_active = ?, starts_at = ?, ends_at = ?
+             WHERE id = ?"
+        );
+        $stmt->bind_param(
+            "sddiissi",
+            $code,
+            $discountPercent,
+            $minSubtotal,
+            $usageLimit,
+            $isActive,
+            $startsAt,
+            $endsAt,
+            $couponId
+        );
+
+        if ($stmt->execute()) {
+            setAdminToast("Đã cập nhật coupon thành công!");
+        } else {
+            setAdminToast("Không thể cập nhật coupon. Có thể mã đã tồn tại.", "error");
+        }
+        $stmt->close();
+        regenerateCsrfToken();
+        redirectToTab('coupons');
+    }
+
+    if (isset($_GET['delete_coupon_id'])) {
+        $id = (int) $_GET['delete_coupon_id'];
+        $stmt = $conn->prepare("DELETE FROM cart_coupons WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+        setAdminToast("Đã xóa coupon thành công!");
+        redirectToTab('coupons');
+    }
+
     /* --- XỬ LÝ LIÊN HỆ / HỖ TRỢ --- */
     if (isset($_POST['reply_contact']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         $id = (int) $_POST['contact_id'];
@@ -651,6 +770,7 @@ $users = [];
 $orders = [];
 $order_items = [];
 $promotions = [];
+$coupons = [];
 $total_revenue = 0;
 $pending_count = 0;
 $js_dates = '[]';
@@ -852,6 +972,7 @@ foreach ($order_items as $item) {
     ];
 }
 $promotions = $conn->query("SELECT p.*, b.ten_banh, b.gia AS gia_hien_tai FROM promotions p JOIN banh b ON p.banh_id = b.id")->fetch_all(MYSQLI_ASSOC);
+$coupons = $conn->query("SELECT * FROM cart_coupons ORDER BY created_at DESC, id DESC")->fetch_all(MYSQLI_ASSOC);
 
 // Kiểm tra query contact_requests (phòng trường hợp người dùng chưa tạo bảng trên cloud)
 $contactRequestsQuery = $conn->query("SELECT * FROM contact_requests ORDER BY created_at DESC");
@@ -1762,6 +1883,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         class="bi bi-people"></i> Khách hàng</a>
                 <a class="nav-link" href="admin.php?tab=promotions#promotions" data-tab="promotions"
                     onclick="showTab(event, 'promotions')"><i class="bi bi-tags"></i> Khuyến mãi</a>
+                <a class="nav-link" href="admin.php?tab=coupons#coupons" data-tab="coupons"
+                    onclick="showTab(event, 'coupons')"><i class="bi bi-ticket-perforated"></i> Coupon</a>
                 <a class="nav-link" href="admin.php?tab=contacts#contacts" data-tab="contacts"
                     onclick="showTab(event, 'contacts')"><i class="bi bi-envelope"></i> Liên hệ</a>
             </nav>
@@ -2538,6 +2661,108 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 </div>
             </div>
 
+            <div id="coupons" class="tab-content">
+                <h3 class="mb-4" style="color:#4a1d1f;">Mã giảm giá coupon</h3>
+                <form method="POST" class="card p-3 border-0 shadow-sm mb-3 row g-2">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <div class="col-md-2">
+                        <input type="text" name="code" class="form-control text-uppercase" placeholder="Mã coupon" maxlength="30" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="discount_percent" class="form-control" placeholder="% giảm giá" min="1" max="100" step="0.01" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="min_subtotal" class="form-control" placeholder="Đơn tối thiểu" min="0" step="1000">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="usage_limit" class="form-control" placeholder="Giới hạn lượt dùng" min="1" step="1">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="starts_at" class="form-control" title="Ngày bắt đầu">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="ends_at" class="form-control" title="Ngày kết thúc">
+                    </div>
+                    <div class="col-md-10 d-flex align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="couponIsActive" checked>
+                            <label class="form-check-label" for="couponIsActive">Đang hoạt động</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" name="add_coupon" class="btn btn-green w-100">
+                            <i class="bi bi-plus-lg"></i> Thêm
+                        </button>
+                    </div>
+                </form>
+                <div class="custom-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Giảm giá</th>
+                                <th>Đơn tối thiểu</th>
+                                <th>Lượt dùng</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($coupons as $coupon): ?>
+                                <tr>
+                                    <td><strong><?= htmlspecialchars((string) $coupon['code'], ENT_QUOTES) ?></strong></td>
+                                    <td><?= rtrim(rtrim(number_format((float) $coupon['discount_percent'], 2, '.', ''), '0'), '.') ?>%</td>
+                                    <td><?= number_format((float) ($coupon['min_subtotal'] ?? 0), 0, ',', '.') ?>đ</td>
+                                    <td><?= htmlspecialchars(couponUsageLabel($coupon)) ?></td>
+                                    <td>
+                                        <?php
+                                            $startLabel = !empty($coupon['starts_at']) ? date('d/m/Y', strtotime((string) $coupon['starts_at'])) : 'Không giới hạn';
+                                            $endLabel = !empty($coupon['ends_at']) ? date('d/m/Y', strtotime((string) $coupon['ends_at'])) : 'Không giới hạn';
+                                        ?>
+                                        <?= htmlspecialchars($startLabel) ?> -> <?= htmlspecialchars($endLabel) ?>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($coupon['is_active'])): ?>
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Tạm tắt</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-primary coupon-edit-btn"
+                                            data-id="<?= (int) $coupon['id'] ?>"
+                                            data-code="<?= htmlspecialchars((string) $coupon['code'], ENT_QUOTES) ?>"
+                                            data-discount="<?= (float) $coupon['discount_percent'] ?>"
+                                            data-min-subtotal="<?= (float) ($coupon['min_subtotal'] ?? 0) ?>"
+                                            data-usage-limit="<?= (int) ($coupon['usage_limit'] ?? 0) ?>"
+                                            data-start="<?= !empty($coupon['starts_at']) ? date('Y-m-d', strtotime((string) $coupon['starts_at'])) : '' ?>"
+                                            data-end="<?= !empty($coupon['ends_at']) ? date('Y-m-d', strtotime((string) $coupon['ends_at'])) : '' ?>"
+                                            data-active="<?= !empty($coupon['is_active']) ? '1' : '0' ?>">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger coupon-delete-btn"
+                                            data-delete-url="?delete_coupon_id=<?= (int) $coupon['id'] ?>"
+                                            data-coupon-code="<?= htmlspecialchars((string) $coupon['code'], ENT_QUOTES) ?>">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($coupons)): ?>
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">Chưa có coupon nào.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- TAB 6: CONTACTS -->
             <div id="contacts" class="tab-content">
                 <h3 class="mb-4" style="color:#4a1d1f;">Yêu cầu hỗ trợ khách hàng</h3>
@@ -2687,6 +2912,64 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <div class="col-12 mt-4 d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-outline-secondary" id="editPromotionCancel">Hủy</button>
                             <button type="submit" name="update_promotion" class="btn btn-green">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="deleteCouponModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="deleteCouponTitle">
+                <div class="confirm-modal-box">
+                    <div class="confirm-modal-title" id="deleteCouponTitle">Xóa coupon?</div>
+                    <p class="confirm-modal-desc" id="deleteCouponDesc">Coupon sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                    <div class="confirm-modal-actions">
+                        <button type="button" class="btn btn-outline-secondary" id="deleteCouponCancel">Hủy</button>
+                        <button type="button" class="btn btn-danger" id="deleteCouponConfirm">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editCouponModal" class="confirm-modal" role="dialog" aria-modal="true"
+                aria-labelledby="editCouponTitle">
+                <div class="confirm-modal-box" style="text-align: left; max-width: 560px;">
+                    <div class="confirm-modal-title" id="editCouponTitle">Chỉnh sửa coupon</div>
+                    <form method="POST" class="mt-3 row g-3">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="coupon_id" id="editCouponId">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Mã coupon</label>
+                            <input type="text" name="code" id="editCouponCode" class="form-control text-uppercase" maxlength="30" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">% giảm giá</label>
+                            <input type="number" name="discount_percent" id="editCouponDiscount" class="form-control" min="1" max="100" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Đơn tối thiểu (VNĐ)</label>
+                            <input type="number" name="min_subtotal" id="editCouponMinSubtotal" class="form-control" min="0" step="1000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Giới hạn lượt dùng</label>
+                            <input type="number" name="usage_limit" id="editCouponUsageLimit" class="form-control" min="1" step="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày bắt đầu</label>
+                            <input type="date" name="starts_at" id="editCouponStart" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày kết thúc</label>
+                            <input type="date" name="ends_at" id="editCouponEnd" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="editCouponActive">
+                                <label class="form-check-label" for="editCouponActive">Đang hoạt động</label>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" id="editCouponCancel">Hủy</button>
+                            <button type="submit" name="update_coupon" class="btn btn-green">Lưu thay đổi</button>
                         </div>
                     </form>
                 </div>
@@ -3057,6 +3340,94 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                 document.addEventListener('keydown', function (event) {
                     if (event.key === 'Escape' && editPromotionModal && editPromotionModal.classList.contains('is-open')) {
                         closeEditPromotionModal();
+                    }
+                });
+
+                const deleteCouponModal = document.getElementById('deleteCouponModal');
+                const deleteCouponCancel = document.getElementById('deleteCouponCancel');
+                const deleteCouponConfirm = document.getElementById('deleteCouponConfirm');
+                const deleteCouponDesc = document.getElementById('deleteCouponDesc');
+                let deleteCouponUrl = '';
+
+                function closeDeleteCouponModal() {
+                    if (!deleteCouponModal) return;
+                    deleteCouponModal.classList.remove('is-open');
+                    deleteCouponUrl = '';
+                }
+
+                document.querySelectorAll('.coupon-delete-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        deleteCouponUrl = btn.dataset.deleteUrl || '';
+                        const code = btn.dataset.couponCode || 'Coupon này';
+                        deleteCouponDesc.textContent = code + ' sẽ bị xóa vĩnh viễn và không thể khôi phục.';
+                        deleteCouponModal.classList.add('is-open');
+                    });
+                });
+
+                if (deleteCouponCancel) {
+                    deleteCouponCancel.addEventListener('click', closeDeleteCouponModal);
+                }
+
+                if (deleteCouponConfirm) {
+                    deleteCouponConfirm.addEventListener('click', function () {
+                        if (deleteCouponUrl) {
+                            window.location.href = deleteCouponUrl;
+                        }
+                    });
+                }
+
+                if (deleteCouponModal) {
+                    deleteCouponModal.addEventListener('click', function (event) {
+                        if (event.target === deleteCouponModal) {
+                            closeDeleteCouponModal();
+                        }
+                    });
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && deleteCouponModal && deleteCouponModal.classList.contains('is-open')) {
+                        closeDeleteCouponModal();
+                    }
+                });
+
+                const editCouponModal = document.getElementById('editCouponModal');
+                const editCouponCancel = document.getElementById('editCouponCancel');
+
+                function closeEditCouponModal() {
+                    if (!editCouponModal) return;
+                    editCouponModal.classList.remove('is-open');
+                }
+
+                document.querySelectorAll('.coupon-edit-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        document.getElementById('editCouponId').value = btn.dataset.id || '';
+                        document.getElementById('editCouponCode').value = btn.dataset.code || '';
+                        document.getElementById('editCouponDiscount').value = btn.dataset.discount || '';
+                        document.getElementById('editCouponMinSubtotal').value = btn.dataset.minSubtotal || '0';
+                        document.getElementById('editCouponUsageLimit').value = btn.dataset.usageLimit === '0' ? '' : (btn.dataset.usageLimit || '');
+                        document.getElementById('editCouponStart').value = btn.dataset.start || '';
+                        document.getElementById('editCouponEnd').value = btn.dataset.end || '';
+                        document.getElementById('editCouponActive').checked = btn.dataset.active === '1';
+                        editCouponModal.classList.add('is-open');
+                    });
+                });
+
+                if (editCouponCancel) {
+                    editCouponCancel.addEventListener('click', closeEditCouponModal);
+                }
+
+                if (editCouponModal) {
+                    editCouponModal.addEventListener('click', function (event) {
+                        if (event.target === editCouponModal) {
+                            closeEditCouponModal();
+                        }
+                    });
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && editCouponModal && editCouponModal.classList.contains('is-open')) {
+                        closeEditCouponModal();
                     }
                 });
 

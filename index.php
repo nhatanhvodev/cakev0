@@ -691,10 +691,10 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
         }
 
         .best-price {
-            font-size: 22px;
+            font-size: 18px;
             line-height: 1.2;
             font-weight: 700;
-            color: #109c63;
+            color: #4a1d1f;
         }
 
         .best-cta {

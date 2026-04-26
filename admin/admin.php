@@ -1537,9 +1537,13 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
         }
 
         .best-selling-checkbox {
+            display: inline-flex;
+            align-items: center;
+            flex: 0 0 auto;
             width: 56px;
             height: 30px;
             margin: 0;
+            padding: 0 !important;
             cursor: pointer;
             border-radius: 999px !important;
             border: 1px solid #d8c1a3;
@@ -1548,19 +1552,25 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             appearance: none;
             -webkit-appearance: none;
             position: relative;
+            vertical-align: middle;
+            background-image: none !important;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 0;
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
 
         .best-selling-checkbox::before {
             content: "";
             position: absolute;
-            top: 3px;
+            top: 50%;
             left: 3px;
             width: 22px;
             height: 22px;
             border-radius: 50%;
             background: #8b5e34;
             box-shadow: 0 2px 6px rgba(74, 29, 31, 0.18);
+            transform: translateY(-50%);
             transition: transform 0.2s ease, background-color 0.2s ease;
         }
 
@@ -1570,7 +1580,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
         }
 
         .best-selling-checkbox:checked::before {
-            transform: translateX(26px);
+            transform: translate(26px, -50%);
             background: #fbedcd;
         }
 

@@ -411,6 +411,30 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             flex-wrap: wrap;
         }
 
+        .hero-trust {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .hero-trust-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: rgba(251, 237, 205, 0.55);
+            border: 1px solid rgba(74, 29, 31, 0.12);
+            color: #4a1d1f;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .hero-trust-item i {
+            color: #8b4513;
+        }
+
         .btn-primary {
             display: inline-flex;
             align-items: center;
@@ -624,31 +648,66 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 
         .best-card {
             scroll-snap-align: start;
-            width: 231px;
+            width: 264px;
             flex: 0 0 auto;
         }
 
         .best-link {
             color: inherit;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 14px;
+            border-radius: 30px;
+            background: #fffdfa;
+            border: 1px solid rgba(243, 224, 190, 0.95);
+            box-shadow: 0 18px 34px rgba(74, 29, 31, 0.08);
         }
 
         .best-card img {
-            width: 231px;
-            height: 328px;
-            border-radius: 33px;
+            width: 100%;
+            height: 250px;
+            border-radius: 24px;
             object-fit: cover;
-            box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.14);
             user-select: none;
             -webkit-user-drag: none;
         }
 
         .best-name {
-            margin: 14px 0 8px;
+            margin: 16px 0 8px;
             font-size: 22px;
-            line-height: 33px;
-            font-weight: 400;
-            color: #000000;
+            line-height: 30px;
+            font-weight: 600;
+            color: #2f1415;
+        }
+
+        .best-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .best-price {
+            font-size: 22px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #109c63;
+        }
+
+        .best-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 112px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: #4a1d1f;
+            color: #fbedcd;
+            font-size: 14px;
+            font-weight: 600;
         }
 
 
@@ -801,12 +860,12 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
 
         .testimonial-badge {
             display: inline-flex;
-            padding: 2px 8px;
+            padding: 6px 12px;
             border-radius: 36px;
             background: #fbedcd;
             color: #4a1d1f;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 18px;
         }
 
@@ -828,8 +887,8 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
         }
 
         .testimonial-name {
-            font-size: 12px;
-            font-weight: 300;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .testimonial-rating {
@@ -837,12 +896,12 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             align-items: center;
             gap: 6px;
             color: #ffa903;
-            font-size: 10px;
+            font-size: 14px;
         }
 
         .testimonial-rating span {
             color: #707070;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .testimonial-message {
@@ -866,12 +925,12 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
         }
 
         .testimonial-form {
-            margin: 32px auto 0;
-            max-width: 440px;
+            margin: 40px auto 0;
+            max-width: 520px;
             background: #ffffff;
             border-radius: 18px;
-            padding: 24px;
-            box-shadow: 0 18px 36px rgba(74, 29, 31, 0.08);
+            padding: 22px;
+            box-shadow: 0 14px 28px rgba(74, 29, 31, 0.06);
             border: 1px solid #f0e1c9;
         }
 
@@ -889,7 +948,7 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             padding: 12px 14px;
             border: 1px solid #e4d4bd;
             border-radius: 10px;
-            font-size: 10px;
+            font-size: 14px;
             font-family: 'Poppins', sans-serif;
         }
 
@@ -908,8 +967,8 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             color: #ffffff;
             border-radius: 30px;
             border: none;
-            font-weight: 300;
-            font-size: 12px;
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
         }
 
@@ -937,6 +996,10 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             }
 
             .hero-image {
+                justify-content: flex-start;
+            }
+
+             .hero-trust {
                 justify-content: flex-start;
             }
 
@@ -1037,6 +1100,11 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 gap: 12px;
             }
 
+            .hero-trust-item {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+
             .btn-primary,
             .btn-outline {
                 width: 100%;
@@ -1046,6 +1114,18 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             .strip-thumb {
                 width: 200px;
                 height: 150px;
+            }
+
+            .best-card {
+                width: 232px;
+            }
+
+            .best-card img {
+                height: 220px;
+            }
+
+            .best-price {
+                font-size: 18px;
             }
         }
 
@@ -1060,9 +1140,51 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 line-height: 26px;
             }
 
+            .hero-trust {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .hero-trust-item {
+                width: 100%;
+                justify-content: center;
+            }
+
             .strip-thumb {
                 width: 170px;
                 height: 130px;
+            }
+
+            .best-card {
+                width: 210px;
+            }
+
+            .best-link {
+                padding: 12px;
+                border-radius: 24px;
+            }
+
+            .best-card img {
+                height: 200px;
+                border-radius: 18px;
+            }
+
+            .best-name {
+                font-size: 18px;
+                line-height: 26px;
+            }
+
+            .best-meta {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .best-cta {
+                width: 100%;
+            }
+
+            .testimonial-form {
+                padding: 18px;
             }
         }
 
@@ -1120,11 +1242,16 @@ $heroStripImages = [
     <section class="hero">
         <div class="hero-inner">
             <div class="hero-content">
-                <h1 class="hero-title">Mang đến cho bạn niềm hạnh phúc<br>qua một miếng bánh</h1>
-                <p class="hero-desc">Chúng tôi làm nhiều loại bánh khác nhau, bánh sô cô la, bánh quy mềm, bánh phô mai hoặc bất cứ thứ gì bạn muốn.</p>
+                <h1 class="hero-title">Bánh sinh nhật thiết kế riêng,<br>giao nhanh trong ngày</h1>
+                <p class="hero-desc">Gấu Bakery nhận làm bánh theo mẫu, bánh sinh nhật và bánh ngọt mỗi ngày với hình thức đẹp mắt, vị bánh dễ ăn và thời gian giao nhanh để bạn kịp mọi dịp quan trọng.</p>
                 <div class="hero-actions">
                     <a class="btn-primary" href="/cakev0/pages/product.php">Đặt ngay</a>
                     <a class="btn-outline" href="/cakev0/pages/product.php">Xem tất cả</a>
+                </div>
+                <div class="hero-trust">
+                    <div class="hero-trust-item"><i class="fa-solid fa-bolt"></i> Giao nhanh trong ngày</div>
+                    <div class="hero-trust-item"><i class="fa-solid fa-cake-candles"></i> Bánh làm mới mỗi ngày</div>
+                    <div class="hero-trust-item"><i class="fa-solid fa-wand-magic-sparkles"></i> Nhận đặt bánh theo mẫu</div>
                 </div>
             </div>
             <div class="hero-image">
@@ -1175,9 +1302,9 @@ $heroStripImages = [
 
     <section class="best-selling">
         <div class="best-header">
-            <h2 class="best-title">Try Our Best Selling</h2>
+            <h2 class="best-title">Bánh bán chạy</h2>
             <span class="best-divider"></span>
-            <p class="best-desc">Đây là những món ngon nhất mà mọi người đều yêu thích. Độ nhẹ và vị ngọt của bánh khiến bạn muốn ăn mãi không thôi. Hãy bắt đầu từ bánh ngọt, bánh mì và các món khác.</p>
+            <p class="best-desc">Những mẫu bánh được khách chọn nhiều nhất tuần này. Bạn có thể xem nhanh giá bán, mở chi tiết sản phẩm và chọn mẫu phù hợp ngay.</p>
         </div>
 
         <div class="best-list">
@@ -1187,6 +1314,10 @@ $heroStripImages = [
                     <a href="/cakev0/product/<?= urlencode($slug) ?>" class="best-link">
                         <img src="<?= buildImageUrl($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
                         <div class="best-name"><?= htmlspecialchars($p['ten_banh']) ?> </div>
+                        <div class="best-meta">
+                            <div class="best-price"><?= number_format((float) ($p['gia'] ?? 0), 0, ',', '.') ?> VNĐ</div>
+                            <div class="best-cta">Xem chi tiết</div>
+                        </div>
                     </a>
                 </div>
             <?php endforeach; ?>
@@ -1241,7 +1372,7 @@ $heroStripImages = [
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
                                         <i class="<?= $i <= $rating ? 'fa-solid' : 'fa-regular' ?> fa-star"></i>
                                     <?php endfor; ?>
-                                    <span><?= $rating ?>.0 Rating</span>
+                                    <span><?= $rating ?>.0 sao</span>
                                 </div>
                             </div>
                         </div>
@@ -1257,7 +1388,7 @@ $heroStripImages = [
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-regular fa-star"></i>
-                                <span>4.0 Rating</span>
+                                <span>4.0 sao</span>
                             </div>
                         </div>
                     </div>
@@ -1284,10 +1415,11 @@ $heroStripImages = [
 
             <form class="testimonial-form" method="POST" action="/cakev0/index.php#testimonial">
                 <input type="hidden" name="submit_testimonial" value="1">
+                <p style="margin:0 0 16px; font-size:14px; line-height:22px; color:#6b5a52;">Nếu bạn đã đặt bánh tại Gấu Bakery, hãy chia sẻ cảm nhận ngắn để giúp khách khác dễ chọn hơn.</p>
                 <div class="testimonial-fields">
                     <input class="testimonial-input" type="text" name="review_name" placeholder="Tên của bạn" required>
                     <select class="testimonial-select" name="review_rating" required>
-                        <option value="">Rating</option>
+                        <option value="">Chọn số sao</option>
                         <option value="5">5 sao</option>
                         <option value="4">4 sao</option>
                         <option value="3">3 sao</option>

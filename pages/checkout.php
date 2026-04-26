@@ -573,10 +573,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Khu vực QR Code -->
                 <div class="qr-box" id="qr">
                     <p style="margin:0"><strong>Ngân hàng Vietcombank</strong></p>
-                    <p style="margin:5px 0">STK: 0123456789 - Gấu Bakery</p>
+                    <p style="margin:5px 0">STK: 1028944280 - VO LY NHAT ANH</p>
                     <p style="color:#c44536; font-weight:bold;">Số tiền: <?= number_format($total, 0, ',', '.') ?> VNĐ</p>
-                    <!-- Ảnh QR sinh động từ Google Charts API -->
-                    <img id="qr-img" src="" alt="Mã QR thanh toán">
+                    <img id="qr-img" src="/cakev0/assets/img/qr.jpg" alt="Mã QR thanh toán Vietcombank">
                     <p style="font-size:12px; color:#666; margin-top:8px;">Quét mã để thanh toán nhanh</p>
                 </div>
 
@@ -637,21 +636,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 document.addEventListener("DOMContentLoaded", () => {
     // Khai báo biến
     const qrBox = document.getElementById("qr");
-    const qrImg = document.getElementById("qr-img");
     const bankRadio = document.getElementById("bank");
     const codRadio = document.getElementById("cod");
     const vnpayRadio = document.getElementById("vnpay");
-    
-    // Tổng tiền từ PHP (In thẳng vào JS an toàn)
-    const totalAmount = <?= $total ?>; 
 
     // Hàm cập nhật QR Code
     function updatePaymentMethod() {
         if (bankRadio.checked) {
             qrBox.style.display = "block";
-            // Tạo link QR động: Nội dung + Số tiền
-            const qrData = `Thanh toan don hang GauBakery - So tien ${totalAmount}`;
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
         } else {
             qrBox.style.display = "none";
         }

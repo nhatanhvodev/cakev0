@@ -2329,7 +2329,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
                             <div class="best-selling-actions">
                                 <div class="best-selling-note">Bạn có thể chọn nhiều sản phẩm, nhưng nên ưu tiên một nhóm ngắn để ngoài trang chủ gọn và rõ.</div>
-                                <button name="update_best_selling" class="btn btn-green">
+                                <button type="submit" name="update_best_selling" class="btn btn-green">
                                     <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
                                 </button>
                             </div>
@@ -3491,10 +3491,43 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         });
                     };
 
+                    const withPreservedViewport = function (callback) {
+                        const activeElement = document.activeElement;
+                        const activeElementId = activeElement && activeElement.id ? activeElement.id : '';
+                        const selectionStart = activeElement && typeof activeElement.selectionStart === 'number'
+                            ? activeElement.selectionStart
+                            : null;
+                        const selectionEnd = activeElement && typeof activeElement.selectionEnd === 'number'
+                            ? activeElement.selectionEnd
+                            : null;
+                        const scrollX = window.scrollX;
+                        const scrollY = window.scrollY;
+
+                        callback();
+
+                        window.scrollTo(scrollX, scrollY);
+
+                        if (activeElementId) {
+                            const nextActiveElement = document.getElementById(activeElementId);
+                            if (nextActiveElement) {
+                                nextActiveElement.focus({ preventScroll: true });
+                                if (
+                                    selectionStart !== null &&
+                                    selectionEnd !== null &&
+                                    typeof nextActiveElement.setSelectionRange === 'function'
+                                ) {
+                                    nextActiveElement.setSelectionRange(selectionStart, selectionEnd);
+                                }
+                            }
+                        }
+                    };
+
                     const refreshBestSellingView = function () {
-                        syncBestSellingUi();
-                        sortBestSellingCards();
-                        applyBestSellingFilters();
+                        withPreservedViewport(function () {
+                            syncBestSellingUi();
+                            sortBestSellingCards();
+                            applyBestSellingFilters();
+                        });
                     };
 
                     bestSellingCards.forEach(function (card) {
@@ -3504,7 +3537,13 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             checkbox.addEventListener('change', refreshBestSellingView);
                         }
                         if (rankInput) {
-                            rankInput.addEventListener('input', refreshBestSellingView);
+                            rankInput.addEventListener('input', function () {
+                                withPreservedViewport(function () {
+                                    syncBestSellingUi();
+                                    applyBestSellingFilters();
+                                });
+                            });
+                            rankInput.addEventListener('change', refreshBestSellingView);
                         }
                     });
 

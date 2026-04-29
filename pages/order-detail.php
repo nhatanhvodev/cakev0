@@ -332,6 +332,33 @@ body {
     font-weight: 600;
 }
 
+.order-product-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.order-product-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #f3e0be;
+    flex-shrink: 0;
+}
+
+.order-product-name {
+    color: #2c2c2c;
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.35;
+}
+
+.order-product-name:hover {
+    color: #6a2d22;
+}
+
 .order-map {
     width: 100%;
     height: 180px;
@@ -567,6 +594,12 @@ body {
     .order-table .review-cell .d-flex {
         flex-wrap: wrap;
     }
+
+    .order-product-thumb {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -632,6 +665,20 @@ body {
     .order-table td[data-label] {
         grid-template-columns: 1fr;
         gap: 4px;
+    }
+
+    .order-product-info {
+        gap: 10px;
+    }
+
+    .order-product-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+    }
+
+    .order-product-name {
+        font-size: 14px;
     }
 
     .order-total {
@@ -770,9 +817,18 @@ body {
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach($items as $it): ?>
+                <?php foreach($items as $it):
+                    $productSlug = !empty($it['slug']) ? $it['slug'] : slugify($it['ten_banh'], (int) $it['id']);
+                ?>
                 <tr class="order-table-row">
-                    <td data-label="Tên bánh"><?= htmlspecialchars($it['ten_banh']) ?></td>
+                    <td data-label="Tên bánh">
+                        <div class="order-product-info">
+                            <img class="order-product-thumb" src="<?= imgPath($it['hinh_anh']) ?>" alt="<?= htmlspecialchars($it['ten_banh']) ?>">
+                            <a href="/cakev0/product/<?= urlencode($productSlug) ?>" class="order-product-name">
+                                <?= htmlspecialchars($it['ten_banh']) ?>
+                            </a>
+                        </div>
+                    </td>
                     <td data-label="Số lượng"><?= $it['quantity'] ?></td>
                     <td data-label="Giá"><?= number_format($it['price']) ?> đ</td>
                     <td data-label="Thành tiền" class="fw-bold text-danger">

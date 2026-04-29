@@ -1206,8 +1206,6 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 filter: blur(120px);
             }
 
-            .strip-marquee,
-            .hero-slide,
             .testimonial-item {
                 animation: none !important;
                 transition: none !important;
@@ -1462,7 +1460,6 @@ $heroStripImages = [
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isCompactViewport = window.innerWidth <= 540;
         const heroSlider = document.getElementById('heroSlider');
         const heroSlides = heroSlider ? Array.from(heroSlider.querySelectorAll('.hero-slide')) : [];
@@ -1484,9 +1481,7 @@ $heroStripImages = [
                 });
             });
 
-            if (!reduceMotion) {
-                setInterval(() => showHero(heroIndex + 1), 5000);
-            }
+            setInterval(() => showHero(heroIndex + 1), 5000);
         }
 
         const bestList = document.querySelector('.best-list');
@@ -1539,7 +1534,7 @@ $heroStripImages = [
             dot.addEventListener('click', () => activate(i));
         });
 
-        if (!reduceMotion && !isCompactViewport) {
+        if (!isCompactViewport) {
             setInterval(() => {
                 const nextIndex = (activeIndex + 1) % items.length;
                 activate(nextIndex);

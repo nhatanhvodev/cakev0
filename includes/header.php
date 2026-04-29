@@ -100,6 +100,33 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   body {
     max-width: 100%;
     overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #8b7a7a #f6ead2;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #8b7a7a #f6ead2;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #f6ead2;
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #8b7a7a;
+    border-radius: 999px;
+    border: 2px solid #f6ead2;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #6a2d22;
   }
 
   #site-header {

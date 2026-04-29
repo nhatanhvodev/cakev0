@@ -766,12 +766,30 @@ body {
 
 <script>
 function addCartQuick(productId) {
+    const goLogin = () => {
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+        setTimeout(() => {
+            window.location.href = `/cakev0/pages/login.php?redirect=${redirect}`;
+        }, 500);
+    };
+
     fetch('/cakev0/pages/cart.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=add&banh_id=${productId}&qty=1`
     })
-    .then(r => r.json())
+    .then(async (r) => {
+        const raw = await r.text();
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            const looksLikeLoginRedirect = r.redirected || /login\.php/i.test(r.url || '') || /<html|<!doctype/i.test(raw);
+            if (looksLikeLoginRedirect) {
+                return { success: false, require_login: true, message: 'Vui lòng đăng nhập để tiếp tục.' };
+            }
+            return { success: false, message: 'Không thêm được, vui lòng thử lại!' };
+        }
+    })
     .then(d => {
         if (d.success) {
             window.showToast('🧁 Đã thêm vào giỏ hàng!', 'success');
@@ -780,16 +798,18 @@ function addCartQuick(productId) {
                 window.setCartBadge(d.cart_count);
             }
         } else {
-            window.showToast(d.message || 'Không thêm được, vui lòng thử lại!', 'error');
             if (d.require_login) {
-                const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-                setTimeout(() => {
-                    window.location.href = `/cakev0/pages/login.php?redirect=${redirect}`;
-                }, 500);
+                window.showToast('Vui lòng đăng nhập để tiếp tục.', 'error');
+                goLogin();
+                return;
             }
+            window.showToast(d.message || 'Không thêm được, vui lòng thử lại!', 'error');
         }
     })
-    .catch(() => window.showToast('Lỗi kết nối máy chủ!', 'error'));
+    .catch(() => {
+        window.showToast('Vui lòng đăng nhập để tiếp tục.', 'error');
+        goLogin();
+    });
 }
 
 function toggleFavorite(button) {

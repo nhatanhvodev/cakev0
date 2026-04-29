@@ -639,6 +639,27 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             scroll-snap-type: x mandatory;
             cursor: grab;
             scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #8b7a7a #f6ead2;
+        }
+
+        .best-list::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .best-list::-webkit-scrollbar-track {
+            background: #f6ead2;
+            border-radius: 999px;
+        }
+
+        .best-list::-webkit-scrollbar-thumb {
+            background: #8b7a7a;
+            border-radius: 999px;
+            border: 2px solid #f6ead2;
+        }
+
+        .best-list::-webkit-scrollbar-thumb:hover {
+            background: #6a2d22;
         }
 
         .best-list.is-dragging {

@@ -1,14 +1,23 @@
-<?php
+﻿<?php
 
 session_start();
 ob_start();
 date_default_timezone_set('Asia/Ho_Chi_Minh');
-$pageTitle = 'Giỏ hàng';
+$pageTitle = 'Giá» hÃ ng';
 
 require_once '../config/connect.php';
 require_once '../config/coupons.php';
 
 if (!isset($_SESSION['user_id'])) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'require_login' => true,
+            'message' => 'Đăng nhập để tiếp tục.'
+        ]);
+        exit;
+    }
     header("Location: login.php");
     exit;
 }
@@ -51,11 +60,11 @@ if (isset($_POST['action'])) {
             ");
         }
 
-        // Dếm lại số loại sản phẩm (số dòng) trong giỏ
+        // Dáº¿m láº¡i sá»‘ loáº¡i sáº£n pháº©m (sá»‘ dÃ²ng) trong giá»
         $countRes = $conn->query("SELECT COUNT(*) as cnt FROM cart WHERE user_id = $user_id");
         $cartCount = (int)($countRes->fetch_assoc()['cnt'] ?? 0);
 
-        $msg = $is_new ? 'Đã thêm sản phẩm vào giỏ hàng.' : 'Đã tăng số lượng trong giỏ.';
+        $msg = $is_new ? 'ÄÃ£ thÃªm sáº£n pháº©m vÃ o giá» hÃ ng.' : 'ÄÃ£ tÄƒng sá»‘ lÆ°á»£ng trong giá».';
         echo json_encode(['success' => true, 'is_new' => $is_new, 'cart_count' => $cartCount, 'message' => $msg]);
         exit;
     }
@@ -69,7 +78,7 @@ if ($action === 'add_custom') {
         WHERE id = $cart_id AND user_id = $user_id
     ");
 
-    echo json_encode(['success' => true, 'message' => 'Đã cập nhật số lượng sản phẩm.']);
+    echo json_encode(['success' => true, 'message' => 'ÄÃ£ cáº­p nháº­t sá»‘ lÆ°á»£ng sáº£n pháº©m.']);
     exit;
 }
 
@@ -116,11 +125,11 @@ if ($action === 'add_custom') {
     }
 
     $actionMessages = [
-        'increase' => 'Đã tăng số lượng sản phẩm.',
-        'decrease' => 'Đã cập nhật số lượng sản phẩm.',
-        'remove' => 'Đã xóa sản phẩm khỏi giỏ hàng.'
+        'increase' => 'ÄÃ£ tÄƒng sá»‘ lÆ°á»£ng sáº£n pháº©m.',
+        'decrease' => 'ÄÃ£ cáº­p nháº­t sá»‘ lÆ°á»£ng sáº£n pháº©m.',
+        'remove' => 'ÄÃ£ xÃ³a sáº£n pháº©m khá»i giá» hÃ ng.'
     ];
-    echo json_encode(['success' => true, 'message' => $actionMessages[$action] ?? 'Đã cập nhật giỏ hàng.']);
+    echo json_encode(['success' => true, 'message' => $actionMessages[$action] ?? 'ÄÃ£ cáº­p nháº­t giá» hÃ ng.']);
     exit;
 }
 
@@ -178,11 +187,11 @@ $grandTotal = (float)$subtotal;
 
 if (!empty($cartItems) && $couponInput !== '') {
     if (!preg_match('/^[A-Z0-9_-]{3,30}$/', $couponInput)) {
-        $couponError = 'Mã giảm giá không hợp lệ.';
+        $couponError = 'MÃ£ giáº£m giÃ¡ khÃ´ng há»£p lá»‡.';
     } else {
         $coupon = findCartCoupon($conn, $couponInput, date('Y-m-d'));
         if (!$coupon) {
-            $couponError = 'Mã giảm giá không tồn tại hoặc đã hết hạn.';
+            $couponError = 'MÃ£ giáº£m giÃ¡ khÃ´ng tá»“n táº¡i hoáº·c Ä‘Ã£ háº¿t háº¡n.';
         } else {
             $minSubtotal = (float)($coupon['min_subtotal'] ?? 0);
             $discountPercent = (float)($coupon['discount_percent'] ?? 0);
@@ -190,17 +199,17 @@ if (!empty($cartItems) && $couponInput !== '') {
             $usedCount = (int) ($coupon['used_count'] ?? 0);
 
             if ($subtotal < $minSubtotal) {
-                $couponError = 'Đơn hàng tối thiểu ' . number_format($minSubtotal, 0, ',', '.') . ' VNĐ để dùng mã này.';
+                $couponError = 'ÄÆ¡n hÃ ng tá»‘i thiá»ƒu ' . number_format($minSubtotal, 0, ',', '.') . ' VNÄ Ä‘á»ƒ dÃ¹ng mÃ£ nÃ y.';
             } elseif ($usageLimit > 0 && $usedCount >= $usageLimit) {
-                $couponError = 'Mã giảm giá đã hết lượt sử dụng.';
+                $couponError = 'MÃ£ giáº£m giÃ¡ Ä‘Ã£ háº¿t lÆ°á»£t sá»­ dá»¥ng.';
             } elseif ($discountPercent <= 0) {
-                $couponError = 'Mã giảm giá chưa được cấu hình hợp lệ.';
+                $couponError = 'MÃ£ giáº£m giÃ¡ chÆ°a Ä‘Æ°á»£c cáº¥u hÃ¬nh há»£p lá»‡.';
             } else {
                 $discountPercentApplied = min(100, $discountPercent);
                 $discountAmount = round($subtotal * ($discountPercentApplied / 100));
                 $grandTotal = max(0, $subtotal - $discountAmount);
                 $appliedCoupon = $coupon;
-                $couponSuccess = 'Áp dụng mã ' . $coupon['code'] . ' thành công.';
+                $couponSuccess = 'Ãp dá»¥ng mÃ£ ' . $coupon['code'] . ' thÃ nh cÃ´ng.';
             }
         }
     }
@@ -653,6 +662,128 @@ if (!empty($cartItems) && $couponInput !== '') {
             }
         }
 
+        @media (max-width: 768px) {
+            .cart-table tr.cart-item-row {
+                padding: 14px;
+                border: 1px solid #f3e0be;
+                border-radius: 18px;
+                background: #fffdf8;
+                box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
+            }
+
+            .cart-table td {
+                text-align: left;
+            }
+
+            .cart-table td[data-label]::before {
+                margin-bottom: 8px;
+                color: #6a2d22;
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .cart-table .cart-remove-cell {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                width: auto;
+            }
+
+            .cart-table .cart-remove-cell .btn-remove {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                border-radius: 12px;
+            }
+
+            .cart-table .cart-image-cell {
+                float: left;
+                width: 50px;
+                margin-right: 12px;
+                margin-bottom: 10px;
+            }
+
+            .cart-table .cart-image-cell::before {
+                display: none;
+            }
+
+            .cart-table .cart-image-cell img {
+                width: 50px;
+                height: 50px;
+                border-radius: 10px;
+                object-fit: cover;
+                box-shadow: none;
+            }
+
+            .cart-table .cart-product-cell {
+                min-height: 50px;
+                padding-right: 50px;
+                margin-bottom: 10px;
+            }
+
+            .cart-table .cart-product-name {
+                font-size: 16px;
+                line-height: 1.35;
+                font-weight: 500;
+                color: #2f1415;
+                overflow-wrap: anywhere;
+            }
+
+            .cart-table .cart-price-cell,
+            .cart-table .cart-qty-cell,
+            .cart-table .cart-total-cell {
+                clear: both;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(243, 224, 190, 0.95);
+            }
+
+            .cart-table .cart-price-text,
+            .cart-table .cart-total-text {
+                display: block;
+                font-size: 16px;
+                line-height: 1.35;
+            }
+
+            .cart-table .cart-total-text {
+                color: #d9293a;
+                font-weight: 700;
+            }
+
+            .cart-table .cart-qty-cell > div {
+                justify-content: flex-start !important;
+                margin-left: 0;
+                min-width: 118px;
+                width: fit-content;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cart-table .cart-product-name {
+                font-size: 15px;
+            }
+
+            .cart-table .cart-price-text,
+            .cart-table .cart-total-text {
+                font-size: 14px;
+            }
+
+            .cart-table .cart-image-cell {
+                width: 44px;
+            }
+
+            .cart-table .cart-image-cell img {
+                width: 44px;
+                height: 44px;
+            }
+
+            .cart-table .cart-product-cell {
+                min-height: 44px;
+            }
+        }
+
         .scroll-top {
             position: fixed;
             right: 20px;
@@ -694,7 +825,7 @@ if (!empty($cartItems) && $couponInput !== '') {
 <section class="cart-page">
     <div class="container-xl">
         <div class="cart-card">
-            <div class="cart-title">Giỏ hàng của bạn</div>
+            <div class="cart-title">Giá» hÃ ng cá»§a báº¡n</div>
 
             <div class="table-responsive cart-table-wrap mb-4">
                 <table class="table align-middle text-center cart-table">
@@ -702,10 +833,10 @@ if (!empty($cartItems) && $couponInput !== '') {
                         <tr>
                             <th><i class="fa-solid fa-circle-xmark" style="color: #000000;"></i></th>
                             <th><i class="fa-regular fa-image" style="color: #000000;"></i></th>
-                            <th>Sản phẩm</th>
-                            <th><i class="fa-solid fa-tags" style="color: #000000;"></i> Đơn giá</th>
-                            <th><i class="fa-solid fa-box-open" style="color: #000000;"></i> Số lượng</th>
-                            <th><i class="fa-solid fa-money-bill-wave" style="color: #000000;"></i> Tổng</th>
+                            <th>Sáº£n pháº©m</th>
+                            <th><i class="fa-solid fa-tags" style="color: #000000;"></i> ÄÆ¡n giÃ¡</th>
+                            <th><i class="fa-solid fa-box-open" style="color: #000000;"></i> Sá»‘ lÆ°á»£ng</th>
+                            <th><i class="fa-solid fa-money-bill-wave" style="color: #000000;"></i> Tá»•ng</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -714,7 +845,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                                 <td colspan="6">
                                     <div class="empty-cart text-muted fs-5" style="box-shadow:none;">
                                         <div style="font-size:48px"><i class="fa-solid fa-basket-shopping" style="color: #8b4513;"></i></div>
-                                        <p class="mt-3">Giỏ hàng của bạn đang trống!</p>
+                                        <p class="mt-3">Giá» hÃ ng cá»§a báº¡n Ä‘ang trá»‘ng!</p>
                                     </div>
                                 </td>
                             </tr>
@@ -725,28 +856,32 @@ if (!empty($cartItems) && $couponInput !== '') {
                             <tr class="cart-item-row">
                                 
                                 <td class="cart-remove-cell">
-                                    <button class="btn btn-sm btn-danger btn-remove" data-id="<?= $item['cart_id'] ?>"><i class="fa-solid fa-trash-can"></i>️</button>
+                                    <button class="btn btn-sm btn-danger btn-remove" data-id="<?= $item['cart_id'] ?>"><i class="fa-solid fa-trash-can"></i>ï¸</button>
                                 </td>
                                 
-                                <td class="cart-image-cell" data-label="Ảnh">
-                                    <img src="<?= buildImageUrl($item['hinh_anh']) ?>" width="70" alt="Bánh">
+                                <td class="cart-image-cell">
+                                    <img src="<?= buildImageUrl($item['hinh_anh']) ?>" width="70" alt="BÃ¡nh">
                                 </td>
                                 
-                                <td data-label="Sản phẩm"><?= htmlspecialchars($item['ten_banh']) ?></td>
+                                <td class="cart-product-cell" data-label="Tên bánh">
+                                    <div class="cart-product-name"><?= htmlspecialchars($item['ten_banh']) ?></div>
+                                </td>
                                 
-                                <td data-label="Đơn giá"><?= number_format($item['gia'], 0, ',', '.') ?> VNĐ</td>
+                                <td class="cart-price-cell" data-label="Giá">
+                                    <span class="cart-price-text"><?= number_format($item['gia'], 0, ',', '.') ?> VNĐ</span>
+                                </td>
                                 
-                                <td class="cart-qty-cell" data-label="Số lượng">
+                                <td class="cart-qty-cell" data-label="Sá»‘ lÆ°á»£ng">
                                     <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <button class="btn btn-sm btn-outline-secondary qty-btn btn-decrease" data-id="<?= $item['cart_id'] ?>">−</button>
+                                        <button class="btn btn-sm btn-outline-secondary qty-btn btn-decrease" data-id="<?= $item['cart_id'] ?>">âˆ’</button>
                                         <span class="fw-bold" style="min-width:20px;"><?= $item['quantity'] ?></span>
                                         <button class="btn btn-sm btn-outline-secondary qty-btn btn-increase" data-id="<?= $item['cart_id'] ?>">+</button>
 
                                     </div>
                                 </td>
                                 
-                                <td class="fw-bold text-success" data-label="Tổng">
-                                    <?= number_format($rowTotal, 0, ',', '.') ?> VNĐ
+                                <td class="cart-total-cell fw-bold text-success" data-label="Thành tiền">
+                                    <span class="cart-total-text"><?= number_format($rowTotal, 0, ',', '.') ?> VNĐ</span>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -764,13 +899,13 @@ if (!empty($cartItems) && $couponInput !== '') {
                                 type="text"
                                 name="coupon"
                                 class="form-control text-uppercase"
-                                placeholder="Nhập mã giảm giá"
+                                placeholder="Nháº­p mÃ£ giáº£m giÃ¡"
                                 value="<?= htmlspecialchars($couponInput) ?>"
                                 maxlength="30"
                             >
-                            <button class="btn btn-outline-secondary" type="submit">Áp dụng</button>
+                            <button class="btn btn-outline-secondary" type="submit">Ãp dá»¥ng</button>
                             <?php if ($couponInput !== ''): ?>
-                                <a class="btn btn-outline-danger" href="/cakev0/pages/cart.php">Xóa mã</a>
+                                <a class="btn btn-outline-danger" href="/cakev0/pages/cart.php">XÃ³a mÃ£</a>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -787,34 +922,34 @@ if (!empty($cartItems) && $couponInput !== '') {
                 </div>
                 <div class="col-md-6">
                     <div class="summary-box">
-                        <h5><i class="fa-solid fa-money-bills" style="color: #000000;"></i> Tổng giỏ hàng</h5>
+                        <h5><i class="fa-solid fa-money-bills" style="color: #000000;"></i> Tá»•ng giá» hÃ ng</h5>
                         <table class="table mb-3">
                             <tr>
-                                <td>Tạm tính</td>
-                                <td class="text-end"><?= number_format($subtotal, 0, ',', '.') ?> VNĐ</td>
+                                <td>Táº¡m tÃ­nh</td>
+                                <td class="text-end"><?= number_format($subtotal, 0, ',', '.') ?> VNÄ</td>
                             </tr>
                             <?php if ($discountAmount > 0 && $appliedCoupon): ?>
                                 <tr>
                                     <td>
-                                        Giảm giá (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= rtrim(rtrim(number_format($discountPercentApplied, 2, '.', ''), '0'), '.') ?>%)
+                                        Giáº£m giÃ¡ (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= rtrim(rtrim(number_format($discountPercentApplied, 2, '.', ''), '0'), '.') ?>%)
                                     </td>
-                                    <td class="text-end text-success">-<?= number_format($discountAmount, 0, ',', '.') ?> VNĐ</td>
+                                    <td class="text-end text-success">-<?= number_format($discountAmount, 0, ',', '.') ?> VNÄ</td>
                                 </tr>
                             <?php endif; ?>
                             <tr class="fw-bold">
-                                <td>Tổng cộng</td>
-                                <td class="text-end text-danger"><?= number_format($grandTotal, 0, ',', '.') ?> VNĐ</td>
+                                <td>Tá»•ng cá»™ng</td>
+                                <td class="text-end text-danger"><?= number_format($grandTotal, 0, ',', '.') ?> VNÄ</td>
                             </tr>
                         </table>
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i> Cập nhật</button>
+                            <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i> Cáº­p nháº­t</button>
                             <?php
                                 $checkoutUrl = '/cakev0/pages/checkout.php';
                                 if ($appliedCoupon) {
                                     $checkoutUrl .= '?coupon=' . urlencode((string) $appliedCoupon['code']);
                                 }
                             ?>
-                            <a href="<?= htmlspecialchars($checkoutUrl) ?>" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toán</a>
+                            <a href="<?= htmlspecialchars($checkoutUrl) ?>" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toÃ¡n</a>
                         </div>
                     </div>
                 </div>
@@ -849,12 +984,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 setTimeout(() => location.reload(), 600);
             } else {
-                window.showToast('Có lỗi xảy ra!', 'error');
+                window.showToast('CÃ³ lá»—i xáº£y ra!', 'error');
             }
         })
         .catch(err => {
             console.error(err);
-            window.showToast('Lỗi kết nối server', 'error');
+            window.showToast('Lá»—i káº¿t ná»‘i server', 'error');
         })
         .finally(() => {
             document.body.style.cursor = 'default';
@@ -869,12 +1004,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentQty < 5) {
             ajaxCart('increase', btn.dataset.id);
         } else {
-            let addQty = prompt('Nhập số lượng muốn thêm:', '1');
+            let addQty = prompt('Nháº­p sá»‘ lÆ°á»£ng muá»‘n thÃªm:', '1');
             if (addQty === null) return;
 
             addQty = parseInt(addQty);
             if (isNaN(addQty) || addQty <= 0) {
-                window.showToast('Số lượng không hợp lệ', 'error');
+                window.showToast('Sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡', 'error');
                 return;
             }
 
@@ -893,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.showToast(d.message, 'success');
                 }
                 if (!d.success) {
-                    window.showToast('Lỗi cập nhật số lượng', 'error');
+                    window.showToast('Lá»—i cáº­p nháº­t sá»‘ lÆ°á»£ng', 'error');
                     location.reload();
                 }
             });
@@ -909,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.btn-remove').forEach(btn => {
         btn.addEventListener('click', () => {
-            window.showConfirm('Bạn có chắc chắn muốn xóa sản phẩm này?').then(ok => { if (!ok) return; ajaxCart('remove', btn.dataset.id); })
+            window.showConfirm('Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a sáº£n pháº©m nÃ y?').then(ok => { if (!ok) return; ajaxCart('remove', btn.dataset.id); })
         });
     });
 });
@@ -937,3 +1072,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
 if(isset($conn)) $conn->close(); 
 ?>
+

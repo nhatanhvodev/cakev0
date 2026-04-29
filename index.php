@@ -1396,7 +1396,7 @@ $heroStripImages = [
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
                                         <i class="<?= $i <= $rating ? 'fa-solid' : 'fa-regular' ?> fa-star"></i>
                                     <?php endfor; ?>
-                                    <span><?= $rating ?>.0 sao</span>
+                                    <span><?= $rating ?> sao</span>
                                 </div>
                             </div>
                         </div>

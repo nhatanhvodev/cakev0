@@ -76,6 +76,12 @@ body {
     margin: 0;
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 .contact-shell {
     max-width: 1180px;
     margin: 24px auto 60px;
@@ -116,6 +122,7 @@ body {
 .contact-form input,
 .contact-form textarea {
     width: 100%;
+    max-width: 100%;
     border-radius: 14px;
     border: 1px solid #e5d6bf;
     padding: 12px 14px;

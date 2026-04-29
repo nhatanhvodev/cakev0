@@ -552,7 +552,13 @@ function addCartQuick(productId) {
                 window.setCartBadge(d.cart_count);
             }
         } else {
-            window.showToast('Không thêm được, vui lòng thử lại!', 'error');
+            window.showToast(d.message || 'Không thêm được, vui lòng thử lại!', 'error');
+            if (d.require_login) {
+                const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+                setTimeout(() => {
+                    window.location.href = `/cakev0/pages/login.php?redirect=${redirect}`;
+                }, 500);
+            }
         }
     })
     .catch(() => window.showToast('Lỗi kết nối máy chủ!', 'error'));

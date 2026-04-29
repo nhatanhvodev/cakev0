@@ -261,6 +261,10 @@ body {
         height: 200px;
     }
 
+    .hero-float {
+        display: none;
+    }
+
     .about-banner p {
         font-size: 14px;
     }

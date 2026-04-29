@@ -1168,10 +1168,6 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
                 filter: blur(140px);
             }
 
-            .strip-marquee {
-                animation: none;
-            }
-
             .best-card {
                 width: 210px;
             }
@@ -1488,7 +1484,7 @@ $heroStripImages = [
                 });
             });
 
-            if (!reduceMotion && !isCompactViewport) {
+            if (!reduceMotion) {
                 setInterval(() => showHero(heroIndex + 1), 5000);
             }
         }

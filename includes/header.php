@@ -101,12 +101,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     max-width: 100%;
     overflow-x: hidden;
     scrollbar-width: thin;
-    scrollbar-color: #8b7a7a #f6ead2;
+    scrollbar-color: #ffa467 #f6ead2;
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #8b7a7a #f6ead2;
+    scrollbar-color: #ffa467 #f6ead2;
   }
 
   *::-webkit-scrollbar {
@@ -120,7 +120,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #8b7a7a;
+    background: #ffa467;
     border-radius: 999px;
     border: 2px solid #f6ead2;
   }

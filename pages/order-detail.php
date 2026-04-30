@@ -830,9 +830,9 @@ body {
                         </div>
                     </td>
                     <td data-label="Số lượng"><?= $it['quantity'] ?></td>
-                    <td data-label="Giá"><?= number_format($it['price']) ?> đ</td>
+                    <td data-label="Giá"><?= number_format($it['price']) ?> VNĐ</td>
                     <td data-label="Thành tiền" class="fw-bold text-danger">
-                        <?= number_format($it['price']*$it['quantity']) ?> đ
+                        <?= number_format($it['price']*$it['quantity']) ?> VNĐ
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -903,7 +903,7 @@ body {
     </div>
 
     <div class="order-total">
-        Tổng tiền: <span class="text-success"><?= number_format($order['total_amount']) ?> đ</span>
+        Tổng tiền: <span class="text-success"><?= number_format($order['total_amount']) ?> VNĐ</span>
     </div>
 </div>
 
@@ -915,10 +915,10 @@ body {
     <hr>
     <?php foreach($items as $it): ?>
         <p><?= $it['ten_banh'] ?> × <?= $it['quantity'] ?>
-        = <strong><?= number_format($it['price']*$it['quantity']) ?> đ</strong></p>
+        = <strong><?= number_format($it['price']*$it['quantity']) ?> VNĐ</strong></p>
     <?php endforeach; ?>
     <hr>
-    <h6>Tổng: <?= number_format($order['total_amount']) ?> đ</h6>
+    <h6>Tổng: <?= number_format($order['total_amount']) ?> VNĐ</h6>
     <button class="btn btn-secondary btn-sm mt-3" onclick="closeBill()">Đóng</button>
 </div>
 </div>
@@ -1041,10 +1041,10 @@ function exportPDF(){
     let y=45;
     <?php foreach($items as $it): ?>
         doc.text("<?= $it['ten_banh'] ?> x <?= $it['quantity'] ?>",20,y);
-        doc.text("<?= number_format($it['price']*$it['quantity']) ?> đ",150,y);
+        doc.text("<?= number_format($it['price']*$it['quantity']) ?> VNĐ",150,y);
         y+=10;
     <?php endforeach; ?>
-    doc.text("Tong tien: <?= number_format($order['total_amount']) ?> đ",20,y+10);
+    doc.text("Tong tien: <?= number_format($order['total_amount']) ?> VNĐ",20,y+10);
     doc.save("hoa-don-<?= $order_id ?>.pdf");
 }
 </script>

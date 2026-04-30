@@ -1110,7 +1110,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
     $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle('Doanh thu');
-    $sheet->fromArray(['Ngày/Tháng', 'Doanh thu (VND)'], null, 'A1');
+    $sheet->fromArray(['Ngày/Tháng', 'Doanh thu (VNĐ)'], null, 'A1');
     $row = 2;
     foreach ($chart_labels as $index => $label) {
         $value = $chart_values[$index] ?? 0;
@@ -1908,7 +1908,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <div class="stat-card">
                             <div class="stat-info">
                                 <h5>Tổng doanh thu</h5>
-                                <h3><?= number_format($total_revenue, 0, ',', '.') ?>đ</h3>
+                                <h3><?= number_format($total_revenue, 0, ',', '.') ?> VNĐ</h3>
                             </div>
                             <div class="stat-icon revenue"><i class="bi bi-graph-up-arrow"></i></div>
                         </div>
@@ -2002,7 +2002,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                 <tr>
                                     <td>#<?= $o['id'] ?></td>
                                     <td><?= htmlspecialchars($o['username'] ?? 'Khách lẻ') ?></td>
-                                    <td><?= number_format($o['total_amount']) ?>đ</td>
+                                    <td><?= number_format($o['total_amount']) ?> VNĐ</td>
                                     <td>
                                         <?php
                                         $statusData = match (strtolower($o['status'])) {
@@ -2067,7 +2067,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                     </div>
                                                 <?php endif; endforeach; ?>
                                         </td>
-                                        <td class="fw-bold"><?= number_format($o['total_amount']) ?>đ</td>
+                                        <td class="fw-bold"><?= number_format($o['total_amount']) ?> VNĐ</td>
                                         <td>
                                             <?php
                                             $statusData = match (strtolower($o['status'])) {
@@ -2220,7 +2220,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             class="rounded"></td>
                                     <td><?= htmlspecialchars($p['ten_banh']) ?></td>
                                     <td><?= htmlspecialchars($p['loai']) ?></td>
-                                    <td><?= number_format((int) $p['gia']) ?>đ</td>
+                                    <td><?= number_format((int) $p['gia']) ?> VNĐ</td>
                                     <td><?= !empty($p['mo_ta']) ? 'Có mô tả' : 'Chưa có' ?></td>
                                     <td>
                                         <?php if (!empty($productImageMap[(int) $p['id']])): ?>
@@ -2292,7 +2292,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                     <td><?= $u['id'] ?></td>
                                     <td><?= htmlspecialchars($u['username']) ?></td>
                                     <td><?= htmlspecialchars($u['email']) ?></td>
-                                    <td><?= number_format((float) $u['total_spent']) ?>đ</td>
+                                    <td><?= number_format((float) $u['total_spent']) ?> VNĐ</td>
                                     <td><?= date('d/m/Y H:i', strtotime($u['created_at'])) ?></td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-primary user-orders-btn"
@@ -2609,7 +2609,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     </div>
                     <div class="col-md-2">
                         <input type="text" id="promotionCurrentPrice" class="form-control"
-                            value="<?= !empty($products) ? number_format((float) $products[0]['gia'], 0, ',', '.') . 'đ' : '0đ' ?>"
+                            value="<?= !empty($products) ? number_format((float) $products[0]['gia'], 0, ',', '.') . ' VNĐ' : '0 VNĐ' ?>"
                             readonly>
                     </div>
                     <div class="col-md-2"><input type="number" name="gia_khuyen_mai" class="form-control"
@@ -2634,8 +2634,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             <?php foreach ($promotions as $promo): ?>
                                 <tr>
                                     <td><?= htmlspecialchars($promo['ten_banh']) ?></td>
-                                    <td><?= number_format((float) ($promo['gia_hien_tai'] ?? 0), 0, ',', '.') ?>đ</td>
-                                    <td><?= number_format($promo['gia_khuyen_mai']) ?>đ</td>
+                                    <td><?= number_format((float) ($promo['gia_hien_tai'] ?? 0), 0, ',', '.') ?> VNĐ</td>
+                                    <td><?= number_format($promo['gia_khuyen_mai']) ?> VNĐ</td>
                                     <td><?= date('d/m', strtotime($promo['ngay_bat_dau'])) ?> ->
                                         <?= date('d/m', strtotime($promo['ngay_ket_thuc'])) ?>
                                     </td>
@@ -2713,7 +2713,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                 <tr>
                                     <td><strong><?= htmlspecialchars((string) $coupon['code'], ENT_QUOTES) ?></strong></td>
                                     <td><?= rtrim(rtrim(number_format((float) $coupon['discount_percent'], 2, '.', ''), '0'), '.') ?>%</td>
-                                    <td><?= number_format((float) ($coupon['min_subtotal'] ?? 0), 0, ',', '.') ?>đ</td>
+                                    <td><?= number_format((float) ($coupon['min_subtotal'] ?? 0), 0, ',', '.') ?> VNĐ</td>
                                     <td><?= htmlspecialchars(couponUsageLabel($coupon)) ?></td>
                                     <td>
                                         <?php
@@ -3078,7 +3078,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
                 function formatVnd(value) {
                     const amount = Number(value || 0);
-                    return amount.toLocaleString('vi-VN') + 'đ';
+                    return amount.toLocaleString('vi-VN') + ' VNĐ';
                 }
 
                 function syncPromotionCurrentPrice() {
@@ -3986,7 +3986,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             scales: {
                                 y: {
                                     beginAtZero: true,
-                                    ticks: { callback: function (value) { return value.toLocaleString('vi-VN') + 'đ'; } }
+                                    ticks: { callback: function (value) { return value.toLocaleString('vi-VN') + ' VNĐ'; } }
                                 }
                             },
                             plugins: {

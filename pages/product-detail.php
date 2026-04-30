@@ -689,14 +689,14 @@ body {
             <h1><?= htmlspecialchars($selected['ten_banh']) ?></h1>
             <div class="detail-price">
                 <?php if (!empty($selected['gia_khuyen_mai'])): ?>
-                    <del><?= number_format($selected['gia']) ?>đ</del>
-                    <?= number_format($selected['gia_khuyen_mai']) ?>đ
+                    <del><?= number_format($selected['gia']) ?> VNĐ</del>
+                    <?= number_format($selected['gia_khuyen_mai']) ?> VNĐ
                     <?php if ($selected['gia'] > 0): ?>
                         <?php $discount = (int) round(100 - (($selected['gia_khuyen_mai'] / $selected['gia']) * 100)); ?>
                         <span class="detail-discount">-<?= $discount ?>%</span>
                     <?php endif; ?>
                 <?php else: ?>
-                    <?= number_format($selected['gia']) ?>đ
+                    <?= number_format($selected['gia']) ?> VNĐ
                 <?php endif; ?>
             </div>
             <?php if (!empty($selected['mo_ta'])): ?>

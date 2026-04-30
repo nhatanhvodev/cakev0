@@ -727,14 +727,14 @@ body {
                             </a>
                             <div class="price">
                                 <?php if ($p['gia_khuyen_mai']): ?>
-                                    <del><?= number_format($p['gia']) ?>đ</del>
-                                    <span class="current-price"><?= number_format($p['gia_khuyen_mai']) ?>đ</span>
+                                    <del><?= number_format($p['gia']) ?> VNĐ</del>
+                                    <span class="current-price"><?= number_format($p['gia_khuyen_mai']) ?> VNĐ</span>
                                     <?php if ($p['gia'] > 0): ?>
                                         <?php $discount = (int) round(100 - (($p['gia_khuyen_mai'] / $p['gia']) * 100)); ?>
                                         <span class="discount-rate">-<?= $discount ?>%</span>
                                     <?php endif; ?>
                                 <?php else: ?>
-                                    <span class="current-price"><?= number_format($p['gia']) ?>đ</span>
+                                    <span class="current-price"><?= number_format($p['gia']) ?> VNĐ</span>
                                 <?php endif; ?>
                             </div>
                             <div class="product-actions">

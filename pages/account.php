@@ -1017,7 +1017,7 @@ foreach ($orders as $order) {
                         <span>Đơn hàng</span>
                     </div>
                     <div class="stat-item">
-                        <strong><?= number_format($total_spent, 0, ',', '.') ?>đ</strong>
+                        <strong><?= number_format($total_spent, 0, ',', '.') ?> VNĐ</strong>
                         <span>Tổng chi tiêu</span>
                     </div>
                 </div>
@@ -1067,7 +1067,7 @@ foreach ($orders as $order) {
                                                 <tr>
                                                     <td data-label="Mã ĐH"><span class="badge bg-secondary">#<?= $o['id'] ?></span></td>
                                                     <td data-label="Ngày đặt"><?= date("d/m/Y", strtotime($o['created_at'])) ?></td>
-                                                    <td data-label="Tổng tiền" class="fw-bold text-success"><?= number_format($o['total_amount']) ?> đ
+                                                    <td data-label="Tổng tiền" class="fw-bold text-success"><?= number_format($o['total_amount']) ?> VNĐ
                                                     </td>
                                                     <td data-label="Trạng thái">
                                                         <?php

@@ -3,7 +3,7 @@
 session_start();
 ob_start();
 date_default_timezone_set('Asia/Ho_Chi_Minh');
-$pageTitle = 'Giá» hÃ ng';
+$pageTitle = 'Giỏ hàng';
 
 require_once '../config/connect.php';
 require_once '../config/coupons.php';
@@ -60,11 +60,11 @@ if (isset($_POST['action'])) {
             ");
         }
 
-        // Dáº¿m láº¡i sá»‘ loáº¡i sáº£n pháº©m (sá»‘ dÃ²ng) trong giá»
+        // Đếm lại số loại sản phẩm (số dòng) trong giỏ
         $countRes = $conn->query("SELECT COUNT(*) as cnt FROM cart WHERE user_id = $user_id");
         $cartCount = (int)($countRes->fetch_assoc()['cnt'] ?? 0);
 
-        $msg = $is_new ? 'ÄÃ£ thÃªm sáº£n pháº©m vÃ o giá» hÃ ng.' : 'ÄÃ£ tÄƒng sá»‘ lÆ°á»£ng trong giá».';
+        $msg = $is_new ? 'Đã thêm sản phẩm vào giỏ hàng.' : 'Đã tăng số lượng trong giỏ.';
         echo json_encode(['success' => true, 'is_new' => $is_new, 'cart_count' => $cartCount, 'message' => $msg]);
         exit;
     }
@@ -78,7 +78,7 @@ if ($action === 'add_custom') {
         WHERE id = $cart_id AND user_id = $user_id
     ");
 
-    echo json_encode(['success' => true, 'message' => 'ÄÃ£ cáº­p nháº­t sá»‘ lÆ°á»£ng sáº£n pháº©m.']);
+    echo json_encode(['success' => true, 'message' => 'Đã cập nhật số lượng sản phẩm.']);
     exit;
 }
 
@@ -125,11 +125,11 @@ if ($action === 'add_custom') {
     }
 
     $actionMessages = [
-        'increase' => 'ÄÃ£ tÄƒng sá»‘ lÆ°á»£ng sáº£n pháº©m.',
-        'decrease' => 'ÄÃ£ cáº­p nháº­t sá»‘ lÆ°á»£ng sáº£n pháº©m.',
-        'remove' => 'ÄÃ£ xÃ³a sáº£n pháº©m khá»i giá» hÃ ng.'
+        'increase' => 'Đã tăng số lượng sản phẩm.',
+        'decrease' => 'Đã cập nhật số lượng sản phẩm.',
+        'remove' => 'Đã xóa sản phẩm khỏi giỏ hàng.'
     ];
-    echo json_encode(['success' => true, 'message' => $actionMessages[$action] ?? 'ÄÃ£ cáº­p nháº­t giá» hÃ ng.']);
+    echo json_encode(['success' => true, 'message' => $actionMessages[$action] ?? 'Đã cập nhật giỏ hàng.']);
     exit;
 }
 
@@ -187,11 +187,11 @@ $grandTotal = (float)$subtotal;
 
 if (!empty($cartItems) && $couponInput !== '') {
     if (!preg_match('/^[A-Z0-9_-]{3,30}$/', $couponInput)) {
-        $couponError = 'MÃ£ giáº£m giÃ¡ khÃ´ng há»£p lá»‡.';
+        $couponError = 'Mã giảm giá không hợp lệ.';
     } else {
         $coupon = findCartCoupon($conn, $couponInput, date('Y-m-d'));
         if (!$coupon) {
-            $couponError = 'MÃ£ giáº£m giÃ¡ khÃ´ng tá»“n táº¡i hoáº·c Ä‘Ã£ háº¿t háº¡n.';
+            $couponError = 'Mã giảm giá không tồn tại hoặc đã hết hạn.';
         } else {
             $minSubtotal = (float)($coupon['min_subtotal'] ?? 0);
             $discountPercent = (float)($coupon['discount_percent'] ?? 0);
@@ -199,17 +199,17 @@ if (!empty($cartItems) && $couponInput !== '') {
             $usedCount = (int) ($coupon['used_count'] ?? 0);
 
             if ($subtotal < $minSubtotal) {
-                $couponError = 'ÄÆ¡n hÃ ng tá»‘i thiá»ƒu ' . number_format($minSubtotal, 0, ',', '.') . ' VNÄ Ä‘á»ƒ dÃ¹ng mÃ£ nÃ y.';
+                $couponError = 'Đơn hàng tối thiểu ' . number_format($minSubtotal, 0, ',', '.') . ' VNĐ để dùng mã này.';
             } elseif ($usageLimit > 0 && $usedCount >= $usageLimit) {
-                $couponError = 'MÃ£ giáº£m giÃ¡ Ä‘Ã£ háº¿t lÆ°á»£t sá»­ dá»¥ng.';
+                $couponError = 'Mã giảm giá đã hết lượt sử dụng.';
             } elseif ($discountPercent <= 0) {
-                $couponError = 'MÃ£ giáº£m giÃ¡ chÆ°a Ä‘Æ°á»£c cáº¥u hÃ¬nh há»£p lá»‡.';
+                $couponError = 'Mã giảm giá chưa được cấu hình hợp lệ.';
             } else {
                 $discountPercentApplied = min(100, $discountPercent);
                 $discountAmount = round($subtotal * ($discountPercentApplied / 100));
                 $grandTotal = max(0, $subtotal - $discountAmount);
                 $appliedCoupon = $coupon;
-                $couponSuccess = 'Ãp dá»¥ng mÃ£ ' . $coupon['code'] . ' thÃ nh cÃ´ng.';
+                $couponSuccess = 'Áp dụng mã ' . $coupon['code'] . ' thành công.';
             }
         }
     }
@@ -825,7 +825,7 @@ if (!empty($cartItems) && $couponInput !== '') {
 <section class="cart-page">
     <div class="container-xl">
         <div class="cart-card">
-            <div class="cart-title">Giá» hÃ ng cá»§a báº¡n</div>
+            <div class="cart-title">Giỏ hàng của bạn</div>
 
             <div class="table-responsive cart-table-wrap mb-4">
                 <table class="table align-middle text-center cart-table">
@@ -833,10 +833,10 @@ if (!empty($cartItems) && $couponInput !== '') {
                         <tr>
                             <th><i class="fa-solid fa-circle-xmark" style="color: #000000;"></i></th>
                             <th><i class="fa-regular fa-image" style="color: #000000;"></i></th>
-                            <th>Sáº£n pháº©m</th>
-                            <th><i class="fa-solid fa-tags" style="color: #000000;"></i> ÄÆ¡n giÃ¡</th>
-                            <th><i class="fa-solid fa-box-open" style="color: #000000;"></i> Sá»‘ lÆ°á»£ng</th>
-                            <th><i class="fa-solid fa-money-bill-wave" style="color: #000000;"></i> Tá»•ng</th>
+                            <th>Sản phẩm</th>
+                            <th><i class="fa-solid fa-tags" style="color: #000000;"></i> Đơn giá</th>
+                            <th><i class="fa-solid fa-box-open" style="color: #000000;"></i> Số lượng</th>
+                            <th><i class="fa-solid fa-money-bill-wave" style="color: #000000;"></i> Tổng</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -845,7 +845,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                                 <td colspan="6">
                                     <div class="empty-cart text-muted fs-5" style="box-shadow:none;">
                                         <div style="font-size:48px"><i class="fa-solid fa-basket-shopping" style="color: #8b4513;"></i></div>
-                                        <p class="mt-3">Giá» hÃ ng cá»§a báº¡n Ä‘ang trá»‘ng!</p>
+                                        <p class="mt-3">Giỏ hàng của bạn đang trống!</p>
                                     </div>
                                 </td>
                             </tr>
@@ -856,11 +856,11 @@ if (!empty($cartItems) && $couponInput !== '') {
                             <tr class="cart-item-row">
                                 
                                 <td class="cart-remove-cell">
-                                    <button class="btn btn-sm btn-danger btn-remove" data-id="<?= $item['cart_id'] ?>"><i class="fa-solid fa-trash-can"></i>ï¸</button>
+                                    <button class="btn btn-sm btn-danger btn-remove" data-id="<?= $item['cart_id'] ?>"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                                 
                                 <td class="cart-image-cell">
-                                    <img src="<?= buildImageUrl($item['hinh_anh']) ?>" width="70" alt="BÃ¡nh">
+                                    <img src="<?= buildImageUrl($item['hinh_anh']) ?>" width="70" alt="Bánh">
                                 </td>
                                 
                                 <td class="cart-product-cell" data-label="Tên bánh">
@@ -871,7 +871,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                                     <span class="cart-price-text"><?= number_format($item['gia'], 0, ',', '.') ?> VNĐ</span>
                                 </td>
                                 
-                                <td class="cart-qty-cell" data-label="Sá»‘ lÆ°á»£ng">
+                                <td class="cart-qty-cell" data-label="Số lượng">
                                     <div class="d-flex justify-content-center align-items-center gap-2">
                                         <button class="btn btn-sm btn-outline-secondary qty-btn btn-decrease" data-id="<?= $item['cart_id'] ?>">âˆ’</button>
                                         <span class="fw-bold" style="min-width:20px;"><?= $item['quantity'] ?></span>
@@ -899,13 +899,13 @@ if (!empty($cartItems) && $couponInput !== '') {
                                 type="text"
                                 name="coupon"
                                 class="form-control text-uppercase"
-                                placeholder="Nháº­p mÃ£ giáº£m giÃ¡"
+                                placeholder="Nhập mã giảm giá"
                                 value="<?= htmlspecialchars($couponInput) ?>"
                                 maxlength="30"
                             >
-                            <button class="btn btn-outline-secondary" type="submit">Ãp dá»¥ng</button>
+                            <button class="btn btn-outline-secondary" type="submit">Áp dụng</button>
                             <?php if ($couponInput !== ''): ?>
-                                <a class="btn btn-outline-danger" href="/cakev0/pages/cart.php">XÃ³a mÃ£</a>
+                                <a class="btn btn-outline-danger" href="/cakev0/pages/cart.php">Xóa mã</a>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -922,34 +922,34 @@ if (!empty($cartItems) && $couponInput !== '') {
                 </div>
                 <div class="col-md-6">
                     <div class="summary-box">
-                        <h5><i class="fa-solid fa-money-bills" style="color: #000000;"></i> Tá»•ng giá» hÃ ng</h5>
+                        <h5><i class="fa-solid fa-money-bills" style="color: #000000;"></i> Tổng giỏ hàng</h5>
                         <table class="table mb-3">
                             <tr>
-                                <td>Táº¡m tÃ­nh</td>
-                                <td class="text-end"><?= number_format($subtotal, 0, ',', '.') ?> VNÄ</td>
+                                <td>Tạm tính</td>
+                                <td class="text-end"><?= number_format($subtotal, 0, ',', '.') ?> VNĐ</td>
                             </tr>
                             <?php if ($discountAmount > 0 && $appliedCoupon): ?>
                                 <tr>
                                     <td>
-                                        Giáº£m giÃ¡ (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= rtrim(rtrim(number_format($discountPercentApplied, 2, '.', ''), '0'), '.') ?>%)
+                                        Giảm giá (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= rtrim(rtrim(number_format($discountPercentApplied, 2, '.', ''), '0'), '.') ?>%)
                                     </td>
-                                    <td class="text-end text-success">-<?= number_format($discountAmount, 0, ',', '.') ?> VNÄ</td>
+                                    <td class="text-end text-success">-<?= number_format($discountAmount, 0, ',', '.') ?> VNĐ</td>
                                 </tr>
                             <?php endif; ?>
                             <tr class="fw-bold">
-                                <td>Tá»•ng cá»™ng</td>
-                                <td class="text-end text-danger"><?= number_format($grandTotal, 0, ',', '.') ?> VNÄ</td>
+                                <td>Tổng cộng</td>
+                                <td class="text-end text-danger"><?= number_format($grandTotal, 0, ',', '.') ?> VNĐ</td>
                             </tr>
                         </table>
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i> Cáº­p nháº­t</button>
+                            <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i> Cập nhật</button>
                             <?php
                                 $checkoutUrl = '/cakev0/pages/checkout.php';
                                 if ($appliedCoupon) {
                                     $checkoutUrl .= '?coupon=' . urlencode((string) $appliedCoupon['code']);
                                 }
                             ?>
-                            <a href="<?= htmlspecialchars($checkoutUrl) ?>" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toÃ¡n</a>
+                            <a href="<?= htmlspecialchars($checkoutUrl) ?>" class="btn checkout-btn text-white px-4"><i class="fa-regular fa-credit-card" style="color: #ffffff;"></i> Thanh toán</a>
                         </div>
                     </div>
                 </div>
@@ -984,12 +984,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 setTimeout(() => location.reload(), 600);
             } else {
-                window.showToast('CÃ³ lá»—i xáº£y ra!', 'error');
+                window.showToast('Có lỗi xảy ra!', 'error');
             }
         })
         .catch(err => {
             console.error(err);
-            window.showToast('Lá»—i káº¿t ná»‘i server', 'error');
+            window.showToast('Lỗi kết nối server', 'error');
         })
         .finally(() => {
             document.body.style.cursor = 'default';
@@ -1004,12 +1004,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentQty < 5) {
             ajaxCart('increase', btn.dataset.id);
         } else {
-            let addQty = prompt('Nháº­p sá»‘ lÆ°á»£ng muá»‘n thÃªm:', '1');
+            let addQty = prompt('Nhập số lượng muốn thêm:', '1');
             if (addQty === null) return;
 
             addQty = parseInt(addQty);
             if (isNaN(addQty) || addQty <= 0) {
-                window.showToast('Sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡', 'error');
+                window.showToast('Số lượng không hợp lệ', 'error');
                 return;
             }
 
@@ -1028,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.showToast(d.message, 'success');
                 }
                 if (!d.success) {
-                    window.showToast('Lá»—i cáº­p nháº­t sá»‘ lÆ°á»£ng', 'error');
+                    window.showToast('Lỗi cập nhật số lượng', 'error');
                     location.reload();
                 }
             });
@@ -1044,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.btn-remove').forEach(btn => {
         btn.addEventListener('click', () => {
-            window.showConfirm('Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a sáº£n pháº©m nÃ y?').then(ok => { if (!ok) return; ajaxCart('remove', btn.dataset.id); })
+            window.showConfirm('Bạn có chắc chắn muốn xóa sản phẩm này?').then(ok => { if (!ok) return; ajaxCart('remove', btn.dataset.id); })
         });
     });
 });

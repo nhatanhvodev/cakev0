@@ -571,7 +571,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php foreach ($cart as $item): ?>
                 <li class="order-item">
                     <span><span class="order-dot"></span><?= htmlspecialchars($item['ten_banh']) ?> <small>x<?= $item['quantity'] ?></small></span>
-                    <span><?= number_format($item['gia'] * $item['quantity'], 0, ',', '.') ?>đ</span>
+                    <span><?= number_format($item['gia'] * $item['quantity'], 0, ',', '.') ?> VNĐ</span>
                 </li>
                 <?php endforeach; ?>
             </ul>

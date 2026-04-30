@@ -510,9 +510,9 @@ body {
                         </a>
                         <p class="favorite-price">
                             <?php if (!empty($item['gia_khuyen_mai'])): ?>
-                                <del><?= number_format($item['gia'], 0, ',', '.') ?>đ</del>
+                                <del><?= number_format($item['gia'], 0, ',', '.') ?> VNĐ</del>
                             <?php endif; ?>
-                            <span class="current"><?= number_format($price, 0, ',', '.') ?>đ</span>
+                            <span class="current"><?= number_format($price, 0, ',', '.') ?> VNĐ</span>
                             <?php if ($discountPercent !== null): ?>
                                 <span class="discount-rate">-<?= $discountPercent ?>%</span>
                             <?php endif; ?>

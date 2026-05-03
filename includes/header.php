@@ -1130,10 +1130,10 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     <div class="cate-panel-col cate-panel-social">
       <div class="cate-panel-title">Liên hệ với chúng tôi</div>
       <div class="cate-panel-social-links">
-        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="#" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a>
-        <a href="#" aria-label="Tiktok"><i class="fa-brands fa-tiktok"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://www.facebook.com/nhatanhismee" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="https://www.facebook.com/nhatanhismee" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://www.facebook.com/nhatanhismee" aria-label="Tiktok"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://www.facebook.com/nhatanhismee" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
       </div>
     </div>
   </div>

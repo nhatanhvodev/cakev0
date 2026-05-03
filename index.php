@@ -722,13 +722,15 @@ $reviews    = ($res_review) ? $res_review->fetch_all(MYSQLI_ASSOC) : [];
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 112px;
+            min-width: 132px;
             padding: 10px 16px;
             border-radius: 999px;
             background: #4a1d1f;
             color: #fbedcd;
             font-size: 14px;
             font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
 

@@ -914,7 +914,7 @@ if (!empty($cartItems) && $couponInput !== '') {
                                 
                                 <td class="cart-qty-cell" data-label="Số lượng">
                                     <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <button class="btn btn-sm btn-outline-secondary qty-btn btn-decrease" data-id="<?= $item['cart_id'] ?>">âˆ’</button>
+                                        <button class="btn btn-sm btn-outline-secondary qty-btn btn-decrease" data-id="<?= $item['cart_id'] ?>">-</button>
                                         <span class="fw-bold" style="min-width:20px;"><?= $item['quantity'] ?></span>
                                         <button class="btn btn-sm btn-outline-secondary qty-btn btn-increase" data-id="<?= $item['cart_id'] ?>">+</button>
 

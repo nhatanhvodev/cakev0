@@ -894,12 +894,30 @@ filterButtons.forEach((btn) => {
 
 function addDetailToCart(id, name, price, imgUrl) {
     const qty = Math.max(1, parseInt(document.getElementById('detailQty').value || '1'));
+    const goLogin = () => {
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+        setTimeout(() => {
+            window.location.href = `/cakev0/pages/login.php?redirect=${redirect}`;
+        }, 500);
+    };
+
     fetch('/cakev0/pages/cart.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `action=add&banh_id=${id}&qty=${qty}`
     })
-    .then(r => r.json())
+    .then(async (r) => {
+        const raw = await r.text();
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            const looksLikeLoginRedirect = r.redirected || /login\.php/i.test(r.url || '') || /<html|<!doctype/i.test(raw);
+            if (looksLikeLoginRedirect) {
+                return { success: false, require_login: true, message: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.' };
+            }
+            return { success: false, message: 'Không thêm được, vui lòng thử lại!' };
+        }
+    })
     .then(d => {
         if (d.success) {
             if (window.showToast) {
@@ -913,17 +931,15 @@ function addDetailToCart(id, name, price, imgUrl) {
         } else if (window.showToast) {
             window.showToast(d.message || 'Không thêm được, vui lòng thử lại!', 'error');
             if (d.require_login) {
-                const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-                setTimeout(() => {
-                    window.location.href = `/cakev0/pages/login.php?redirect=${redirect}`;
-                }, 500);
+                goLogin();
             }
         }
     })
     .catch(() => {
         if (window.showToast) {
-            window.showToast('Lỗi kết nối máy chủ!', 'error');
+            window.showToast('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.', 'error');
         }
+        goLogin();
     });
 }
 

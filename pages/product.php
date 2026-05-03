@@ -785,7 +785,7 @@ function addCartQuick(productId) {
         } catch (e) {
             const looksLikeLoginRedirect = r.redirected || /login\.php/i.test(r.url || '') || /<html|<!doctype/i.test(raw);
             if (looksLikeLoginRedirect) {
-                return { success: false, require_login: true, message: 'Vui lòng đăng nhập để tiếp tục.' };
+                return { success: false, require_login: true, message: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.' };
             }
             return { success: false, message: 'Không thêm được, vui lòng thử lại!' };
         }
@@ -799,7 +799,7 @@ function addCartQuick(productId) {
             }
         } else {
             if (d.require_login) {
-                window.showToast('Vui lòng đăng nhập để tiếp tục.', 'error');
+                window.showToast('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.', 'error');
                 goLogin();
                 return;
             }
@@ -807,7 +807,7 @@ function addCartQuick(productId) {
         }
     })
     .catch(() => {
-        window.showToast('Vui lòng đăng nhập để tiếp tục.', 'error');
+        window.showToast('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.', 'error');
         goLogin();
     });
 }

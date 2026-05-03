@@ -1,7 +1,7 @@
 <?php
 
-session_start();
 ob_start();
+session_start();
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $pageTitle = 'Giỏ hàng';
 
@@ -14,7 +14,7 @@ if (!isset($_SESSION['user_id'])) {
         echo json_encode([
             'success' => false,
             'require_login' => true,
-            'message' => 'Đăng nhập để tiếp tục.'
+            'message' => 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.'
         ]);
         exit;
     }
@@ -23,21 +23,33 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = (int)$_SESSION['user_id'];
 
-ensureCartCouponInfrastructure($conn);
-
 if (isset($_POST['action'])) {
     ob_clean();
-    header('Content-Type: application/json');
+    header('Content-Type: application/json; charset=UTF-8');
+
+    $respondJson = static function (array $payload): void {
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+        exit;
+    };
+
+    $databaseErrorMessage = static function (string $fallback) use ($conn): string {
+        if (function_exists('env_bool') && env_bool('APP_DEBUG', false) && !empty($conn->error)) {
+            return $fallback . ': ' . $conn->error;
+        }
+        return $fallback;
+    };
 
     $action = $_POST['action'];
 
     if ($action === 'add') {
-        $banh_id = (int)$_POST['banh_id'];
+        $banh_id = (int)($_POST['banh_id'] ?? 0);
         $qty = max(1, (int)($_POST['qty'] ?? 1));
 
         if ($banh_id <= 0) {
-            echo json_encode(['success' => false]);
-            exit;
+            $respondJson([
+                'success' => false,
+                'message' => 'Sản phẩm không hợp lệ.'
+            ]);
         }
 
         $check = $conn->query("
@@ -45,23 +57,50 @@ if (isset($_POST['action'])) {
             WHERE user_id = $user_id AND banh_id = $banh_id
         ");
 
+        if (!$check) {
+            $respondJson([
+                'success' => false,
+                'message' => $databaseErrorMessage('Không thêm được vào giỏ hàng')
+            ]);
+        }
+
         $is_new = ($check->num_rows === 0);
 
         if (!$is_new) {
-            $conn->query("
+            $updated = $conn->query("
                 UPDATE cart 
                 SET quantity = quantity + $qty
                 WHERE user_id = $user_id AND banh_id = $banh_id
             ");
+            if (!$updated) {
+                $respondJson([
+                    'success' => false,
+                    'message' => $databaseErrorMessage('Không thêm được vào giỏ hàng')
+                ]);
+            }
         } else {
-            $conn->query("
+            $inserted = $conn->query("
                 INSERT INTO cart (user_id, banh_id, quantity)
                 VALUES ($user_id, $banh_id, $qty)
             ");
+            if (!$inserted) {
+                $respondJson([
+                    'success' => false,
+                    'message' => $databaseErrorMessage('Không thêm được vào giỏ hàng')
+                ]);
+            }
         }
 
         // Đếm lại số loại sản phẩm (số dòng) trong giỏ
         $countRes = $conn->query("SELECT COUNT(*) as cnt FROM cart WHERE user_id = $user_id");
+        if (!$countRes) {
+            $respondJson([
+                'success' => true,
+                'is_new' => $is_new,
+                'cart_count' => 0,
+                'message' => $is_new ? 'Đã thêm sản phẩm vào giỏ hàng.' : 'Đã tăng số lượng trong giỏ.'
+            ]);
+        }
         $cartCount = (int)($countRes->fetch_assoc()['cnt'] ?? 0);
 
         $msg = $is_new ? 'Đã thêm sản phẩm vào giỏ hàng.' : 'Đã tăng số lượng trong giỏ.';
@@ -132,6 +171,8 @@ if ($action === 'add_custom') {
     echo json_encode(['success' => true, 'message' => $actionMessages[$action] ?? 'Đã cập nhật giỏ hàng.']);
     exit;
 }
+
+ensureCartCouponInfrastructure($conn);
 
 function buildImageUrl($path) {
     $fallback = '/cakev0/assets/img/no-image.jpg';

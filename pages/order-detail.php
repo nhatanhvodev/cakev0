@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config/connect.php';
+require_once '../includes/order_helpers.php';
 if ($conn->connect_error) die("Lỗi DB");
 
 if (!isset($_SESSION['user_id'])) {
@@ -107,6 +108,7 @@ $statusLabel = match ($status) {
 $allowedReviewStatuses = ['completed'];
 $editableOrderStatuses = ['pending', 'cod_not_deposited', 'cod_deposited', 'paid', 'approved'];
 $canEditOrderInfo = in_array($status, $editableOrderStatuses, true);
+$canCancelOrder = canCustomerCancelOrder((string) ($order['payment_method'] ?? ''), (string) ($order['status'] ?? ''));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_info'])) {
     if (!$canEditOrderInfo) {
@@ -147,17 +149,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_info']))
 
 // --- HỦY ĐƠN HÀNG (CHỈ KHI ĐANG CHỜ) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order'])) {
-    $stmt = $conn->prepare(
-        "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'cod_not_deposited')"
-    );
-    $stmt->bind_param('ii', $order_id, $user_id);
-    $stmt->execute();
-    if ($stmt->affected_rows > 0) {
-        $_SESSION['review_flash'] = 'Đã hủy đơn hàng thành công.';
+    if (!$canCancelOrder) {
+        $_SESSION['review_flash'] = 'Chỉ có thể hủy đơn COD khi đơn còn chờ duyệt.';
     } else {
-        $_SESSION['review_flash'] = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';
+        $paymentMethod = (string) ($order['payment_method'] ?? '');
+        $stmt = $conn->prepare(
+            "UPDATE orders SET status = 'cancelled'
+             WHERE id = ? AND user_id = ? AND payment_method = ? AND LOWER(status) IN ('pending', 'cod_not_deposited')"
+        );
+        $stmt->bind_param('iis', $order_id, $user_id, $paymentMethod);
+        $stmt->execute();
+        if ($stmt->affected_rows > 0) {
+            $_SESSION['review_flash'] = 'Đã hủy đơn hàng thành công.';
+        } else {
+            $_SESSION['review_flash'] = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';
+        }
+        $stmt->close();
     }
-    $stmt->close();
     header("Location: order-detail.php?id={$order_id}");
     exit;
 }
@@ -768,7 +776,7 @@ body {
                     <i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa thông tin
                 </button>
             <?php endif; ?>
-            <?php if (in_array($status, ['pending', 'cod_not_deposited'], true)): ?>
+            <?php if ($canCancelOrder): ?>
                 <button type="button" id="cancelOrderBtn" class="btn btn-outline-danger btn-pill">
                     <i class="fa-regular fa-circle-xmark"></i> Hủy đơn
                 </button>

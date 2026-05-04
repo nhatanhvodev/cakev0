@@ -6,8 +6,17 @@ session_start();
 // 1. Kết nối Database
 require_once '../config/connect.php';
 require_once '../config/coupons.php';
+require_once '../includes/checkout_helpers.php';
 $pageTitle = 'Thanh toán';
 $extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
+
+if (!headers_sent()) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
+    header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
+}
+
 // 2. Bảo mật: CSRF Token
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -88,8 +97,10 @@ if ($couponInput !== '') {
 // 6. XỬ LÝ KHI NGƯỜI DÙNG BẤM "THANH TOÁN" (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check CSRF
-    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        die("Lỗi bảo mật: CSRF Token không hợp lệ.");
+    if (isCheckoutCsrfInvalid($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+        $_SESSION['toast'] = ['msg' => 'Trang thanh toán đã hết hạn. Vui lòng thử lại từ trang hiện tại.', 'type' => 'error'];
+        header('Location: ' . buildCheckoutRedirectUrl($couponInput));
+        exit;
     }
 
     $name    = trim($_POST['recipient_name']);
@@ -196,11 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Exception $e) {
             $conn->rollback(); // Hoàn tác nếu lỗi
             $_SESSION['toast'] = ['msg' => 'Lỗi hệ thống, vui lòng thử lại!', 'type' => 'error'];
-            $redirectUrl = '/cakev0/pages/checkout.php';
-            if ($couponInput !== '') {
-                $redirectUrl .= '?coupon=' . urlencode($couponInput);
-            }
-            header('Location: ' . $redirectUrl);
+            header('Location: ' . buildCheckoutRedirectUrl($couponInput));
             exit;
         }
     }

@@ -9,6 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once '../config/config.php';
 require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
+require_once '../includes/order_helpers.php';
 //
 $conn->set_charset("utf8mb4"); //
 
@@ -30,6 +31,10 @@ $success = '';
 if (isset($_SESSION['success'])) {
     $success = $_SESSION['success'];
     unset($_SESSION['success']); //
+}
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
 }
 
 function resolveAvatarUrl(?string $avatar): string
@@ -483,20 +488,33 @@ if (isset($_POST['change_password'])) {
 if (isset($_POST['cancel_order'])) {
     $orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
     if ($orderId <= 0) {
-        $_SESSION['success'] = '';
-        $error = 'Đơn hàng không hợp lệ.';
+        $_SESSION['error'] = 'Đơn hàng không hợp lệ.';
     } else {
         $stmt = $conn->prepare(
-            "UPDATE orders SET status = 'cancelled' WHERE id = ? AND user_id = ? AND LOWER(status) IN ('pending', 'cod_not_deposited')"
+            "SELECT status, payment_method FROM orders WHERE id = ? AND user_id = ? LIMIT 1"
         );
         $stmt->bind_param('ii', $orderId, $user_id);
         $stmt->execute();
-        if ($stmt->affected_rows > 0) {
-            $_SESSION['success'] = 'Đã hủy đơn hàng thành công.';
-        } else {
-            $error = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';
-        }
+        $cancelOrder = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        if (!$cancelOrder || !canCustomerCancelOrder((string) ($cancelOrder['payment_method'] ?? ''), (string) ($cancelOrder['status'] ?? ''))) {
+            $_SESSION['error'] = 'Chỉ có thể hủy đơn COD khi đơn còn chờ duyệt.';
+        } else {
+            $paymentMethod = (string) $cancelOrder['payment_method'];
+            $stmt = $conn->prepare(
+                "UPDATE orders SET status = 'cancelled'
+                 WHERE id = ? AND user_id = ? AND payment_method = ? AND LOWER(status) IN ('pending', 'cod_not_deposited')"
+            );
+            $stmt->bind_param('iis', $orderId, $user_id, $paymentMethod);
+            $stmt->execute();
+            if ($stmt->affected_rows > 0) {
+                $_SESSION['success'] = 'Đã hủy đơn hàng thành công.';
+            } else {
+                $_SESSION['error'] = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';
+            }
+            $stmt->close();
+        }
     }
     header('Location: account.php');
     exit;
@@ -507,7 +525,7 @@ if (isset($_POST['cancel_order'])) {
    ================================================================================= */
 
 // 1. Lấy Lịch sử đơn hàng
-$stmt = $conn->prepare("SELECT id, total_amount, status, created_at FROM orders WHERE user_id=? ORDER BY created_at DESC"); //
+$stmt = $conn->prepare("SELECT id, total_amount, payment_method, status, created_at FROM orders WHERE user_id=? ORDER BY created_at DESC"); //
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -1092,7 +1110,7 @@ foreach ($orders as $order) {
                                                     <td data-label="Thao tác" class="order-action-cell">
                                                         <a href="/cakev0/pages/order-detail.php?id=<?= $o['id'] ?>"
                                                             class="btn btn-sm btn-outline-primary">Xem</a>
-                                                        <?php if (in_array(strtolower($o['status']), ['pending', 'cod_not_deposited'], true)): ?>
+                                                        <?php if (canCustomerCancelOrder((string) ($o['payment_method'] ?? ''), (string) $o['status'])): ?>
                                                             <button type="button"
                                                                 class="btn btn-sm btn-outline-danger cancel-order-btn"
                                                                 data-order-id="<?= $o['id'] ?>">

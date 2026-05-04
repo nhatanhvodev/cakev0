@@ -23,3 +23,12 @@ if (!function_exists('buildCheckoutRedirectUrl')) {
         return $redirectUrl;
     }
 }
+
+if (!function_exists('shouldClearCartAfterOrderPlacement')) {
+    function shouldClearCartAfterOrderPlacement(?string $paymentMethod): bool
+    {
+        $paymentMethod = trim((string) $paymentMethod);
+
+        return in_array($paymentMethod, ['Tiền mặt', 'Chuyển khoản'], true);
+    }
+}

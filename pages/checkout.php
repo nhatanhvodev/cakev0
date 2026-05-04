@@ -130,8 +130,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_item->execute();
             }
 
-            // C. Chỉ xóa giỏ hàng ngay với COD
-            if ($payment === 'Tiền mặt') {
+            // C. Xóa giỏ hàng ngay với COD và chuyển khoản thủ công
+            if (shouldClearCartAfterOrderPlacement($payment)) {
                 $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
                 $stmt_clear->bind_param("i", $user_id);
                 $stmt_clear->execute();
@@ -452,9 +452,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .qr-box img {
+            display: block;
             max-width: 180px;
             border-radius: 12px;
-            margin-top: 10px;
+            margin: 10px auto 0;
         }
 
         @media (max-width: 900px) {

@@ -64,3 +64,5 @@ services:
         value: "300"
       - key: MAIL_FORCE_IPV4
         value: "true"
+      - key: MAIL_DEBUG
+        value: "false"

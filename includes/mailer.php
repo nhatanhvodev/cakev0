@@ -59,6 +59,26 @@ function mail_resolve_smtp_host(string $host): string {
     return $host;
 }
 
+function mail_debug_enabled(): bool {
+    return env_bool('MAIL_DEBUG', false);
+}
+
+function mail_log_connection_context(string $smtpHost, string $resolvedHost, int $port, int $timeout): void {
+    if (!mail_debug_enabled()) {
+        return;
+    }
+
+    error_log(sprintf(
+        'Mailer Debug: host=%s resolvedHost=%s port=%d timeout=%d forceIpv4=%s encryption=%s',
+        $smtpHost,
+        $resolvedHost,
+        $port,
+        $timeout,
+        mail_force_ipv4_enabled() ? 'true' : 'false',
+        (string) env_value('MAIL_ENCRYPTION', 'tls')
+    ));
+}
+
 function mail_html_to_text(string $html): string {
     $withBreaks = preg_replace('/<br\s*\/?>/i', "\n", $html);
     $withBlocks = preg_replace('/<\/(p|div|h[1-6]|li|tr)>/i', "\n", $withBreaks ?? $html);
@@ -109,6 +129,7 @@ function send_custom_mail($to, $subject, $body, $fromName = null) {
         $mail->Port       = (int) env_value('MAIL_PORT', 587);
         $mail->Timeout    = mail_timeout_seconds();
         $mail->CharSet    = 'UTF-8';
+        mail_log_connection_context($smtpHost, $mail->Host, $mail->Port, $mail->Timeout);
         if ($mail->Host !== $smtpHost) {
             $mail->SMTPOptions = [
                 'ssl' => [

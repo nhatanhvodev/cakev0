@@ -40,6 +40,7 @@ services:
       - MAIL_FROM_NAME=${MAIL_FROM_NAME:-Gau Bakery}
       - MAIL_TIMEOUT=${MAIL_TIMEOUT:-300}
       - MAIL_FORCE_IPV4=${MAIL_FORCE_IPV4:-true}
+      - MAIL_DEBUG=${MAIL_DEBUG:-false}
     depends_on:
       db:
         condition: service_healthy

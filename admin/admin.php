@@ -1331,7 +1331,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
         #userOrdersBody {
             min-width: 0;
             min-height: 0;
-            overflow: auto;
+            overflow-y: auto;
+            overflow-x: hidden;
             padding-right: 4px;
             scrollbar-gutter: stable;
         }
@@ -1376,6 +1377,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
         .user-orders-table {
             width: 100%;
+            min-width: 0;
+            table-layout: fixed;
             border-collapse: collapse;
             margin-top: 10px;
         }
@@ -1385,6 +1388,37 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             padding: 10px 12px;
             border-bottom: 1px solid #f0e6d7;
             font-size: 14px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            vertical-align: middle;
+        }
+
+        .user-orders-table th:nth-child(1),
+        .user-orders-table td:nth-child(1) {
+            width: 72px;
+        }
+
+        .user-orders-table th:nth-child(2),
+        .user-orders-table td:nth-child(2) {
+            width: 155px;
+        }
+
+        .user-orders-table th:nth-child(3),
+        .user-orders-table td:nth-child(3) {
+            width: 118px;
+        }
+
+        .user-orders-table th:nth-child(5),
+        .user-orders-table td:nth-child(5) {
+            width: 92px;
+            text-align: right;
+            overflow-wrap: normal;
+        }
+
+        .user-orders-table .user-order-detail-btn {
+            width: 76px;
+            padding-left: 0;
+            padding-right: 0;
         }
 
         .user-orders-empty {

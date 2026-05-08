@@ -46,3 +46,19 @@ services:
         sync: false
       - key: UPLOADTHING_APP_ID
         sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Gau Bakery
+      - key: MAIL_TIMEOUT
+        value: "10"

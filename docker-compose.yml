@@ -31,6 +31,14 @@ services:
       - VNPAY_TRANSACTION_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
       - UPLOADTHING_TOKEN=${UPLOADTHING_TOKEN:-eyJhcGlLZXkiOiJza19saXZlXzY1ODEwZTRlOWZjYWUxMmEyM2MyZGRiYWQ0NWVjNzAyNGQxY2RiY2I4MDJiZTg3MmVlOGE5ZjQzM2VjN2FkZjciLCJhcHBJZCI6Ingyanp1eTUzbnYiLCJyZWdpb25zIjpbInNlYTEiXX0=}
       - UPLOADTHING_APP_ID=${UPLOADTHING_APP_ID:-x2jzuy53nv}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-Gau Bakery}
+      - MAIL_TIMEOUT=${MAIL_TIMEOUT:-10}
     depends_on:
       db:
         condition: service_healthy

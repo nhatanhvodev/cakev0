@@ -49,12 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          <br>
                          <p>Trân trọng,<br><strong>Gấu Bakery Team</strong></p>";
 
-                send_custom_mail($email, $subject, $body);
+                $welcomeMailSent = send_custom_mail($email, $subject, $body);
 
                 // Đăng ký thành công -> Tự động đăng nhập & chuyển hướng
                 $_SESSION['user_id'] = $conn->insert_id;
                 $_SESSION['username'] = $username;
-                $_SESSION['toast'] = ['msg' => 'Đăng ký thành công! Chào mừng bạn đến với Gấu Bakery.', 'type' => 'success'];
+                $_SESSION['toast'] = $welcomeMailSent
+                    ? ['msg' => 'Đăng ký thành công! Email chào mừng đã được gửi.', 'type' => 'success']
+                    : ['msg' => 'Đăng ký thành công, nhưng chưa gửi được email chào mừng. Vui lòng kiểm tra cấu hình email.', 'type' => 'warning'];
                 header("Location: " . base_url('index.php'));
                 exit;
             } else {

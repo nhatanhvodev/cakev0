@@ -307,7 +307,7 @@ if (!$user)
 if (isset($_POST['update_profile'])) {
     $ten = trim($_POST['ten']);
     $email = trim($_POST['email']);
-    $phone = trim($_POST['phone']);
+    $phone = trim((string) ($_POST['phone'] ?? ''));
     $avatar_name = $user['avatar']; // Mặc định giữ ảnh cũ
 
     // Xử lý Upload Ảnh
@@ -1165,7 +1165,7 @@ foreach ($orders as $order) {
                                             <div class="col-md-6">
                                                 <label class="form-label small text-muted">Số điện thoại</label>
                                                 <input type="text" name="phone" class="form-control"
-                                                    value="<?= htmlspecialchars($user['phone']) ?>">
+                                                    value="<?= html_escape($user['phone'] ?? '') ?>">
                                             </div>
                                             <div class="col-md-12">
                                                 <label class="form-label small text-muted">Email</label>

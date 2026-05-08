@@ -36,6 +36,13 @@ if (!defined('BASE_URL')) {
 	define('BASE_URL', APP_BASE_PATH === '' ? '/' : APP_BASE_PATH . '/');
 }
 
+if (!function_exists('html_escape')) {
+	function html_escape($value): string
+	{
+		return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+	}
+}
+
 if (!function_exists('base_url')) {
 	function base_url(string $path = ''): string
 	{

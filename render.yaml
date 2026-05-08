@@ -61,4 +61,4 @@ services:
       - key: MAIL_FROM_NAME
         value: Gau Bakery
       - key: MAIL_TIMEOUT
-        value: "10"
+        value: "300"

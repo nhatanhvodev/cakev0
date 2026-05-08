@@ -38,7 +38,7 @@ services:
       - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME:-Gau Bakery}
-      - MAIL_TIMEOUT=${MAIL_TIMEOUT:-10}
+      - MAIL_TIMEOUT=${MAIL_TIMEOUT:-300}
     depends_on:
       db:
         condition: service_healthy

@@ -20,12 +20,12 @@ function mail_required_config_missing(): array {
 }
 
 function mail_timeout_seconds(): int {
-    $timeout = (int) env_value('MAIL_TIMEOUT', '10');
+    $timeout = (int) env_value('MAIL_TIMEOUT', '300');
     if ($timeout < 1) {
-        return 10;
+        return 300;
     }
 
-    return min($timeout, 60);
+    return min($timeout, 300);
 }
 
 function mail_html_to_text(string $html): string {

@@ -259,6 +259,7 @@ foreach ($reviewRows as $row) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 body {
@@ -502,6 +503,89 @@ body {
     padding: 20px;
     text-align: center;
     animation: zoomIn .3s ease;
+}
+
+.pdf-invoice-source {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 794px;
+    background: #fff;
+    color: #1f1f1f;
+    padding: 42px;
+    font-family: 'Poppins', Arial, sans-serif;
+    pointer-events: none;
+}
+
+.pdf-invoice-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    border-bottom: 2px solid #4a1d1f;
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+}
+
+.pdf-invoice-title {
+    margin: 0;
+    color: #4a1d1f;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.pdf-invoice-meta {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.pdf-invoice-section {
+    margin-bottom: 22px;
+}
+
+.pdf-invoice-section h3 {
+    color: #4a1d1f;
+    font-size: 17px;
+    margin: 0 0 10px;
+}
+
+.pdf-invoice-section p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.pdf-invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.pdf-invoice-table th,
+.pdf-invoice-table td {
+    border-bottom: 1px solid #ead7b8;
+    padding: 12px 8px;
+    text-align: left;
+}
+
+.pdf-invoice-table th {
+    background: #fff7ea;
+    color: #4a1d1f;
+    font-weight: 700;
+}
+
+.pdf-invoice-table .text-end {
+    text-align: right;
+}
+
+.pdf-invoice-total {
+    display: flex;
+    justify-content: flex-end;
+    gap: 22px;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #4a1d1f;
 }
 
 @keyframes zoomIn {
@@ -931,6 +1015,56 @@ body {
 </div>
 </div>
 
+<div id="pdfInvoice" class="pdf-invoice-source" aria-hidden="true">
+    <div class="pdf-invoice-header">
+        <div>
+            <h2 class="pdf-invoice-title">Gấu Bakery</h2>
+            <p class="pdf-invoice-meta">Hóa đơn #<?= $order_id ?></p>
+        </div>
+        <div class="text-end">
+            <p class="pdf-invoice-meta">Ngày đặt</p>
+            <strong><?= date("d/m/Y H:i", strtotime($order['created_at'])) ?></strong>
+        </div>
+    </div>
+
+    <div class="pdf-invoice-section">
+        <h3>Thông tin người nhận</h3>
+        <p><strong>Họ tên:</strong> <?= htmlspecialchars($order['recipient_name']) ?></p>
+        <p><strong>Số điện thoại:</strong> <?= htmlspecialchars($order['phone']) ?></p>
+        <p><strong>Địa chỉ:</strong> <?= htmlspecialchars($order['address']) ?></p>
+        <p><strong>Thanh toán:</strong> <?= htmlspecialchars($order['payment_method']) ?></p>
+        <p><strong>Trạng thái:</strong> <?= $statusLabel ?></p>
+    </div>
+
+    <div class="pdf-invoice-section">
+        <h3>Sản phẩm</h3>
+        <table class="pdf-invoice-table">
+            <thead>
+            <tr>
+                <th>Tên bánh</th>
+                <th class="text-end">Số lượng</th>
+                <th class="text-end">Đơn giá</th>
+                <th class="text-end">Thành tiền</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach($items as $it): ?>
+                <tr>
+                    <td><?= htmlspecialchars($it['ten_banh']) ?></td>
+                    <td class="text-end"><?= (int) $it['quantity'] ?></td>
+                    <td class="text-end"><?= number_format($it['price']) ?> VNĐ</td>
+                    <td class="text-end"><?= number_format($it['price'] * $it['quantity']) ?> VNĐ</td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <div class="pdf-invoice-total">
+            <span>Tổng tiền</span>
+            <span><?= number_format($order['total_amount']) ?> VNĐ</span>
+        </div>
+    </div>
+</div>
+
 <?php include '../includes/footer.html'; ?>
 
 <button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
@@ -1041,18 +1175,38 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-function exportPDF(){
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("Hoa don #<?= $order_id ?>",20,20);
-    doc.text("Nguoi nhan: <?= $order['recipient_name'] ?>",20,30);
-    let y=45;
-    <?php foreach($items as $it): ?>
-        doc.text("<?= $it['ten_banh'] ?> x <?= $it['quantity'] ?>",20,y);
-        doc.text("<?= number_format($it['price']*$it['quantity']) ?> VNĐ",150,y);
-        y+=10;
-    <?php endforeach; ?>
-    doc.text("Tong tien: <?= number_format($order['total_amount']) ?> VNĐ",20,y+10);
+async function exportPDF(){
+    if (!window.jspdf || !window.html2canvas) {
+        alert('Chưa tải xong thư viện xuất PDF, vui lòng thử lại.');
+        return;
+    }
+
+    const invoice = document.getElementById('pdfInvoice');
+    const PdfClass = window.jspdf.jsPDF;
+    const canvas = await html2canvas(invoice, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true
+    });
+
+    const doc = new PdfClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const margin = 10;
+    const imageWidth = pageWidth - margin * 2;
+    const imageHeight = canvas.height * imageWidth / canvas.width;
+    const imageData = canvas.toDataURL('image/png');
+    const pageContentHeight = pageHeight - margin * 2;
+
+    let renderedHeight = 0;
+    while (renderedHeight < imageHeight) {
+        if (renderedHeight > 0) {
+            doc.addPage();
+        }
+        doc.addImage(imageData, 'PNG', margin, margin - renderedHeight, imageWidth, imageHeight);
+        renderedHeight += pageContentHeight;
+    }
+
     doc.save("hoa-don-<?= $order_id ?>.pdf");
 }
 </script>

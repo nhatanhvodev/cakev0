@@ -1313,16 +1313,27 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             max-width: 1200px;
             max-height: 85vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .user-orders-layout {
             display: grid;
             grid-template-columns: 1.1fr 1fr;
             gap: 18px;
-            max-height: 58vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+            height: 58vh;
+            max-height: 620px;
+            min-height: 320px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        #userOrdersBody {
+            min-width: 0;
+            min-height: 0;
+            overflow: auto;
             padding-right: 4px;
+            scrollbar-gutter: stable;
         }
 
         .user-orders-detail {
@@ -1331,6 +1342,10 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             border-radius: 16px;
             padding: 14px;
             min-height: 220px;
+            max-height: 100%;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
+            align-self: stretch;
         }
 
         .user-orders-detail h6 {
@@ -1375,6 +1390,22 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
         .user-orders-empty {
             margin: 12px 0 0;
             color: #6b6b6b;
+        }
+
+        @media (max-width: 900px) {
+            .user-orders-modal-box {
+                max-height: 90vh;
+            }
+
+            .user-orders-layout {
+                grid-template-columns: 1fr;
+                height: 68vh;
+            }
+
+            #userOrdersBody,
+            .user-orders-detail {
+                max-height: 32vh;
+            }
         }
 
         .stat-info h5 {
@@ -3503,6 +3534,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         '<div><strong>Tổng tiền:</strong> ' + Number(detail.total_amount).toLocaleString('vi-VN') + 'đ</div>' +
                         '</div>' +
                         '<div class="user-orders-items">' + itemsHtml + '</div>';
+                    adminOrderDetail.scrollTop = 0;
                 }
 
                 document.querySelectorAll('.order-detail-btn').forEach(function (btn) {
@@ -3591,6 +3623,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         '<div><strong>Tổng tiền:</strong> ' + Number(detail.total_amount).toLocaleString('vi-VN') + 'đ</div>' +
                         '</div>' +
                         '<div class="user-orders-items">' + itemsHtml + '</div>';
+                    userOrdersDetail.scrollTop = 0;
                 }
 
                 function renderUserOrders(orders) {
@@ -3613,10 +3646,17 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     });
                     html += '</tbody></table>';
                     userOrdersBody.innerHTML = html;
+                    userOrdersBody.scrollTop = 0;
 
                     userOrdersBody.querySelectorAll('.user-order-detail-btn').forEach(function (btn) {
                         btn.addEventListener('click', function () {
                             const orderId = btn.dataset.orderId;
+                            userOrdersBody.querySelectorAll('.user-order-detail-btn').forEach(function (item) {
+                                item.classList.remove('btn-primary');
+                                item.classList.add('btn-outline-primary');
+                            });
+                            btn.classList.remove('btn-outline-primary');
+                            btn.classList.add('btn-primary');
                             renderOrderDetail(orderId);
                         });
                     });

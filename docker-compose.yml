@@ -31,6 +31,7 @@ services:
       - VNPAY_TRANSACTION_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
       - UPLOADTHING_TOKEN=${UPLOADTHING_TOKEN:-eyJhcGlLZXkiOiJza19saXZlXzY1ODEwZTRlOWZjYWUxMmEyM2MyZGRiYWQ0NWVjNzAyNGQxY2RiY2I4MDJiZTg3MmVlOGE5ZjQzM2VjN2FkZjciLCJhcHBJZCI6Ingyanp1eTUzbnYiLCJyZWdpb25zIjpbInNlYTEiXX0=}
       - UPLOADTHING_APP_ID=${UPLOADTHING_APP_ID:-x2jzuy53nv}
+      - MAIL_DRIVER=${MAIL_DRIVER:-smtp}
       - MAIL_HOST=${MAIL_HOST:-}
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME:-}
@@ -41,6 +42,10 @@ services:
       - MAIL_TIMEOUT=${MAIL_TIMEOUT:-300}
       - MAIL_FORCE_IPV4=${MAIL_FORCE_IPV4:-true}
       - MAIL_DEBUG=${MAIL_DEBUG:-false}
+      - GMAIL_CLIENT_ID=${GMAIL_CLIENT_ID:-}
+      - GMAIL_CLIENT_SECRET=${GMAIL_CLIENT_SECRET:-}
+      - GMAIL_REFRESH_TOKEN=${GMAIL_REFRESH_TOKEN:-}
+      - GMAIL_USER_ID=${GMAIL_USER_ID:-me}
     depends_on:
       db:
         condition: service_healthy

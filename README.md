@@ -173,6 +173,7 @@ VNPAY_TRANSACTION_API_URL=
 UPLOADTHING_API_KEY=
 UPLOADTHING_APP_ID=
 
+MAIL_DRIVER=smtp
 MAIL_HOST=
 MAIL_PORT=
 MAIL_USERNAME=
@@ -183,7 +184,27 @@ MAIL_FROM_NAME=
 MAIL_TIMEOUT=300
 MAIL_FORCE_IPV4=true
 MAIL_DEBUG=false
+GMAIL_CLIENT_ID=
+GMAIL_CLIENT_SECRET=
+GMAIL_REFRESH_TOKEN=
+GMAIL_USER_ID=me
 ```
+
+### Mail tren Render qua Gmail API
+
+Neu SMTP Gmail tren Render bi timeout o port 587, dung driver HTTP:
+
+```env
+MAIL_DRIVER=gmail_api
+MAIL_FROM_ADDRESS=your-gmail@gmail.com
+MAIL_FROM_NAME=Gau Bakery
+GMAIL_CLIENT_ID=...
+GMAIL_CLIENT_SECRET=...
+GMAIL_REFRESH_TOKEN=...
+GMAIL_USER_ID=me
+```
+
+`MAIL_FROM_ADDRESS` phai la tai khoan Gmail da cap refresh token, hoac mot alias gui mail da duoc Gmail xac minh. Scope OAuth can co quyen gui mail Gmail API (`gmail.send`). SMTP config van duoc giu lai de chay local bang `MAIL_DRIVER=smtp`.
 
 ## Bảo mật hiện có
 

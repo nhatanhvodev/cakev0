@@ -46,8 +46,10 @@ services:
         sync: false
       - key: UPLOADTHING_APP_ID
         sync: false
+      - key: MAIL_DRIVER
+        value: gmail_api
       - key: MAIL_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: MAIL_PORT
         value: "587"
       - key: MAIL_USERNAME
@@ -66,3 +68,11 @@ services:
         value: "true"
       - key: MAIL_DEBUG
         value: "false"
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false
+      - key: GMAIL_USER_ID
+        value: me

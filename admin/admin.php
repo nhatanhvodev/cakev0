@@ -2544,7 +2544,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
 
             <!-- TAB: PASSWORD REQUESTS -->
             <div id="password-requests" class="tab-content"> 
-                <h3 class="mb-4" style="color:#4a1d1f;">Duyet yeu cau doi mat khau</h3>
+                <h3 class="mb-4" style="color:#4a1d1f;">Duyệt yêu cầu đổi mật khẩu</h3>
                 <div class="custom-table">
                     <table>
                         <thead>
@@ -2596,7 +2596,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                 </button>
                                             </form>
                                         <?php else: ?>
-                                            <span class="text-muted">Da xu ly</span>
+                                            <span class="text-muted">Đã xử lý</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

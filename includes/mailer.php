@@ -28,6 +28,37 @@ function mail_timeout_seconds(): int {
     return min($timeout, 300);
 }
 
+function mail_force_ipv4_enabled(): bool {
+    return env_bool('MAIL_FORCE_IPV4', true);
+}
+
+function mail_resolve_smtp_host(string $host): string {
+    if (!mail_force_ipv4_enabled() || filter_var($host, FILTER_VALIDATE_IP)) {
+        return $host;
+    }
+
+    $records = dns_get_record($host, DNS_A);
+    if (is_array($records)) {
+        foreach ($records as $record) {
+            $ip = $record['ip'] ?? null;
+            if (is_string($ip) && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                return $ip;
+            }
+        }
+    }
+
+    $ips = gethostbynamel($host);
+    if (is_array($ips)) {
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                return $ip;
+            }
+        }
+    }
+
+    return $host;
+}
+
 function mail_html_to_text(string $html): string {
     $withBreaks = preg_replace('/<br\s*\/?>/i', "\n", $html);
     $withBlocks = preg_replace('/<\/(p|div|h[1-6]|li|tr)>/i', "\n", $withBreaks ?? $html);
@@ -69,7 +100,8 @@ function send_custom_mail($to, $subject, $body, $fromName = null) {
 
     try {
         $mail->isSMTP();
-        $mail->Host       = env_value('MAIL_HOST', 'smtp.gmail.com');
+        $smtpHost         = env_value('MAIL_HOST', 'smtp.gmail.com');
+        $mail->Host       = mail_resolve_smtp_host($smtpHost);
         $mail->SMTPAuth   = true;
         $mail->Username   = env_value('MAIL_USERNAME');
         $mail->Password   = env_value('MAIL_PASSWORD');
@@ -77,6 +109,13 @@ function send_custom_mail($to, $subject, $body, $fromName = null) {
         $mail->Port       = (int) env_value('MAIL_PORT', 587);
         $mail->Timeout    = mail_timeout_seconds();
         $mail->CharSet    = 'UTF-8';
+        if ($mail->Host !== $smtpHost) {
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'peer_name' => $smtpHost,
+                ],
+            ];
+        }
 
         $defaultFromName = env_value('MAIL_FROM_NAME', 'Gau Bakery');
         $mail->setFrom($fromAddress, $fromName ?? $defaultFromName);

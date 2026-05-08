@@ -62,3 +62,5 @@ services:
         value: Gau Bakery
       - key: MAIL_TIMEOUT
         value: "300"
+      - key: MAIL_FORCE_IPV4
+        value: "true"

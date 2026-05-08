@@ -756,10 +756,25 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         redirectToTab('password-requests');
     }
 
-    if (isset($_GET['delete_contact_id'])) {
-        $id = (int) $_GET['delete_contact_id'];
-        $conn->query("DELETE FROM contact_requests WHERE id=$id");
-        setAdminToast("Đã xóa liên hệ!");
+    if (isset($_POST['delete_contact']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $id = (int) ($_POST['contact_id'] ?? 0);
+        if ($id > 0) {
+            $stmt = $conn->prepare("DELETE FROM contact_requests WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $deleted = $stmt->affected_rows;
+            $stmt->close();
+
+            if ($deleted > 0) {
+                setAdminToast("Đã xóa liên hệ thành công!");
+            } else {
+                setAdminToast("Liên hệ không tồn tại hoặc đã được xóa trước đó.", "warning");
+            }
+        } else {
+            setAdminToast("Liên hệ không hợp lệ.", "error");
+        }
+
+        regenerateCsrfToken();
         redirectToTab('contacts');
     }
 //} // Removed redundant check
@@ -2819,9 +2834,11 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             <i class="bi bi-reply"></i>
                                         </button>
                                         <?php endif; ?>
-                                        <a href="?delete_contact_id=<?= $c['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa liên hệ này?')">
+                                        <button type="button" class="btn btn-sm btn-outline-danger contact-delete-btn"
+                                            data-id="<?= (int) $c['id'] ?>"
+                                            data-name="<?= htmlspecialchars($c['name']) ?>">
                                             <i class="bi bi-trash"></i>
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -3018,6 +3035,19 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('contactReplyModal').classList.remove('is-open')">Hủy</button>
                             <button type="submit" name="reply_contact" class="btn btn-green">Gửi phản hồi</button>
                         </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="contactDeleteModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="contactDeleteTitle">
+                <div class="confirm-modal-box" style="text-align: left; max-width: 460px;">
+                    <div class="confirm-modal-title" id="contactDeleteTitle">Xóa liên hệ?</div>
+                    <p class="confirm-modal-desc" id="contactDeleteDesc">Yêu cầu hỗ trợ này sẽ bị xóa khỏi hệ thống.</p>
+                    <form method="POST" class="confirm-modal-actions mt-4" style="justify-content: flex-end;">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="contact_id" id="deleteContactId">
+                        <button type="button" class="btn btn-outline-secondary" id="contactDeleteCancel">Hủy</button>
+                        <button type="submit" name="delete_contact" class="btn btn-danger">Xóa liên hệ</button>
                     </form>
                 </div>
             </div>
@@ -3653,6 +3683,36 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             editor.setContent('');
                         }
                     });
+                });
+
+                const contactDeleteModal = document.getElementById('contactDeleteModal');
+                const deleteContactId = document.getElementById('deleteContactId');
+                const contactDeleteDesc = document.getElementById('contactDeleteDesc');
+                const contactDeleteCancel = document.getElementById('contactDeleteCancel');
+
+                function closeContactDeleteModal() {
+                    contactDeleteModal.classList.remove('is-open');
+                }
+
+                document.querySelectorAll('.contact-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        deleteContactId.value = btn.dataset.id;
+                        contactDeleteDesc.textContent = `Yêu cầu hỗ trợ của ${btn.dataset.name || 'khách hàng'} sẽ bị xóa khỏi hệ thống.`;
+                        contactDeleteModal.classList.add('is-open');
+                    });
+                });
+
+                contactDeleteCancel.addEventListener('click', closeContactDeleteModal);
+                contactDeleteModal.addEventListener('click', function (event) {
+                    if (event.target === contactDeleteModal) {
+                        closeContactDeleteModal();
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && contactDeleteModal.classList.contains('is-open')) {
+                        closeContactDeleteModal();
+                    }
                 });
 
                 // Ensure TinyMCE saves content before form submit

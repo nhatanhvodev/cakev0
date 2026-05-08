@@ -25,4 +25,17 @@ if ($conn->connect_error) {
 }
 
 $conn->set_charset($charset);
+
+$appTimeZone = new DateTimeZone(date_default_timezone_get());
+$nowInAppTimeZone = new DateTimeImmutable('now', $appTimeZone);
+$offsetSeconds = $appTimeZone->getOffset($nowInAppTimeZone);
+$offsetSign = $offsetSeconds >= 0 ? '+' : '-';
+$offsetSeconds = abs($offsetSeconds);
+$dbTimeZone = sprintf(
+    '%s%02d:%02d',
+    $offsetSign,
+    intdiv($offsetSeconds, 3600),
+    intdiv($offsetSeconds % 3600, 60)
+);
+$conn->query("SET time_zone = '{$dbTimeZone}'");
 ?>

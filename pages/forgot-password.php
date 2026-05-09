@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message_class = 'error';
     } else {
         $email_or_username = trim($_POST['email_or_username'] ?? '');
-        $new_password_raw = trim($_POST['new_password'] ?? '');
-        $confirm_password = trim($_POST['confirm_password'] ?? '');
+        $new_password_raw = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
 
         if ($email_or_username === '' || $new_password_raw === '' || $confirm_password === '') {
             $message = 'Vui lòng nhập đầy đủ thông tin.';

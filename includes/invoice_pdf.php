@@ -71,6 +71,7 @@ function render_invoice_html(array $order, array $items): string
     $couponDiscount = (float) ($order['coupon_discount'] ?? 0);
     $totalAmount = (float) ($order['total_amount'] ?? 0);
     $subtotalAmount = calculate_invoice_subtotal($items);
+
     if (($couponCode !== '' || $couponDiscount > 0) && $couponDiscount <= 0 && $subtotalAmount > $totalAmount) {
         $couponDiscount = max(0.0, $subtotalAmount - $totalAmount);
     }
@@ -100,15 +101,24 @@ function render_invoice_html(array $order, array $items): string
         $rowsHtml = '<tr><td colspan="5" class="empty">Kh&#244;ng c&#243; s&#7843;n ph&#7849;m.</td></tr>';
     }
 
-    $couponHtml = '';
+    $summaryRowsHtml = sprintf(
+        '<tr><td>T&#7841;m t&#237;nh</td><td class="text-right">%s VN&#272;</td></tr>',
+        $formattedSubtotalAmount
+    );
+
     if ($couponCode !== '' || $couponDiscount > 0) {
         $couponLabel = htmlspecialchars($couponCode !== '' ? $couponCode : 'Khuy&#7871;n m&#227;i', ENT_QUOTES, 'UTF-8');
-        $couponHtml = sprintf(
-            '<div class="summary-row"><span>M&#227; gi&#7843;m gi&#225;</span><span>%s</span></div><div class="summary-row discount"><span>Gi&#7843;m gi&#225;</span><span>-%s VN&#272;</span></div>',
+        $summaryRowsHtml .= sprintf(
+            '<tr><td>M&#227; gi&#7843;m gi&#225;</td><td class="text-right">%s</td></tr><tr class="discount-row"><td>Gi&#7843;m gi&#225;</td><td class="text-right">-%s VN&#272;</td></tr>',
             $couponLabel,
             format_invoice_money($couponDiscount)
         );
     }
+
+    $summaryRowsHtml .= sprintf(
+        '<tr class="summary-total"><td>T&#7893;ng c&#7897;ng</td><td class="text-right">%s VN&#272;</td></tr>',
+        $formattedTotalAmount
+    );
 
     return <<<HTML
 <!DOCTYPE html>
@@ -164,27 +174,20 @@ function render_invoice_html(array $order, array $items): string
             text-align: center;
             color: #666;
         }
-        .summary {
+        .summary-table {
+            width: 280px;
             margin-top: 16px;
             margin-left: auto;
-            width: 280px;
+            border-collapse: collapse;
         }
-        .summary-row {
-            display: block;
-            margin-bottom: 6px;
-            overflow: hidden;
+        .summary-table td {
+            padding: 6px 0;
+            vertical-align: top;
         }
-        .summary-row span:first-child {
-            float: left;
-        }
-        .summary-row span:last-child {
-            float: right;
-        }
-        .summary-row.discount {
+        .summary-table .discount-row {
             color: #0a7a3d;
         }
-        .summary-total {
-            margin-top: 10px;
+        .summary-table .summary-total td {
             padding-top: 10px;
             border-top: 1px solid #d7d7d7;
             font-size: 15px;
@@ -239,17 +242,9 @@ function render_invoice_html(array $order, array $items): string
         </table>
     </div>
 
-    <div class="summary">
-        <div class="summary-row">
-            <span>T&#7841;m t&#237;nh</span>
-            <span>{$formattedSubtotalAmount} VN&#272;</span>
-        </div>
-        {$couponHtml}
-        <div class="summary-row summary-total">
-            <span>T&#7893;ng c&#7897;ng</span>
-            <span>{$formattedTotalAmount} VN&#272;</span>
-        </div>
-    </div>
+    <table class="summary-table">
+        {$summaryRowsHtml}
+    </table>
 </body>
 </html>
 HTML;

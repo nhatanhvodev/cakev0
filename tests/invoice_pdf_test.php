@@ -42,8 +42,10 @@ assert_true(str_contains($html, 'Banh Tiramisu'), 'invoice HTML should show prod
 assert_true(str_contains($html, '185.000'), 'invoice HTML should show total amount');
 assert_true(str_contains($html, 'SAVE10'), 'invoice HTML should show coupon code when present');
 assert_true(str_contains($html, '200.000'), 'invoice HTML should show subtotal amount');
+assert_true(str_contains($html, 'T&#7841;m t&#237;nh'), 'invoice HTML should show subtotal label');
 assert_true(str_contains($html, 'M&#227; gi&#7843;m gi&#225;'), 'invoice HTML should show coupon label');
 assert_true(str_contains($html, 'Gi&#7843;m gi&#225;'), 'invoice HTML should show discount label');
+assert_true(str_contains($html, 'T&#7893;ng c&#7897;ng'), 'invoice HTML should show total label');
 
 $fallbackCouponHtml = render_invoice_html($fallbackCouponOrder, $items);
 assert_true(str_contains($fallbackCouponHtml, '30.000'), 'invoice HTML should infer coupon discount from subtotal when coupon metadata exists');

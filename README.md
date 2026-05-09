@@ -212,6 +212,8 @@ Các cơ chế bảo mật đang có trong codebase:
 
 - Dang ky tai khoan chi hoan tat sau khi nguoi dung bam lien ket xac minh email trong vong 24 gio.
 - Mat khau dang ky phai co it nhat 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet.
+- Hoa don PDF duoc gui qua email sau khi don VNPAY thanh toan thanh cong hoac khi admin xac nhan don COD.
+- Moi don chi tu dong gui hoa don mot lan, duoc theo doi bang `orders.invoice_email_sent_at`.
 - Hash mật khẩu bằng `password_hash()` và xác thực bằng `password_verify()`.
 - Chống CSRF cho các form quan trọng như đăng nhập, quên mật khẩu và nhiều thao tác trong trang admin bằng token sinh từ `random_bytes()` và kiểm tra với `hash_equals()`.
 - Chống SQL Injection ở nhiều luồng chính bằng `prepared statements` với `prepare()` và `bind_param()`.

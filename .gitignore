@@ -5,3 +5,5 @@
 *.log
 *.tmp
 .worktrees/
+tmp/dompdf/*
+!tmp/dompdf/.gitkeep

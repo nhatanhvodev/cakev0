@@ -2,6 +2,7 @@
 require_once("config.php");
 require_once("../config/connect.php");
 require_once("../config/coupons.php");
+require_once("../includes/invoice_mailer.php");
 
 ensureCartCouponInfrastructure($conn);
 
@@ -148,6 +149,10 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                     }
 
                     $conn->commit();
+
+                    if ($order_id > 0 && !send_order_invoice_email($conn, (int) $order_id)) {
+                        error_log('Invoice Mail Error: Failed to send VNPAY invoice for order #' . $order_id);
+                    }
                 } catch (Exception $e) {
                     $conn->rollback();
                 }

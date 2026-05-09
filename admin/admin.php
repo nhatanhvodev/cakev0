@@ -14,6 +14,7 @@ require_once '../config/coupons.php';
 require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
 require_once '../includes/mailer.php';
+require_once '../includes/invoice_mailer.php';
 
 ensureCartCouponInfrastructure($conn);
 
@@ -468,7 +469,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         }
 
         $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-        $paymentStmt = $conn->prepare("SELECT payment_method FROM orders WHERE id = ? LIMIT 1");
+        $paymentStmt = $conn->prepare("SELECT payment_method, status FROM orders WHERE id = ? LIMIT 1");
         $updated = 0;
 
         foreach ($selected as $id) {
@@ -486,12 +487,20 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
             }
 
             $isCodOrder = isCodPaymentMethod((string) ($orderMeta['payment_method'] ?? ''));
+            $shouldSendInvoice = $isCodOrder && $status === 'approved';
             if (in_array($status, $codOnlyStatuses, true) && !$isCodOrder) {
                 continue;
             }
 
             $stmt->bind_param("si", $status, $id);
-            $stmt->execute();
+            if (!$stmt->execute()) {
+                continue;
+            }
+
+            if ($shouldSendInvoice) {
+                send_order_invoice_email($conn, $id);
+            }
+
             $updated++;
         }
 

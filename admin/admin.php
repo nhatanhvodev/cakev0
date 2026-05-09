@@ -469,7 +469,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
         }
 
         $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-        $paymentStmt = $conn->prepare("SELECT payment_method FROM orders WHERE id = ? LIMIT 1");
+        $paymentStmt = $conn->prepare("SELECT payment_method, status FROM orders WHERE id = ? LIMIT 1");
         $updated = 0;
 
         foreach ($selected as $id) {

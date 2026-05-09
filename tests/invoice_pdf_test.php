@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/../includes/invoice_pdf.php';
+require_once __DIR__ . '/../includes/invoice_mailer.php';
 
 $order = [
     'id' => 123,
@@ -26,5 +27,7 @@ assert_true(str_contains($html, 'Hóa đơn #123'), 'invoice HTML should show in
 assert_true(str_contains($html, 'Nguyen Van A'), 'invoice HTML should show recipient name');
 assert_true(str_contains($html, 'Banh Tiramisu'), 'invoice HTML should show product names');
 assert_true(str_contains($html, '185.000'), 'invoice HTML should show total amount');
+assert_true(should_send_invoice_email(['invoice_email_sent_at' => null]), 'null sent timestamp should allow sending');
+assert_true(!should_send_invoice_email(['invoice_email_sent_at' => '2026-05-09 12:00:00']), 'existing sent timestamp should block sending');
 
 echo "invoice pdf helpers ok\n";

@@ -20,7 +20,12 @@ $items = [
     ['ten_banh' => 'Banh Su Kem', 'quantity' => 1, 'price' => 100000],
 ];
 
+$fallbackCouponOrder = $order;
+$fallbackCouponOrder['coupon_discount'] = 0;
+$fallbackCouponOrder['total_amount'] = 170000;
+
 assert_same('hoa-don-123.pdf', build_invoice_filename(123), 'invoice filename should include order id');
+assert_same(200000.0, calculate_invoice_subtotal($items), 'invoice subtotal should be derived from line items');
 
 $runtimeDir = ensure_invoice_pdf_runtime_dir();
 assert_true(is_dir($runtimeDir), 'invoice PDF runtime directory should exist');
@@ -35,6 +40,11 @@ assert_true(str_contains($html, 'Hóa đơn #123'), 'invoice HTML should show in
 assert_true(str_contains($html, 'Nguyen Van A'), 'invoice HTML should show recipient name');
 assert_true(str_contains($html, 'Banh Tiramisu'), 'invoice HTML should show product names');
 assert_true(str_contains($html, '185.000'), 'invoice HTML should show total amount');
+assert_true(str_contains($html, 'SAVE10'), 'invoice HTML should show coupon code when present');
+assert_true(str_contains($html, '200.000'), 'invoice HTML should show subtotal amount');
+
+$fallbackCouponHtml = render_invoice_html($fallbackCouponOrder, $items);
+assert_true(str_contains($fallbackCouponHtml, '30.000'), 'invoice HTML should infer coupon discount from subtotal when coupon metadata exists');
 
 $pdf = render_invoice_pdf($order, $items);
 assert_true(str_starts_with($pdf, '%PDF'), 'invoice PDF renderer should return PDF bytes');

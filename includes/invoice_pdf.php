@@ -49,6 +49,16 @@ function format_invoice_money(float $amount): string
     return number_format($amount, 0, ',', '.');
 }
 
+function calculate_invoice_subtotal(array $items): float
+{
+    $subtotal = 0.0;
+    foreach ($items as $item) {
+        $subtotal += ((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 0));
+    }
+
+    return $subtotal;
+}
+
 function render_invoice_html(array $order, array $items): string
 {
     $orderId = (int) ($order['id'] ?? 0);
@@ -60,7 +70,12 @@ function render_invoice_html(array $order, array $items): string
     $couponCode = trim((string) ($order['coupon_code'] ?? ''));
     $couponDiscount = (float) ($order['coupon_discount'] ?? 0);
     $totalAmount = (float) ($order['total_amount'] ?? 0);
+    $subtotalAmount = calculate_invoice_subtotal($items);
+    if (($couponCode !== '' || $couponDiscount > 0) && $couponDiscount <= 0 && $subtotalAmount > $totalAmount) {
+        $couponDiscount = max(0.0, $subtotalAmount - $totalAmount);
+    }
     $invoiceFilename = htmlspecialchars(build_invoice_filename($orderId), ENT_QUOTES, 'UTF-8');
+    $formattedSubtotalAmount = format_invoice_money($subtotalAmount);
     $formattedTotalAmount = format_invoice_money($totalAmount);
 
     $rowsHtml = '';
@@ -224,6 +239,10 @@ function render_invoice_html(array $order, array $items): string
     </div>
 
     <div class="summary">
+        <div class="summary-row">
+            <span>Tạm tính</span>
+            <span>{$formattedSubtotalAmount} VNĐ</span>
+        </div>
         {$couponHtml}
         <div class="summary-row summary-total">
             <span>Tổng cộng</span>

@@ -7,6 +7,38 @@ require_once __DIR__ . '/../config/bootstrap.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
+function invoice_pdf_runtime_dir(): string
+{
+    return APP_ROOT . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'dompdf';
+}
+
+function ensure_invoice_pdf_runtime_dir(): string
+{
+    $dir = invoice_pdf_runtime_dir();
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        throw new RuntimeException('Unable to create Dompdf runtime directory: ' . $dir);
+    }
+
+    if (!is_writable($dir)) {
+        throw new RuntimeException('Dompdf runtime directory is not writable: ' . $dir);
+    }
+
+    return $dir;
+}
+
+function build_invoice_pdf_options(): Options
+{
+    $runtimeDir = ensure_invoice_pdf_runtime_dir();
+
+    $options = new Options();
+    $options->set('isRemoteEnabled', false);
+    $options->set('tempDir', $runtimeDir);
+    $options->set('fontCache', $runtimeDir);
+    $options->set('defaultFont', 'DejaVu Sans');
+
+    return $options;
+}
+
 function build_invoice_filename(int $orderId): string
 {
     return 'hoa-don-' . $orderId . '.pdf';
@@ -205,10 +237,7 @@ HTML;
 
 function render_invoice_pdf(array $order, array $items): string
 {
-    $options = new Options();
-    $options->set('isRemoteEnabled', false);
-
-    $dompdf = new Dompdf($options);
+    $dompdf = new Dompdf(build_invoice_pdf_options());
     $dompdf->loadHtml(render_invoice_html($order, $items), 'UTF-8');
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();

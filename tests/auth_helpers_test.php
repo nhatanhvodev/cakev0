@@ -44,6 +44,8 @@ $tokenB = generate_verification_token();
 
 assert_true(strlen($tokenA) === 64, 'generated tokens should be 64 characters long');
 assert_true((bool) preg_match('/^[a-f0-9]{64}$/', $tokenA), 'generated tokens should be lowercase hex');
+assert_true(strlen($tokenB) === 64, 'generated tokens should be 64 characters long');
+assert_true((bool) preg_match('/^[a-f0-9]{64}$/', $tokenB), 'generated tokens should be lowercase hex');
 assert_true($tokenA !== $tokenB, 'generated tokens should differ from each other');
 
 echo "auth helpers ok\n";

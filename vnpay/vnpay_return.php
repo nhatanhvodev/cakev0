@@ -2,6 +2,7 @@
 require_once("config.php");
 require_once("../config/connect.php");
 require_once("../config/coupons.php");
+require_once("../includes/invoice_mailer.php");
 
 ensureCartCouponInfrastructure($conn);
 
@@ -99,6 +100,7 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
             $order_id = (int) $_GET['vnp_TxnRef'];
             if ($_GET['vnp_ResponseCode'] == '00') {
                 // Thành công
+                $shouldSendInvoice = false;
                 $conn->begin_transaction();
                 try {
                     $stmt_order = $conn->prepare("SELECT user_id, coupon_code, status FROM orders WHERE id = ? LIMIT 1");
@@ -109,6 +111,7 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
 
                     $previousStatus = (string) ($orderMeta['status'] ?? '');
                     $couponCode = (string) ($orderMeta['coupon_code'] ?? '');
+                    $shouldSendInvoice = ($previousStatus !== 'paid');
 
                     $stmt = $conn->prepare("UPDATE orders SET status = 'paid' WHERE id = ?");
                     $stmt->bind_param("i", $order_id);
@@ -148,6 +151,10 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                     }
 
                     $conn->commit();
+
+                    if ($shouldSendInvoice && !send_order_invoice_email($conn, (int) $order_id)) {
+                        error_log('Invoice Mail Error: Failed to send VNPAY invoice for order #' . $order_id);
+                    }
                 } catch (Exception $e) {
                     $conn->rollback();
                 }

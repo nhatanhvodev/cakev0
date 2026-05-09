@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `pending_registrations` (
   UNIQUE KEY `uniq_pending_registrations_token` (`verification_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Operator note: clean up any rows where `email IS NULL` before making `users.email` NOT NULL in production.
 ALTER TABLE `users`
   MODIFY `email` varchar(255) NOT NULL,
   ADD UNIQUE KEY `uniq_users_email` (`email`);

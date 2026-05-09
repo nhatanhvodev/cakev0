@@ -158,6 +158,46 @@ function gmail_api_build_raw_message(string $to, string $subject, string $body, 
     return gmail_api_base64url_encode($message);
 }
 
+function gmail_api_build_raw_message_with_attachment(string $to, string $subject, string $body, string $fromAddress, ?string $fromName, array $attachments): string {
+    $boundary = 'mixed_' . bin2hex(random_bytes(12));
+    $domain = substr(strrchr($fromAddress, '@') ?: '@localhost', 1) ?: 'localhost';
+    $headers = [
+        'MIME-Version: 1.0',
+        'Date: ' . date(DATE_RFC2822),
+        'Message-ID: <' . bin2hex(random_bytes(16)) . '@' . $domain . '>',
+        'From: ' . mail_format_address($fromAddress, $fromName ?? env_value('MAIL_FROM_NAME', 'Gau Bakery')),
+        'To: ' . mail_format_address($to),
+        'Subject: ' . mail_encode_header($subject),
+        'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+    ];
+
+    $parts = [
+        '--' . $boundary,
+        'Content-Type: text/html; charset=UTF-8',
+        'Content-Transfer-Encoding: base64',
+        '',
+        chunk_split(base64_encode($body), 76, "\r\n"),
+    ];
+
+    foreach ($attachments as $attachment) {
+        $filename = mail_sanitize_header((string) ($attachment['filename'] ?? 'attachment'));
+        $mime = mail_sanitize_header((string) ($attachment['mime'] ?? 'application/octet-stream'));
+        $content = (string) ($attachment['content'] ?? '');
+
+        $parts[] = '--' . $boundary;
+        $parts[] = 'Content-Type: ' . $mime . '; name="' . $filename . '"';
+        $parts[] = 'Content-Transfer-Encoding: base64';
+        $parts[] = 'Content-Disposition: attachment; filename="' . $filename . '"';
+        $parts[] = '';
+        $parts[] = chunk_split(base64_encode($content), 76, "\r\n");
+    }
+
+    $parts[] = '--' . $boundary . '--';
+    $parts[] = '';
+
+    return gmail_api_base64url_encode(implode("\r\n", $headers) . "\r\n\r\n" . implode("\r\n", $parts));
+}
+
 function gmail_api_http_post(string $url, array $headers, string $body): array {
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
@@ -277,6 +317,95 @@ function send_custom_mail_gmail_api($to, $subject, $body, $fromName = null): boo
 
     $rawMessage = gmail_api_build_raw_message($to, $subject, $body, $fromAddress, $fromName);
     return gmail_api_send_raw_message($accessToken, $rawMessage);
+}
+
+function send_custom_mail_with_attachments(string $to, string $subject, string $body, array $attachments, ?string $fromName = null): bool {
+    if (mail_driver() === 'gmail_api') {
+        $missingConfig = gmail_api_config_missing();
+        if (!empty($missingConfig)) {
+            error_log('Mailer Error: Missing Gmail API config: ' . implode(', ', $missingConfig));
+            return false;
+        }
+
+        $fromAddress = env_value('MAIL_FROM_ADDRESS');
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL) || !filter_var($fromAddress, FILTER_VALIDATE_EMAIL)) {
+            error_log('Mailer Error: Invalid sender or recipient email address.');
+            return false;
+        }
+
+        $accessToken = gmail_api_refresh_access_token();
+        if ($accessToken === null) {
+            return false;
+        }
+
+        $rawMessage = gmail_api_build_raw_message_with_attachment($to, $subject, $body, $fromAddress, $fromName, $attachments);
+        return gmail_api_send_raw_message($accessToken, $rawMessage);
+    }
+
+    if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+        error_log('Mailer Error: PHPMailer is not available.');
+        return false;
+    }
+
+    $missingConfig = mail_required_config_missing();
+    if (!empty($missingConfig)) {
+        error_log('Mailer Error: Missing SMTP config: ' . implode(', ', $missingConfig));
+        return false;
+    }
+
+    $fromAddress = env_value('MAIL_FROM_ADDRESS');
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL) || !filter_var($fromAddress, FILTER_VALIDATE_EMAIL)) {
+        error_log('Mailer Error: Invalid sender or recipient email address.');
+        return false;
+    }
+
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $smtpHost         = env_value('MAIL_HOST', 'smtp.gmail.com');
+        $mail->Host       = mail_resolve_smtp_host($smtpHost);
+        $mail->SMTPAuth   = true;
+        $mail->Username   = env_value('MAIL_USERNAME');
+        $mail->Password   = env_value('MAIL_PASSWORD');
+        $mail->SMTPSecure = env_value('MAIL_ENCRYPTION', 'tls');
+        $mail->Port       = (int) env_value('MAIL_PORT', 587);
+        $mail->Timeout    = mail_timeout_seconds();
+        $mail->CharSet    = 'UTF-8';
+        mail_log_connection_context($smtpHost, $mail->Host, $mail->Port, $mail->Timeout);
+        if ($mail->Host !== $smtpHost) {
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'peer_name' => $smtpHost,
+                ],
+            ];
+        }
+
+        $defaultFromName = env_value('MAIL_FROM_NAME', 'Gau Bakery');
+        $mail->setFrom($fromAddress, $fromName ?? $defaultFromName);
+        $mail->addAddress($to);
+
+        foreach ($attachments as $attachment) {
+            $mail->addStringAttachment(
+                (string) ($attachment['content'] ?? ''),
+                (string) ($attachment['filename'] ?? 'attachment'),
+                PHPMailer::ENCODING_BASE64,
+                (string) ($attachment['mime'] ?? 'application/octet-stream')
+            );
+        }
+
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body    = $body;
+        $mail->AltBody = mail_html_to_text($body);
+
+        $mail->send();
+        return true;
+    } catch (\Throwable $e) {
+        $error = $mail->ErrorInfo ?: $e->getMessage();
+        error_log('Mailer Error: ' . $error);
+        return false;
+    }
 }
 
 function mail_html_to_text(string $html): string {

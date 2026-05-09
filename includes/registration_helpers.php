@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/config.php';
 
 function build_registration_verification_url(string $token): string
 {
-    return base_url('pages/verify-registration.php?token=' . urlencode($token));
+    return absolute_url('pages/verify-registration.php?token=' . urlencode($token));
 }
 
 function build_registration_verification_mail(string $username, string $verificationUrl): array

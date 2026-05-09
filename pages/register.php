@@ -25,7 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate dữ liệu
     $passwordError = validate_password_strength($password);
-    if (!$email) {
+    if ($username === '') {
+        $error_message = "Tên đăng nhập không được để trống!";
+    } elseif (!$email) {
         $error_message = "Email không hợp lệ!";
     } elseif ($passwordError !== null) {
         $error_message = $passwordError;
@@ -41,40 +43,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $verificationToken = generate_verification_token();
             $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
-            $pendingCheck = $conn->prepare("SELECT id FROM pending_registrations WHERE username = ? OR email = ?");
+            $pendingCheck = $conn->prepare("SELECT id, username, email FROM pending_registrations WHERE username = ? OR email = ?");
             $pendingCheck->bind_param("ss", $username, $email);
             $pendingCheck->execute();
             $pendingResult = $pendingCheck->get_result();
-            $pendingRow = $pendingResult->fetch_assoc();
+            $pendingRow = null;
+            $pendingConflict = false;
+
+            while ($row = $pendingResult->fetch_assoc()) {
+                if ($row['username'] === $username && $row['email'] === $email) {
+                    $pendingRow = $row;
+                } else {
+                    $pendingConflict = true;
+                }
+            }
             $pendingCheck->close();
 
-            if ($pendingRow) {
-                $pendingId = (int) $pendingRow['id'];
-                $stmt = $conn->prepare("UPDATE pending_registrations SET username = ?, email = ?, password_hash = ?, verification_token = ?, expires_at = ?, created_at = NOW() WHERE id = ?");
-                $stmt->bind_param("sssssi", $username, $email, $passwordHash, $verificationToken, $expiresAt, $pendingId);
+            if ($pendingConflict) {
+                $error_message = "Tên đăng nhập hoặc email đang chờ xác thực. Vui lòng kiểm tra email hoặc dùng thông tin khác.";
             } else {
-                $stmt = $conn->prepare("INSERT INTO pending_registrations (username, email, password_hash, verification_token, expires_at) VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssss", $username, $email, $passwordHash, $verificationToken, $expiresAt);
-            }
-
-            if ($stmt->execute()) {
-                $verificationUrl = build_registration_verification_url($verificationToken);
-                $mail = build_registration_verification_mail($username, $verificationUrl);
-
-                if (!send_custom_mail($email, $mail['subject'], $mail['body'])) {
-                    $error_message = "Không thể gửi email xác thực. Vui lòng thử lại.";
+                if ($pendingRow) {
+                    $pendingId = (int) $pendingRow['id'];
+                    $stmt = $conn->prepare("UPDATE pending_registrations SET username = ?, email = ?, password_hash = ?, verification_token = ?, expires_at = ?, created_at = NOW() WHERE id = ?");
+                    $stmt->bind_param("sssssi", $username, $email, $passwordHash, $verificationToken, $expiresAt, $pendingId);
                 } else {
-                    $_SESSION['toast'] = [
-                        'msg' => 'Đăng ký gần xong. Vui lòng kiểm tra email để xác thực tài khoản trong 24 giờ.',
-                        'type' => 'success',
-                    ];
-                    header("Location: " . base_url('index.php'));
-                    exit;
+                    $stmt = $conn->prepare("INSERT INTO pending_registrations (username, email, password_hash, verification_token, expires_at) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->bind_param("sssss", $username, $email, $passwordHash, $verificationToken, $expiresAt);
                 }
-            } else {
-                $error_message = "Không thể lưu yêu cầu đăng ký. Vui lòng thử lại.";
+
+                if ($stmt->execute()) {
+                    $verificationUrl = build_registration_verification_url($verificationToken);
+                    $mail = build_registration_verification_mail($username, $verificationUrl);
+
+                    if (!send_custom_mail($email, $mail['subject'], $mail['body'])) {
+                        $error_message = "Không thể gửi email xác thực. Vui lòng thử lại.";
+                    } else {
+                        $_SESSION['toast'] = [
+                            'msg' => 'Đăng ký gần xong. Vui lòng kiểm tra email để xác thực tài khoản trong 24 giờ.',
+                            'type' => 'success',
+                        ];
+                        header("Location: " . base_url('index.php'));
+                        exit;
+                    }
+                } else {
+                    $error_message = "Không thể lưu yêu cầu đăng ký. Vui lòng thử lại.";
+                }
+                $stmt->close();
             }
-            $stmt->close();
         }
         $check->close();
     }

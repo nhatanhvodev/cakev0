@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../config/bootstrap.php';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -33,7 +33,7 @@ function render_invoice_html(array $order, array $items): string
 
     $rowsHtml = '';
     foreach ($items as $index => $item) {
-        $name = htmlspecialchars((string) ($item['ten_banh'] ?? $item['name'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $name = htmlspecialchars((string) ($item['ten_banh'] ?? ''), ENT_QUOTES, 'UTF-8');
         $quantity = (int) ($item['quantity'] ?? 0);
         $price = (float) ($item['price'] ?? 0);
         $lineTotal = $quantity * $price;

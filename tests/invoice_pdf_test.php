@@ -36,12 +36,14 @@ assert_same($runtimeDir, $options->get('tempDir'), 'invoice PDF temp dir should 
 assert_same($runtimeDir, $options->get('fontCache'), 'invoice PDF font cache should stay inside the repo-local runtime directory');
 
 $html = render_invoice_html($order, $items);
-assert_true(str_contains($html, 'Hóa đơn #123'), 'invoice HTML should show invoice number');
+assert_true(str_contains($html, 'H&#243;a &#273;&#417;n #123'), 'invoice HTML should show invoice number');
 assert_true(str_contains($html, 'Nguyen Van A'), 'invoice HTML should show recipient name');
 assert_true(str_contains($html, 'Banh Tiramisu'), 'invoice HTML should show product names');
 assert_true(str_contains($html, '185.000'), 'invoice HTML should show total amount');
 assert_true(str_contains($html, 'SAVE10'), 'invoice HTML should show coupon code when present');
 assert_true(str_contains($html, '200.000'), 'invoice HTML should show subtotal amount');
+assert_true(str_contains($html, 'M&#227; gi&#7843;m gi&#225;'), 'invoice HTML should show coupon label');
+assert_true(str_contains($html, 'Gi&#7843;m gi&#225;'), 'invoice HTML should show discount label');
 
 $fallbackCouponHtml = render_invoice_html($fallbackCouponOrder, $items);
 assert_true(str_contains($fallbackCouponHtml, '30.000'), 'invoice HTML should infer coupon discount from subtotal when coupon metadata exists');

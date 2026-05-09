@@ -74,6 +74,7 @@ function render_invoice_html(array $order, array $items): string
     if (($couponCode !== '' || $couponDiscount > 0) && $couponDiscount <= 0 && $subtotalAmount > $totalAmount) {
         $couponDiscount = max(0.0, $subtotalAmount - $totalAmount);
     }
+
     $invoiceFilename = htmlspecialchars(build_invoice_filename($orderId), ENT_QUOTES, 'UTF-8');
     $formattedSubtotalAmount = format_invoice_money($subtotalAmount);
     $formattedTotalAmount = format_invoice_money($totalAmount);
@@ -86,7 +87,7 @@ function render_invoice_html(array $order, array $items): string
         $lineTotal = $quantity * $price;
 
         $rowsHtml .= sprintf(
-            '<tr><td>%d</td><td>%s</td><td class="text-right">%d</td><td class="text-right">%s VNĐ</td><td class="text-right">%s VNĐ</td></tr>',
+            '<tr><td>%d</td><td>%s</td><td class="text-right">%d</td><td class="text-right">%s VN&#272;</td><td class="text-right">%s VN&#272;</td></tr>',
             $index + 1,
             $name,
             $quantity,
@@ -96,14 +97,14 @@ function render_invoice_html(array $order, array $items): string
     }
 
     if ($rowsHtml === '') {
-        $rowsHtml = '<tr><td colspan="5" class="empty">Không có sản phẩm.</td></tr>';
+        $rowsHtml = '<tr><td colspan="5" class="empty">Kh&#244;ng c&#243; s&#7843;n ph&#7849;m.</td></tr>';
     }
 
     $couponHtml = '';
     if ($couponCode !== '' || $couponDiscount > 0) {
-        $couponLabel = htmlspecialchars($couponCode !== '' ? $couponCode : 'Khuyến mãi', ENT_QUOTES, 'UTF-8');
+        $couponLabel = htmlspecialchars($couponCode !== '' ? $couponCode : 'Khuy&#7871;n m&#227;i', ENT_QUOTES, 'UTF-8');
         $couponHtml = sprintf(
-            '<div class="summary-row"><span>Mã giảm giá</span><span>%s</span></div><div class="summary-row discount"><span>Giảm giá</span><span>-%s VNĐ</span></div>',
+            '<div class="summary-row"><span>M&#227; gi&#7843;m gi&#225;</span><span>%s</span></div><div class="summary-row discount"><span>Gi&#7843;m gi&#225;</span><span>-%s VN&#272;</span></div>',
             $couponLabel,
             format_invoice_money($couponDiscount)
         );
@@ -114,7 +115,7 @@ function render_invoice_html(array $order, array $items): string
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hóa đơn #{$orderId}</title>
+    <title>H&#243;a &#273;&#417;n #{$orderId}</title>
     <style>
         @page { margin: 24px; }
         body {
@@ -192,29 +193,29 @@ function render_invoice_html(array $order, array $items): string
     </style>
 </head>
 <body>
-    <h1>Hóa đơn #{$orderId}</h1>
-    <div class="muted">Ngày tạo đơn: {$createdAt}</div>
+    <h1>H&#243;a &#273;&#417;n #{$orderId}</h1>
+    <div class="muted">Ng&#224;y t&#7841;o &#273;&#417;n: {$createdAt}</div>
 
     <div class="section">
         <table class="meta-table">
             <tr>
                 <td>
-                    <strong>Người nhận:</strong><br>
+                    <strong>Ng&#432;&#7901;i nh&#7853;n:</strong><br>
                     {$recipientName}<br>
                     {$phone}
                 </td>
                 <td>
-                    <strong>Địa chỉ giao hàng:</strong><br>
+                    <strong>&#272;&#7883;a ch&#7881; giao h&#224;ng:</strong><br>
                     {$address}
                 </td>
             </tr>
             <tr>
                 <td>
-                    <strong>Phương thức thanh toán:</strong><br>
+                    <strong>Ph&#432;&#417;ng th&#7913;c thanh to&#225;n:</strong><br>
                     {$paymentMethod}
                 </td>
                 <td>
-                    <strong>Tệp hóa đơn:</strong><br>
+                    <strong>T&#7879;p h&#243;a &#273;&#417;n:</strong><br>
                     {$invoiceFilename}
                 </td>
             </tr>
@@ -226,10 +227,10 @@ function render_invoice_html(array $order, array $items): string
             <thead>
                 <tr>
                     <th style="width: 8%;">STT</th>
-                    <th>Sản phẩm</th>
+                    <th>S&#7843;n ph&#7849;m</th>
                     <th style="width: 12%;" class="text-right">SL</th>
-                    <th style="width: 20%;" class="text-right">Đơn giá</th>
-                    <th style="width: 22%;" class="text-right">Thành tiền</th>
+                    <th style="width: 20%;" class="text-right">&#272;&#417;n gi&#225;</th>
+                    <th style="width: 22%;" class="text-right">Th&#224;nh ti&#7873;n</th>
                 </tr>
             </thead>
             <tbody>
@@ -240,13 +241,13 @@ function render_invoice_html(array $order, array $items): string
 
     <div class="summary">
         <div class="summary-row">
-            <span>Tạm tính</span>
-            <span>{$formattedSubtotalAmount} VNĐ</span>
+            <span>T&#7841;m t&#237;nh</span>
+            <span>{$formattedSubtotalAmount} VN&#272;</span>
         </div>
         {$couponHtml}
         <div class="summary-row summary-total">
-            <span>Tổng cộng</span>
-            <span>{$formattedTotalAmount} VNĐ</span>
+            <span>T&#7893;ng c&#7897;ng</span>
+            <span>{$formattedTotalAmount} VN&#272;</span>
         </div>
     </div>
 </body>

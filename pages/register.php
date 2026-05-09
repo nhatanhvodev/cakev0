@@ -8,6 +8,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once '../config/config.php';
 require_once '../includes/mailer.php';
+require_once '../includes/auth_helpers.php';
+require_once '../includes/registration_helpers.php';
 
 $error_message = '';
 
@@ -22,48 +24,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
 
     // Validate dữ liệu
-    if (!$email) {
+    $passwordError = validate_password_strength($password);
+    if ($username === '') {
+        $error_message = "Tên đăng nhập không được để trống!";
+    } elseif (!$email) {
         $error_message = "Email không hợp lệ!";
-    } elseif (strlen($password) < 6) {
-        $error_message = "Mật khẩu tối thiểu 6 ký tự!";
+    } elseif ($passwordError !== null) {
+        $error_message = $passwordError;
     } else {
-        // Kiểm tra tên đăng nhập đã tồn tại chưa
-        $check = $conn->prepare("SELECT id FROM users WHERE username = ?");
-        $check->bind_param("s", $username);
+        $check = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $check->bind_param("ss", $username, $email);
         $check->execute();
 
         if ($check->get_result()->num_rows > 0) {
-            $error_message = "Tên đăng nhập đã tồn tại!";
+            $error_message = "Tên đăng nhập hoặc email đã tồn tại!";
         } else {
-            // Thêm người dùng mới
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $username, $hash, $email);
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            $verificationToken = generate_verification_token();
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
-            if ($stmt->execute()) {
-                // Gửi email xác nhận đăng ký thành công
-                $subject = "Chào mừng bạn đến với Gấu Bakery!";
-                $body = "<h2>Đăng ký thành công!</h2>
-                         <p>Chào mừng <strong>{$username}</strong> đã trở thành thành viên của cửa hàng Gấu Bakery.</p>
-                         <p>Bắt đầu khám phá những chiếc bánh ngọt ngào nhất tại cửa hàng của chúng tôi ngay nhé!</p>
-                         <br>
-                         <p>Trân trọng,<br><strong>Gấu Bakery Team</strong></p>";
+            $pendingCheck = $conn->prepare("SELECT id, username, email FROM pending_registrations WHERE username = ? OR email = ?");
+            $pendingCheck->bind_param("ss", $username, $email);
+            $pendingCheck->execute();
+            $pendingResult = $pendingCheck->get_result();
+            $pendingRow = null;
+            $pendingConflict = false;
 
-                send_custom_mail($email, $subject, $body);
-
-                // Đăng ký thành công -> Tự động đăng nhập & chuyển hướng
-                $_SESSION['user_id'] = $conn->insert_id;
-                $_SESSION['username'] = $username;
-                $_SESSION['toast'] = [
-                    'msg' => 'Chào mừng bạn đến với Gấu Bakery! Tài khoản của bạn đã sẵn sàng để bắt đầu mua bánh.',
-                    'type' => 'success',
-                ];
-                header("Location: " . base_url('index.php'));
-                exit;
-            } else {
-                $error_message = "Lỗi đăng ký!";
+            while ($row = $pendingResult->fetch_assoc()) {
+                if ($row['username'] === $username && $row['email'] === $email) {
+                    $pendingRow = $row;
+                } else {
+                    $pendingConflict = true;
+                }
             }
-            $stmt->close();
+            $pendingCheck->close();
+
+            if ($pendingConflict) {
+                $error_message = "Tên đăng nhập hoặc email đang chờ xác thực. Vui lòng kiểm tra email hoặc dùng thông tin khác.";
+            } else {
+                if ($pendingRow) {
+                    $pendingId = (int) $pendingRow['id'];
+                    $stmt = $conn->prepare("UPDATE pending_registrations SET username = ?, email = ?, password_hash = ?, verification_token = ?, expires_at = ?, created_at = NOW() WHERE id = ?");
+                    $stmt->bind_param("sssssi", $username, $email, $passwordHash, $verificationToken, $expiresAt, $pendingId);
+                } else {
+                    $stmt = $conn->prepare("INSERT INTO pending_registrations (username, email, password_hash, verification_token, expires_at) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->bind_param("sssss", $username, $email, $passwordHash, $verificationToken, $expiresAt);
+                }
+
+                if ($stmt->execute()) {
+                    $verificationUrl = build_registration_verification_url($verificationToken);
+                    $mail = build_registration_verification_mail($username, $verificationUrl);
+
+                    if (!send_custom_mail($email, $mail['subject'], $mail['body'])) {
+                        $error_message = "Không thể gửi email xác thực. Vui lòng thử lại.";
+                    } else {
+                        $_SESSION['toast'] = [
+                            'msg' => 'Đăng ký gần xong. Vui lòng kiểm tra email để xác thực tài khoản trong 24 giờ.',
+                            'type' => 'success',
+                        ];
+                        header("Location: " . base_url('index.php'));
+                        exit;
+                    }
+                } else {
+                    $error_message = "Không thể lưu yêu cầu đăng ký. Vui lòng thử lại.";
+                }
+                $stmt->close();
+            }
         }
         $check->close();
     }
@@ -544,8 +570,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label class="form-label"><i class="fa-solid fa-lock" style="color: #d32f2f;"></i> Mật
                                 khẩu</label> <!-- -->
-                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 6 ký tự"
-                                required> <!-- -->
+                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 12 ký tự"
+                                minlength="12" required> <!-- -->
+                            <small class="text-muted">Mật khẩu cần ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</small>
                         </div>
 
                         <!-- Nút Submit -->

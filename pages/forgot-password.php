@@ -2,6 +2,7 @@
 session_start();
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 require_once '../config/connect.php';
+require_once '../includes/auth_helpers.php';
 
 $message = '';
 $message_class = '';
@@ -17,14 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message_class = 'error';
     } else {
         $email_or_username = trim($_POST['email_or_username'] ?? '');
-        $new_password_raw = trim($_POST['new_password'] ?? '');
-        $confirm_password = trim($_POST['confirm_password'] ?? '');
+        $new_password_raw = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
 
         if ($email_or_username === '' || $new_password_raw === '' || $confirm_password === '') {
             $message = 'Vui lòng nhập đầy đủ thông tin.';
             $message_class = 'error';
-        } elseif (strlen($new_password_raw) < 6) {
-            $message = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+        } elseif (($password_error = validate_password_strength($new_password_raw)) !== null) {
+            $message = $password_error;
             $message_class = 'error';
         } elseif ($new_password_raw !== $confirm_password) {
             $message = 'Mật khẩu xác nhận không khớp.';
@@ -370,12 +371,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <div class="form-group">
             <label><i class="fa-solid fa-lock"></i> Mật khẩu mới</label>
-            <input type="password" name="new_password" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+            <input type="password" name="new_password" placeholder="Toi thieu 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="12" required>
           </div>
 
           <div class="form-group">
             <label><i class="fa-solid fa-lock"></i> Xác nhận mật khẩu mới</label>
-            <input type="password" name="confirm_password" placeholder="Nhập lại mật khẩu" minlength="6" required>
+            <input type="password" name="confirm_password" placeholder="Toi thieu 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="12" required>
           </div>
 
           <button class="btn-submit" type="submit">

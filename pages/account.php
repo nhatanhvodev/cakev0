@@ -10,6 +10,7 @@ require_once '../config/config.php';
 require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
 require_once '../includes/order_helpers.php';
+require_once '../includes/auth_helpers.php';
 //
 $conn->set_charset("utf8mb4"); //
 
@@ -422,8 +423,8 @@ if (isset($_POST['change_password'])) {
         $error = "Mật khẩu hiện tại không đúng.";
     } elseif ($new_pass !== $confirm_pass) {
         $error = "Mật khẩu xác nhận không trùng khớp.";
-    } elseif (strlen($new_pass) < 6) {
-        $error = "Mật khẩu mới quá ngắn (tối thiểu 6 ký tự).";
+    } elseif (($password_error = validate_password_strength($new_pass)) !== null) {
+        $error = $password_error;
     } else {
         $hash = password_hash($new_pass, PASSWORD_DEFAULT);
         $reset_token = bin2hex(random_bytes(16));
@@ -1192,12 +1193,12 @@ foreach ($orders as $order) {
                                             <div class="col-md-4">
                                                 <label class="form-label small text-muted">Mật khẩu mới</label>
                                                 <input type="password" name="new_password" class="form-control"
-                                                    required>
+                                                    placeholder="Toi thieu 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="12" required>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label small text-muted">Xác nhận</label>
                                                 <input type="password" name="confirm_password" class="form-control"
-                                                    required>
+                                                    placeholder="Nhap lai mat khau moi" minlength="12" required>
                                             </div>
                                             <div class="col-12">
                                                 <button type="submit" name="change_password" class="btn-theme-danger">Đổi mật khẩu</button>

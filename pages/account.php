@@ -1193,12 +1193,12 @@ foreach ($orders as $order) {
                                             <div class="col-md-4">
                                                 <label class="form-label small text-muted">Mật khẩu mới</label>
                                                 <input type="password" name="new_password" class="form-control"
-                                                    placeholder="Toi thieu 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="12" required>
+                                                    placeholder="Toi thieu 8 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="8" required>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label small text-muted">Xác nhận</label>
                                                 <input type="password" name="confirm_password" class="form-control"
-                                                    placeholder="Nhap lai mat khau moi" minlength="12" required>
+                                                    placeholder="Nhap lai mat khau moi" minlength="8" required>
                                             </div>
                                             <div class="col-12">
                                                 <button type="submit" name="change_password" class="btn-theme-danger">Đổi mật khẩu</button>
@@ -1275,3 +1275,4 @@ foreach ($orders as $order) {
 </body>
 
 </html>
+

@@ -570,9 +570,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label class="form-label"><i class="fa-solid fa-lock" style="color: #d32f2f;"></i> Mật
                                 khẩu</label> <!-- -->
-                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 12 ký tự"
-                                minlength="12" required> <!-- -->
-                            <small class="text-muted">Mật khẩu cần ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</small>
+                            <input type="password" name="password" class="form-control" placeholder="Tối thiểu 8 ký tự"
+                                minlength="8" required> <!-- -->
+                            <small class="text-muted">Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</small>
                         </div>
 
                         <!-- Nút Submit -->
@@ -629,3 +629,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </script>
 
 </html>
+
+
+

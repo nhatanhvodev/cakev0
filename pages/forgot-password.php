@@ -371,12 +371,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <div class="form-group">
             <label><i class="fa-solid fa-lock"></i> Mật khẩu mới</label>
-            <input type="password" name="new_password" placeholder="Toi thieu 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="12" required>
+            <input type="password" name="new_password" placeholder="Toi thieu 8 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="8" required>
           </div>
 
           <div class="form-group">
             <label><i class="fa-solid fa-lock"></i> Xác nhận mật khẩu mới</label>
-            <input type="password" name="confirm_password" placeholder="Toi thieu 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="12" required>
+            <input type="password" name="confirm_password" placeholder="Toi thieu 8 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="8" required>
           </div>
 
           <button class="btn-submit" type="submit">
@@ -429,3 +429,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
+

@@ -2,8 +2,8 @@
 
 function validate_password_strength(string $password): ?string
 {
-    if (strlen($password) < 12) {
-        return 'Mật khẩu phải có ít nhất 12 ký tự.';
+    if (strlen($password) < 8) {
+        return 'Mật khẩu phải có ít nhất 8 ký tự.';
     }
 
     if (!preg_match('/[A-Z]/', $password)) {

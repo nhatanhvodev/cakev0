@@ -4,9 +4,9 @@ require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/../includes/auth_helpers.php';
 
 assert_same(
-    'Mật khẩu phải có ít nhất 12 ký tự.',
+    'Mật khẩu phải có ít nhất 8 ký tự.',
     validate_password_strength('Short1!'),
-    'reject passwords shorter than 12 characters'
+    'reject passwords shorter than 8 characters'
 );
 
 assert_same(

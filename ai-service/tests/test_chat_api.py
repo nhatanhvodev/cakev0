@@ -57,11 +57,14 @@ def test_knowledge_index_without_db_indexes_policies_and_faq(fake_store):
 
 
 def test_get_engine_falls_back_to_baseline_when_multiagent_missing(fake_store, monkeypatch):
-    # default settings.engine == "multiagent" (see app/config.py) and the
-    # multiagent engine module (Task 12) does not exist yet in this repo,
-    # so get_engine() must catch the ImportError and fall back.
+    # default settings.engine == "multiagent" (see app/config.py). As of Task 12
+    # the multiagent engine module exists, so simulate an ImportError (e.g. a
+    # missing optional dependency) to verify get_engine() still catches it and
+    # falls back to BaselineEngine.
+    import sys
     assert get_settings().engine == "multiagent"
     d = EngineDeps(llm=FakeLLM([]), store=fake_store, settings=get_settings(), conn_factory=lambda: None)
     monkeypatch.setattr(deps, "build_deps", lambda: d)
+    monkeypatch.setitem(sys.modules, "app.engines.multiagent.graph", None)
     eng = deps.get_engine()
     assert isinstance(eng, BaselineEngine)

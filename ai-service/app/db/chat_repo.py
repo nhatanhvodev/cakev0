@@ -23,7 +23,8 @@ def append_message(conn, session_id, sender, content, content_type="text", metad
         cur.execute(
             "INSERT INTO chat_messages (session_id, sender, content, content_type, metadata) "
             "VALUES (%s, %s, %s, %s, %s)",
-            (session_id, sender, content, content_type, json.dumps(metadata) if metadata else None))
+            (session_id, sender, content, content_type,
+             json.dumps(metadata, ensure_ascii=False) if metadata else None))
         return cur.lastrowid
 
 

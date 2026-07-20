@@ -1,0 +1,12 @@
+fastapi==0.115.*
+uvicorn[standard]==0.30.*
+langchain==0.3.*
+langchain-google-genai==2.0.*
+langgraph==0.2.*
+chromadb==0.5.*
+pymysql==1.1.*
+pydantic==2.*
+pydantic-settings==2.*
+python-dotenv==1.0.*
+httpx==0.27.*
+pytest==8.*

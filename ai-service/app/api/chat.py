@@ -14,6 +14,12 @@ class ChatSendRequest(BaseModel):
     context: dict = {}
 
 
+class HandoffRequest(BaseModel):
+    session_id: int
+    reason: str = ""
+    priority: str = "medium"
+
+
 @router.post("/chat/send")
 def chat_send(req: ChatSendRequest, engine=Depends(deps_mod.get_engine)):
     conn = engine.deps.conn_factory()
@@ -49,6 +55,19 @@ def chat_history(session_id: int, engine=Depends(deps_mod.get_engine)):
                  "created_at": str(m["created_at"]) if m.get("created_at") is not None else None}
                 for m in rows]
     return {"session_id": session_id, "messages": messages}
+
+
+@router.post("/chat/handoff")
+def chat_handoff(req: HandoffRequest, engine=Depends(deps_mod.get_engine)):
+    from app.db import ticket_repo
+    conn = engine.deps.conn_factory()
+    if conn is None:
+        return {"ticket_id": None, "status": "open"}
+    tid = ticket_repo.create_ticket(conn, req.session_id, subject=req.reason or "Yêu cầu hỗ trợ",
+                                    priority=req.priority)
+    chat_repo.update_session(conn, req.session_id, status="handoff")
+    conn.close()
+    return {"ticket_id": tid, "status": "open"}
 
 
 @router.post("/knowledge/index")

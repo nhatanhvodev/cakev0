@@ -3,7 +3,12 @@ import json, re
 def product_to_doc(row: dict):
     text = (f"SAN PHAM: {row['ten_banh']}\nLOAI: {row['loai']}\n"
             f"GIA: {int(row['gia'])} VND\nMO TA: {row.get('mo_ta') or ''}")
-    meta = {k: row.get(k) for k in ("id", "gia", "loai", "hinh_anh", "slug") if row.get(k) is not None}
+    meta = {}
+    for k in ("id", "gia", "loai", "hinh_anh", "slug"):
+        v = row.get(k)
+        if v is None:
+            continue
+        meta[k] = float(v) if k == "gia" else v
     return f"product-{row['id']}", text, meta
 
 def load_policy_file(path: str):

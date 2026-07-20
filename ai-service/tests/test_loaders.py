@@ -6,7 +6,16 @@ def test_product_to_doc():
                                          "gia": 250000, "mo_ta": "Ngọt dịu", "hinh_anh": "x.jpg", "slug": "banh-kem-dau"})
     assert doc_id == "product-5"
     assert "Bánh kem dâu" in text and "250" in text
-    assert meta["gia"] == 250000
+    assert meta["gia"] == 250000.0
+
+
+def test_product_to_doc_handles_decimal_gia():
+    from decimal import Decimal
+    from app.knowledge.loaders import product_to_doc
+    _, _, meta = product_to_doc({"id": 5, "ten_banh": "X", "loai": "kem",
+                                 "gia": Decimal("250000.00"), "mo_ta": "", "hinh_anh": "", "slug": "x"})
+    assert isinstance(meta["gia"], float)
+    assert meta["gia"] == 250000.0
 
 
 def test_load_policy_file(tmp_path):

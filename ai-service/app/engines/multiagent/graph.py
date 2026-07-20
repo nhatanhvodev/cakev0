@@ -33,6 +33,17 @@ def build_graph(deps: EngineDeps):
             state["query"])
         return {"response": resp}
 
+    def rewrite_node(state: AgentState):
+        new_q = deps.llm.generate(
+            "Viết lại câu truy vấn tiếng Việt rõ nghĩa hơn, chỉ trả câu viết lại.",
+            state["normalized_query"])
+        return {"normalized_query": new_q.strip(), "retry_count": state.get("retry_count", 0) + 1}
+
+    def after_retrieval(state: AgentState) -> str:
+        if state.get("needs_retry") and state.get("retry_count", 0) < 2:
+            return "rewrite"
+        return "aggregate"
+
     def route(state: AgentState) -> str:
         i = state["intent"]
         if i in HANDOFF_INTENTS:
@@ -47,6 +58,7 @@ def build_graph(deps: EngineDeps):
     g.add_node("normalize", normalize_node)
     g.add_node("router", router_node)
     g.add_node("retrieval", lambda s: retrieval_node(deps, s))
+    g.add_node("rewrite", rewrite_node)
     g.add_node("action", lambda s: action_node(deps, s))
     g.add_node("chitchat", chitchat_node)
     g.add_node("handoff", lambda s: handoff_node(deps, s))
@@ -55,7 +67,9 @@ def build_graph(deps: EngineDeps):
     g.add_edge("normalize", "router")
     g.add_conditional_edges("router", route,
         {"retrieval": "retrieval", "action": "action", "chitchat": "chitchat", "handoff": "handoff"})
-    g.add_edge("retrieval", "aggregate")
+    g.add_conditional_edges("retrieval", after_retrieval,
+        {"rewrite": "rewrite", "aggregate": "aggregate"})
+    g.add_edge("rewrite", "retrieval")
     g.add_edge("action", "aggregate")
     g.add_edge("chitchat", "aggregate")
     g.add_edge("handoff", "aggregate")

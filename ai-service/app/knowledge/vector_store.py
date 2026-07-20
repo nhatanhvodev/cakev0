@@ -22,7 +22,10 @@ class VectorStore:
         return self._client.get_or_create_collection(name, embedding_function=self._embed)
 
     def add(self, collection, ids, texts, metadatas):
-        self._col(collection).upsert(ids=ids, documents=texts, metadatas=metadatas)
+        # chroma rejects empty-dict metadata; normalize to None (query() already
+        # coalesces a missing metadata back to {} on the way out).
+        metas = [m if m else None for m in metadatas]
+        self._col(collection).upsert(ids=ids, documents=texts, metadatas=metas)
 
     def query(self, collection, text, top_k=5) -> list[RetrievedDoc]:
         res = self._col(collection).query(query_texts=[text], n_results=top_k)

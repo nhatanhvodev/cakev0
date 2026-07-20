@@ -24,12 +24,15 @@ def handoff_node(deps, state):
         f"Khách nói: {state['query']}")
     session = state.get("context", {}).get("session") or {}
     conn = deps.conn_factory()
-    if conn is not None and session.get("id"):
-        from app.db import ticket_repo
-        priority = "high" if state.get("intent") == "complaint" else "medium"
-        ticket_repo.create_ticket(conn, session["id"],
-                                  subject=state["query"][:200], priority=priority, draft_response=draft)
-        conn.close()
+    if conn is not None:
+        try:
+            if session.get("id"):
+                from app.db import ticket_repo
+                priority = "high" if state.get("intent") == "complaint" else "medium"
+                ticket_repo.create_ticket(conn, session["id"],
+                                          subject=state["query"][:200], priority=priority, draft_response=draft)
+        finally:
+            conn.close()
     return {"should_handoff": ok, "handoff_reasons": reasons,
             "response": "Mình đã ghi nhận và chuyển cho nhân viên hỗ trợ. Bạn chờ trong ít phút nhé, "
                         "hoặc gọi hotline 0901 234 567."}

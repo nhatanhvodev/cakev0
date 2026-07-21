@@ -60,7 +60,7 @@
 
   async function poll() {
     if (!sessionId) return;
-    const r = await fetch(`${API}/history.php?session_id=${sessionId}`);
+    const r = await fetch(`${API}/history.php?session_id=${sessionId}&guest_token=${encodeURIComponent(token)}`);
     const data = await r.json();
     (data.messages || []).forEach(m => {
       if (m.id > lastMsgId) { lastMsgId = m.id; if (m.sender === 'agent') bubble('agent', esc(m.content)); }

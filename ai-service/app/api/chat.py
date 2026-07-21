@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from app import deps as deps_mod
 from app.db import chat_repo
@@ -43,14 +43,34 @@ def chat_send(req: ChatSendRequest, engine=Depends(deps_mod.get_engine)):
     return {"session_id": session["id"], "reply": reply.model_dump(), "handoff": reply.handoff}
 
 
+def _verify_admin_bypass(header_val: str | None) -> bool:
+    if not header_val:
+        return False
+    import hashlib, hmac as _hmac
+    from app.config import get_settings
+    secret = get_settings().internal_api_secret
+    expected = _hmac.new(secret.encode(), b"admin", hashlib.sha256).hexdigest()
+    return _hmac.compare_digest(expected, header_val)
+
+
 @router.get("/chat/history")
-def chat_history(session_id: int, engine=Depends(deps_mod.get_engine)):
+def chat_history(session_id: int, user_id: int | None = None, guest_token: str | None = None,
+                 x_admin_bypass: str | None = Header(default=None),
+                 engine=Depends(deps_mod.get_engine)):
     conn = engine.deps.conn_factory()
     if conn is None:
         return {"session_id": session_id, "messages": []}
+    is_admin = _verify_admin_bypass(x_admin_bypass)
+    with conn.cursor() as cur:
+        cur.execute("SELECT * FROM chat_sessions WHERE id = %s", (session_id,))
+        session_row = cur.fetchone()
+    if session_row is None or (not is_admin and not chat_repo._session_owner_matches(
+            session_row, user_id, guest_token, None)):
+        conn.close()
+        raise HTTPException(status_code=403, detail="session_not_owned")
     rows = chat_repo.get_messages(conn, session_id)
     conn.close()
-    messages = [{"sender": m["sender"], "content": m["content"],
+    messages = [{"id": m["id"], "sender": m["sender"], "content": m["content"],
                  "content_type": m.get("content_type"),
                  "created_at": str(m["created_at"]) if m.get("created_at") is not None else None}
                 for m in rows]

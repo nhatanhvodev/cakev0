@@ -3,13 +3,26 @@ import json
 _ALLOWED = {"status", "intent_label", "summary", "metadata", "closed_at"}
 
 
+def _session_owner_matches(row, user_id, guest_token, external_user_id) -> bool:
+    """Match session ownership. Prevents IDOR: caller must supply one identifier
+    that matches the stored row. Missing all three (e.g. Messenger session before
+    PSID lookup) fails closed — those callers use dedicated code paths."""
+    if user_id is not None and row.get("user_id") == user_id:
+        return True
+    if guest_token and row.get("guest_token") == guest_token:
+        return True
+    if external_user_id and row.get("external_user_id") == external_user_id:
+        return True
+    return False
+
+
 def get_or_create_session(conn, user_id=None, guest_token=None, source="widget",
                           external_user_id=None, session_id=None) -> dict:
     with conn.cursor() as cur:
         if session_id:
             cur.execute("SELECT * FROM chat_sessions WHERE id = %s", (session_id,))
             row = cur.fetchone()
-            if row:
+            if row and _session_owner_matches(row, user_id, guest_token, external_user_id):
                 return row
         if external_user_id and not session_id:
             cur.execute(

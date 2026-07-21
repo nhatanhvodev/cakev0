@@ -20,11 +20,26 @@ if ($sessionId <= 0) {
     exit;
 }
 
-$url = chat_ai_service_url() . '/chat/history?session_id=' . $sessionId;
+$query = ['session_id' => $sessionId];
+$adminBypass = false;
+if (!empty($_SESSION['admin_logged_in'])) {
+    $adminBypass = true;
+} elseif (isset($_SESSION['user_id'])) {
+    $query['user_id'] = (int) $_SESSION['user_id'];
+} elseif (!empty($_GET['guest_token'])) {
+    $query['guest_token'] = substr((string) $_GET['guest_token'], 0, 64);
+}
+
+$url = chat_ai_service_url() . '/chat/history?' . http_build_query($query);
+$headers = ['Content-Type: application/json'];
+if ($adminBypass) {
+    $secret = getenv('INTERNAL_API_SECRET') ?: '';
+    $headers[] = 'X-Admin-Bypass: ' . hash_hmac('sha256', 'admin', $secret);
+}
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_HTTPHEADER => $headers,
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 30,
 ]);

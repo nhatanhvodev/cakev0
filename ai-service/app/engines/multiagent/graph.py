@@ -1,3 +1,5 @@
+import json
+
 from langgraph.graph import StateGraph, END
 from app.engines.base import EngineDeps
 from app.engines.multiagent.state import AgentState
@@ -9,6 +11,14 @@ RETRIEVAL_INTENTS = {"faq", "catalog_search", "product_recommend",
                      "policy_shipping", "policy_payment", "policy_return"}
 ACTION_INTENTS = {"order_status", "order_create"}
 HANDOFF_INTENTS = {"complaint", "handoff_request"}
+EXIT_DRAFT_WORDS = ("thôi", "hủy", "huy don")
+
+
+def _open_draft(session) -> bool:
+    meta = session.get("metadata")
+    meta = json.loads(meta) if isinstance(meta, str) else (meta or {})
+    d = meta.get("order_draft") or {}
+    return bool(d.get("items")) or d.get("step") not in (None, "items")
 
 def build_graph(deps: EngineDeps):
     from app.engines.multiagent.retrieval import retrieval_node
@@ -24,6 +34,8 @@ def build_graph(deps: EngineDeps):
         return {"normalized_query": normalize(state["query"])}
 
     def router_node(state: AgentState):
+        if state.get("intent") == "order_create":
+            return {"intent": "order_create", "confidence": 1.0}
         intent, conf = router_mod.classify_intent(deps.llm, state["normalized_query"])
         return {"intent": intent, "confidence": conf}
 
@@ -85,6 +97,10 @@ class MultiAgentEngine:
         state: AgentState = {"query": user_message, "history": history, "context": context,
                              "retry_count": 0, "citations": [], "products": [],
                              "should_handoff": False, "handoff_reasons": []}
+        session = (context or {}).get("session") or {}
+        if _open_draft(session) and not any(w in user_message.lower() for w in EXIT_DRAFT_WORDS):
+            state["intent"] = "order_create"
+            state["confidence"] = 1.0
         out = self._graph.invoke(state)
         return EngineReply(
             type=out.get("action_result", {}).get("type", "text"),

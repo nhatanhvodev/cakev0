@@ -110,4 +110,5 @@ class MultiAgentEngine:
             intent=out.get("intent", "unknown"),
             confidence=out.get("confidence", 0.0),
             handoff=out.get("should_handoff", False),
-            order=out.get("action_result", {}).get("order"))
+            order=out.get("action_result", {}).get("order"),
+            retrieved_docs=out.get("retrieved_docs", []))

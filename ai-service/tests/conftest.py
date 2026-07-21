@@ -9,3 +9,11 @@ def fake_embed(texts):
 @pytest.fixture
 def fake_store(tmp_path):
     return VectorStore(str(tmp_path), embedding_fn=fake_embed)
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit_between_tests():
+    from app.main import _reset_rate_limit
+    _reset_rate_limit()
+    yield
+    _reset_rate_limit()

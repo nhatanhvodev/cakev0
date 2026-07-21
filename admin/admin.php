@@ -1976,6 +1976,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     onclick="showTab(event, 'coupons')"><i class="bi bi-ticket-perforated"></i> Coupon</a>
                 <a class="nav-link" href="admin.php?tab=contacts#contacts" data-tab="contacts"
                     onclick="showTab(event, 'contacts')"><i class="bi bi-envelope"></i> Liên hệ</a>
+                <a class="nav-link" href="admin.php?tab=chat#chat" data-tab="chat"
+                    onclick="showTab(event, 'chat')"><i class="bi bi-chat-dots"></i> Hội thoại</a>
             </nav>
         </div>
 
@@ -2922,6 +2924,28 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- TAB 7: CHAT (Hội thoại - Task 18) -->
+            <div id="chat" class="tab-content">
+                <h3 class="mb-4" style="color:#4a1d1f;">Hội thoại khách hàng</h3>
+                <div class="ac-stats">
+                    <div class="ac-stat-box">
+                        <span class="ac-stat-label">Hội thoại hôm nay</span>
+                        <span class="ac-stat-value" id="ac-stat-today">-</span>
+                    </div>
+                    <div class="ac-stat-box">
+                        <span class="ac-stat-label">Đang chờ hỗ trợ (handoff)</span>
+                        <span class="ac-stat-value" id="ac-stat-handoff">-</span>
+                    </div>
+                    <div class="ac-stat-box">
+                        <span class="ac-stat-label">Ý định (intent)</span>
+                        <span class="ac-stat-value" id="ac-stat-intents" style="font-size:13px;">-</span>
+                    </div>
+                </div>
+                <div id="admin-chat-root"></div>
+                <link rel="stylesheet" href="/cakev0/assets/css/admin-chat.css">
+                <script src="/cakev0/assets/js/admin-chat.js"></script>
             </div>
 
             <div id="deleteProductModal" class="confirm-modal" role="dialog" aria-modal="true"

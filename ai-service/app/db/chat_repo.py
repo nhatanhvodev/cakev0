@@ -11,6 +11,13 @@ def get_or_create_session(conn, user_id=None, guest_token=None, source="widget",
             row = cur.fetchone()
             if row:
                 return row
+        if external_user_id and not session_id:
+            cur.execute(
+                "SELECT * FROM chat_sessions WHERE external_user_id = %s AND status = 'active' "
+                "ORDER BY id DESC LIMIT 1", (external_user_id,))
+            row = cur.fetchone()
+            if row:
+                return row
         cur.execute(
             "INSERT INTO chat_sessions (user_id, guest_token, source, external_user_id) "
             "VALUES (%s, %s, %s, %s)", (user_id, guest_token, source, external_user_id))

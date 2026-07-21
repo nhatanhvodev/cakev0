@@ -25,3 +25,21 @@ def extract_events(payload: dict) -> list[dict]:
 def send_text(page_token: str, psid: str, text: str):
     httpx.post(GRAPH_URL, params={"access_token": page_token},
                json={"recipient": {"id": psid}, "message": {"text": text[:2000]}}, timeout=10)
+
+
+def build_generic_template(products: list[dict], base_url: str) -> dict:
+    def vnd(v): return f"{int(v):,}".replace(",", ".") + " VNĐ"
+    elements = [{
+        "title": p["ten_banh"][:80],
+        "subtitle": vnd(p["gia"]),
+        "image_url": p.get("hinh_anh") if str(p.get("hinh_anh", "")).startswith("http")
+                     else f"{base_url}/{str(p.get('hinh_anh', '')).lstrip('/')}",
+        "default_action": {"type": "web_url", "url": f"{base_url}/pages/product.php?id={p['id']}"},
+    } for p in products[:10]]
+    return {"attachment": {"type": "template",
+                           "payload": {"template_type": "generic", "elements": elements}}}
+
+
+def send_payload(page_token: str, psid: str, message: dict):
+    httpx.post(GRAPH_URL, params={"access_token": page_token},
+               json={"recipient": {"id": psid}, "message": message}, timeout=10)

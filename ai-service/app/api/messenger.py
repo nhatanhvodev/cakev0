@@ -34,4 +34,6 @@ async def receive(request: Request, engine=Depends(deps_mod.get_engine)):
         chat_repo.append_message(conn, session["id"], "bot", reply.content)
         conn.close()
         ms.send_text(s.fb_page_token, ev["psid"], reply.content)
+        if reply.products:
+            ms.send_payload(s.fb_page_token, ev["psid"], ms.build_generic_template(reply.products, s.site_base_url))
     return {"status": "ok"}

@@ -17,6 +17,11 @@ def test_is_confirmation():
     assert svc.is_confirmation("đồng ý")
     assert not svc.is_confirmation("khoan đã")
 
+def test_extract_product_keyword_strips_verbs_and_quantities():
+    assert svc.extract_product_keyword("đặt bánh kem dâu 2 cái") == "kem dâu"
+    assert svc.extract_product_keyword("cho mình lấy 1 bánh sinh nhật nhé") == "sinh nhật"
+    assert svc.extract_product_keyword("bánh kem chocolate") == "kem chocolate"
+
 def test_flow_requires_login():
     resp, order, draft = svc.advance_draft(None, {"metadata": None}, "đặt bánh kem", user_id=None)
     assert "đăng nhập" in resp

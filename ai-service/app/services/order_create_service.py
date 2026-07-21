@@ -22,6 +22,21 @@ def parse_quantity(text: str) -> int:
     return max(1, min(20, int(m.group(1)))) if m else 1
 
 
+_ORDER_STOPWORDS = {
+    "đặt", "dat", "mua", "cho", "mình", "minh", "em", "anh", "chị", "chi",
+    "lấy", "lay", "muốn", "muon", "giúp", "giup", "làm", "lam", "nhé", "nhe",
+    "ạ", "a", "với", "voi", "cái", "cai", "chiếc", "chiec", "hộp", "hop",
+    "phần", "phan", "ổ", "o", "bánh", "banh",
+}
+
+
+def extract_product_keyword(text: str) -> str:
+    """Strip digits + common order verbs/classifiers so LIKE can match a product name."""
+    no_digits = re.sub(r"\d+", " ", text)
+    tokens = [t for t in re.findall(r"[\wÀ-ỹ]+", no_digits) if t.lower() not in _ORDER_STOPWORDS]
+    return " ".join(tokens).strip()
+
+
 def is_confirmation(text: str) -> bool:
     low = text.lower()
     return any(w in low for w in CONFIRM_WORDS)
@@ -61,7 +76,8 @@ def advance_draft(deps, session: dict, message: str, user_id) -> tuple[str, dict
     if step == "items":
         conn = deps.conn_factory()
         from app.db import catalog_repo
-        found = catalog_repo.search_products_like(conn, re.sub(r"\d+", "", message).strip()) if conn else []
+        keyword = extract_product_keyword(message)
+        found = catalog_repo.search_products_like(conn, keyword) if conn and keyword else []
         if conn:
             conn.close()
         if not found:

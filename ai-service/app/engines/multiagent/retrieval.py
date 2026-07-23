@@ -41,7 +41,7 @@ def retrieval_node(deps, state):
         RETRIEVAL_SYSTEM, f"TÀI LIỆU:\n{block}\n\nKHÁCH: {state['query']}"))
     by_id = {d.id: d for d in docs}
     cits = [{"source": s, "excerpt": by_id[s].text[:120]} for s in parsed["sources"] if s in by_id]
-    products = [d.metadata | {"ten_banh": d.text.split("\n")[0].replace("SAN PHAM: ", "")}
+    products = [(d.metadata or {}) | {"ten_banh": d.text.split("\n")[0].replace("SAN PHAM: ", "")}
                 for d in docs if d.id.startswith("product-")] if col == "products" else []
 
     if state["intent"] == "product_recommend" and products:

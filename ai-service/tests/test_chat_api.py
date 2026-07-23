@@ -1,3 +1,7 @@
+import hashlib
+import hmac
+import time
+
 from fastapi.testclient import TestClient
 from app.main import app
 from app import deps
@@ -5,6 +9,13 @@ from app.engines.baseline import BaselineEngine
 from app.engines.base import EngineDeps
 from app.llm import FakeLLM
 from app.config import get_settings
+
+
+def _admin_header() -> dict:
+    ts = int(time.time())
+    secret = get_settings().internal_api_secret
+    sig = hmac.new(secret.encode(), f"admin:{ts}".encode(), hashlib.sha256).hexdigest()
+    return {"X-Admin-Bypass": f"{ts}:{sig}"}
 
 
 def test_chat_send_returns_reply(fake_store, monkeypatch):
@@ -48,7 +59,7 @@ def test_knowledge_index_without_db_indexes_policies_and_faq(fake_store):
     d = EngineDeps(llm=FakeLLM([]), store=fake_store, settings=get_settings(), conn_factory=lambda: None)
     app.dependency_overrides[deps.get_engine] = lambda: BaselineEngine(d)
     client = TestClient(app)
-    r = client.post("/knowledge/index", params={"source": "faq"})
+    r = client.post("/knowledge/index", params={"source": "faq"}, headers=_admin_header())
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "ok"

@@ -33,8 +33,10 @@ if (!empty($_SESSION['admin_logged_in'])) {
 $url = chat_ai_service_url() . '/chat/history?' . http_build_query($query);
 $headers = ['Content-Type: application/json'];
 if ($adminBypass) {
-    $secret = getenv('INTERNAL_API_SECRET') ?: '';
-    $headers[] = 'X-Admin-Bypass: ' . hash_hmac('sha256', 'admin', $secret);
+    $bypass = chat_admin_bypass_header();
+    if ($bypass !== null) {
+        $headers[] = $bypass;
+    }
 }
 
 $ch = curl_init($url);

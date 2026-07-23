@@ -20,3 +20,13 @@ function chat_build_forward_payload(array $input, ?int $authenticatedUserId): ar
     }
     return $payload;
 }
+
+function chat_admin_bypass_header(): ?string
+{
+    $secret = getenv('INTERNAL_API_SECRET') ?: '';
+    if ($secret === '') {
+        return null;
+    }
+    $ts = time();
+    return 'X-Admin-Bypass: ' . $ts . ':' . hash_hmac('sha256', 'admin:' . $ts, $secret);
+}

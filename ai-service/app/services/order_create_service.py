@@ -7,8 +7,9 @@ import httpx
 
 from app.engines.multiagent.action import extract_phone
 
-CONFIRM_WORDS = {"đồng ý", "dong y", "ok", "oke", "xác nhận", "xac nhan",
-                  "chốt", "chot", "đúng rồi", "yes"}
+CONFIRM_WORDS = {"đồng ý", "dong y", "ok", "oke", "okay", "xác nhận", "xac nhan",
+                  "chốt", "chot", "chốt đơn", "chot don", "đúng rồi", "dung roi", "yes", "y"}
+_CONFIRM_TOKEN_RE = re.compile(r"[\wÀ-ỹ]+")
 LOGIN_MSG = ("Để đặt bánh trong chat, bạn vui lòng đăng nhập tài khoản Gấu Bakery trước nhé: "
              "/cakev0/pages/login.php")
 
@@ -18,7 +19,8 @@ def sign_payload(body: str, secret: str) -> str:
 
 
 def parse_quantity(text: str) -> int:
-    m = re.search(r"\b(\d{1,2})\b", text)
+    """First standalone integer 1-99. Larger numbers cap to max 20."""
+    m = re.search(r"\b(\d{1,3})\b", text)
     return max(1, min(20, int(m.group(1)))) if m else 1
 
 
@@ -38,8 +40,15 @@ def extract_product_keyword(text: str) -> str:
 
 
 def is_confirmation(text: str) -> bool:
-    low = text.lower()
-    return any(w in low for w in CONFIRM_WORDS)
+    """Token/phrase match — avoids 'ok' inside 'lookbook' false-positive."""
+    low = text.lower().strip()
+    if low in CONFIRM_WORDS:
+        return True
+    tokens = _CONFIRM_TOKEN_RE.findall(low)
+    if any(t in CONFIRM_WORDS for t in tokens):
+        return True
+    # multi-word confirms (e.g. "đồng ý", "xác nhận")
+    return any(w in low for w in CONFIRM_WORDS if " " in w)
 
 
 def fmt_vnd(v) -> str:

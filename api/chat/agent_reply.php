@@ -38,10 +38,15 @@ $payload = [
     'content' => $content,
 ];
 
+$headers = ['Content-Type: application/json'];
+$bypass = chat_admin_bypass_header();
+if ($bypass !== null) {
+    $headers[] = $bypass;
+}
 $ch = curl_init(chat_ai_service_url() . '/admin/reply');
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_HTTPHEADER => $headers,
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 30,

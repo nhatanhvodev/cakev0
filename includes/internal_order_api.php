@@ -34,23 +34,30 @@ function create_order_internal(mysqli $conn, array $p): array
     if (!$stmt->get_result()->fetch_assoc()) { $stmt->close(); return ['error' => 'validation', 'reason' => 'user_not_found']; }
     $stmt->close();
 
-    $total = 0.0;
-    $resolved = [];
-    foreach ($p['items'] as $item) {
-        $banhId = (int) $item['banh_id'];
-        $qty = (int) $item['quantity'];
-        $stmt = $conn->prepare('SELECT id, gia FROM banh WHERE id = ?');
-        $stmt->bind_param('i', $banhId);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        if (!$row) return ['error' => 'validation', 'reason' => 'product_not_found:' . $banhId];
-        $total += ((float) $row['gia']) * $qty;
-        $resolved[] = ['banh_id' => $banhId, 'quantity' => $qty, 'price' => (float) $row['gia']];
-    }
-
     $conn->begin_transaction();
     try {
+        $total = 0.0;
+        $resolved = [];
+        foreach ($p['items'] as $item) {
+            $banhId = (int) $item['banh_id'];
+            $qty = (int) $item['quantity'];
+            $stmt = $conn->prepare('SELECT id, gia, stock FROM banh WHERE id = ? FOR UPDATE');
+            $stmt->bind_param('i', $banhId);
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if (!$row) {
+                $conn->rollback();
+                return ['error' => 'validation', 'reason' => 'product_not_found:' . $banhId];
+            }
+            if ((int) $row['stock'] < $qty) {
+                $conn->rollback();
+                return ['error' => 'validation', 'reason' => 'out_of_stock:' . $banhId];
+            }
+            $total += ((float) $row['gia']) * $qty;
+            $resolved[] = ['banh_id' => $banhId, 'quantity' => $qty, 'price' => (float) $row['gia']];
+        }
+
         $name = trim((string) $p['recipient_name']);
         $phone = (string) $p['phone'];
         $address = trim((string) $p['address']);
@@ -65,12 +72,22 @@ function create_order_internal(mysqli $conn, array $p): array
         $orderId = $conn->insert_id;
         $stmt->close();
 
-        $stmt = $conn->prepare('INSERT INTO order_items (order_id, banh_id, quantity, price) VALUES (?, ?, ?, ?)');
+        $insItem = $conn->prepare('INSERT INTO order_items (order_id, banh_id, quantity, price) VALUES (?, ?, ?, ?)');
+        $decStock = $conn->prepare('UPDATE banh SET stock = stock - ? WHERE id = ? AND stock >= ?');
         foreach ($resolved as $r) {
-            $stmt->bind_param('iiid', $orderId, $r['banh_id'], $r['quantity'], $r['price']);
-            $stmt->execute();
+            $insItem->bind_param('iiid', $orderId, $r['banh_id'], $r['quantity'], $r['price']);
+            $insItem->execute();
+            $decStock->bind_param('iii', $r['quantity'], $r['banh_id'], $r['quantity']);
+            $decStock->execute();
+            if ($decStock->affected_rows !== 1) {
+                $insItem->close();
+                $decStock->close();
+                $conn->rollback();
+                return ['error' => 'validation', 'reason' => 'out_of_stock:' . $r['banh_id']];
+            }
         }
-        $stmt->close();
+        $insItem->close();
+        $decStock->close();
         $conn->commit();
         return ['order_id' => $orderId, 'total_amount' => $total, 'status' => $status];
     } catch (Throwable $e) {

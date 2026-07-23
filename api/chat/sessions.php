@@ -21,9 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
+$headers = ['Content-Type: application/json'];
+$bypass = chat_admin_bypass_header();
+if ($bypass !== null) {
+    $headers[] = $bypass;
+}
 $ch = curl_init(chat_ai_service_url() . '/admin/sessions');
 curl_setopt_array($ch, [
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_HTTPHEADER => $headers,
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 30,
 ]);

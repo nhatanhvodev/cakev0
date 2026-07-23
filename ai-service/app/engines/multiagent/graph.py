@@ -1,4 +1,5 @@
 import json
+import re
 
 from langgraph.graph import StateGraph, END
 from app.engines.base import EngineDeps
@@ -11,7 +12,19 @@ RETRIEVAL_INTENTS = {"faq", "catalog_search", "product_recommend",
                      "policy_shipping", "policy_payment", "policy_return"}
 ACTION_INTENTS = {"order_status", "order_create"}
 HANDOFF_INTENTS = {"complaint", "handoff_request"}
-EXIT_DRAFT_WORDS = ("thôi", "hủy", "huy don")
+EXIT_DRAFT_WORDS = {"thôi", "thoi", "hủy", "huy", "hủy đơn", "huy don", "dừng", "dung",
+                    "quên", "quen", "bỏ", "bo", "cancel"}
+_EXIT_TOKEN_RE = re.compile(r"[\wÀ-ỹ]+")
+
+
+def _has_exit_word(msg: str) -> bool:
+    low = msg.lower().strip()
+    if low in EXIT_DRAFT_WORDS:
+        return True
+    tokens = _EXIT_TOKEN_RE.findall(low)
+    if any(t in EXIT_DRAFT_WORDS for t in tokens):
+        return True
+    return any(w in low for w in EXIT_DRAFT_WORDS if " " in w)
 
 
 def _open_draft(session) -> bool:
@@ -98,7 +111,7 @@ class MultiAgentEngine:
                              "retry_count": 0, "citations": [], "products": [],
                              "should_handoff": False, "handoff_reasons": []}
         session = (context or {}).get("session") or {}
-        if _open_draft(session) and not any(w in user_message.lower() for w in EXIT_DRAFT_WORDS):
+        if _open_draft(session) and not _has_exit_word(user_message):
             state["intent"] = "order_create"
             state["confidence"] = 1.0
         out = self._graph.invoke(state)

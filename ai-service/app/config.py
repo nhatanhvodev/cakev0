@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     fb_page_token: str = ""
     fb_verify_token: str = ""
     fb_app_secret: str = ""
-    cors_origins: str = "*"
+    cors_origins: str = ""  # required in prod; empty in dev blocks browsers explicitly
     site_base_url: str = "https://cake-i8l0.onrender.com/cakev0"
     enable_normalizer: bool = True
 

@@ -11,7 +11,7 @@
     <button id="gau-chat-toggle" aria-label="Mở chat">💬</button>
     <div id="gau-chat-window" hidden>
       <div class="gau-chat-header" title="Thu nhỏ">
-        <div class="gau-ava">🧁</div>
+        <div class="gau-ava"><img src="/cakev0/assets/img/logo.png" alt="Gấu Bakery"></div>
         <div class="gau-htext">
           <div class="gau-htitle">Gấu Bakery</div>
           <div class="gau-hsub"><span class="gau-dot"></span> Trợ lý luôn sẵn sàng</div>

@@ -38,3 +38,7 @@ class VectorStore:
     def reset(self, collection):
         try: self._client.delete_collection(collection)
         except Exception: pass
+
+    def count(self, collection) -> int:
+        try: return self._col(collection).count()
+        except Exception: return 0

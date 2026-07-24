@@ -96,6 +96,37 @@ app.include_router(chat_router)
 app.include_router(messenger_router)
 
 
+@app.on_event("startup")
+def _auto_reindex_if_empty():
+    """Free-tier Render has no persistent disk, so the Chroma index is wiped on
+    every container start (redeploy / sleep-wake). Rebuild it once at startup if
+    the products collection is empty. Best-effort: never block the service boot."""
+    try:
+        from app import deps as deps_mod
+        from app.knowledge.indexer import reindex
+        d = deps_mod.build_deps()
+        if d.store.count("products") > 0:
+            return
+        conn = d.conn_factory()
+        try:
+            n = reindex(d.store, conn, "all")
+            print(f"[startup] auto-reindex complete: {n} docs")
+        finally:
+            if conn:
+                conn.close()
+    except Exception as e:
+        print(f"[startup] auto-reindex skipped: {type(e).__name__}: {e}")
+
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "engine": settings.engine}
+    return {"status": "ok", "engine": settings.engine,
+            "products_indexed": _safe_count()}
+
+
+def _safe_count() -> int:
+    try:
+        from app import deps as deps_mod
+        return deps_mod.build_deps().store.count("products")
+    except Exception:
+        return -1

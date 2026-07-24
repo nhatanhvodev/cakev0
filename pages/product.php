@@ -397,17 +397,12 @@ body {
     box-sizing: border-box;
 }
 
-/* ---- Sticky toolbar (clears the fixed header: 75px + 51px = 126px) ---- */
+/* ---- Toolbar (scrolls with the page; not sticky so it never covers cards) ---- */
 .catalog-toolbar {
-    position: sticky;
-    top: 132px;
-    z-index: 500;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    background: rgba(251, 246, 238, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: var(--pc-surface);
     border: 1px solid var(--pc-honey);
     border-radius: 16px;
     padding: 14px 16px;
@@ -792,14 +787,9 @@ body {
 
 .hidden { display: none; }
 
-/* ---- Responsive: keep sticky toolbar under the shorter mobile header ---- */
-@media (max-width: 900px) {
-    .catalog-toolbar { top: 118px; } /* 64 header + 48 menu + gap */
-}
-
+/* ---- Responsive ---- */
 @media (max-width: 600px) {
     .catalog { padding: 18px 14px 44px; }
-    .catalog-toolbar { top: 110px; }  /* 60 header + 44 menu + gap */
     .cat-head h2 { font-size: 18px; }
 }
 

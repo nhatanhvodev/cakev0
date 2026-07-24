@@ -92,10 +92,50 @@ services:
     networks:
       - bakery-net
 
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: gau-bakery-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - ENGINE=${ENGINE:-multiagent}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-004}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.3}
+      - CHROMA_PERSIST_DIR=/app/data/chroma_db
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root_password
+      - MYSQL_DATABASE=banh_store
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET:-change-me}
+      - INTERNAL_ORDER_API_URL=http://app/cakev0/api/internal/orders/create.php
+      - HANDOFF_CONFIDENCE_THRESHOLD=${HANDOFF_CONFIDENCE_THRESHOLD:-0.6}
+      - FB_PAGE_TOKEN=${FB_PAGE_TOKEN:-}
+      - FB_VERIFY_TOKEN=${FB_VERIFY_TOKEN:-}
+      - FB_APP_SECRET=${FB_APP_SECRET:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - SITE_BASE_URL=http://app/cakev0
+      - ENABLE_NORMALIZER=${ENABLE_NORMALIZER:-true}
+    volumes:
+      - ai_chroma_data:/app/data/chroma_db
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - bakery-net
+
 volumes:
   db_data:
   upload_data:
   page_uploads:
+  ai_chroma_data:
 
 
 networks:

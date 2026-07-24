@@ -1,0 +1,77 @@
+[
+  {
+    "question": "Thời gian giao bánh là bao lâu?",
+    "answer": "Gấu Bakery giao bánh trong ngày với các đơn đặt trước 15h. Với đơn sau 15h, chúng tôi sẽ giao vào sáng hôm sau.",
+    "category": "shipping"
+  },
+  {
+    "question": "Tôi có thể thanh toán bằng những cách nào?",
+    "answer": "Gấu Bakery hỗ trợ: (1) VNPAY online, (2) Thanh toán khi nhận hàng (COD), (3) Chuyển khoản ngân hàng.",
+    "category": "payment"
+  },
+  {
+    "question": "Tôi muốn đổi bánh thì phải làm sao?",
+    "answer": "Bạn có thể đổi bánh trong 2 giờ sau khi nhận nếu bánh có vấn đề chất lượng. Liên hệ hotline 0901 234 567.",
+    "category": "returns"
+  },
+  {
+    "question": "Phí vận chuyển được tính như thế nào?",
+    "answer": "Phí vận chuyển phụ thuộc vào loại bánh, địa điểm và thời điểm đặt hàng. Gấu Bakery sẽ thông báo rõ phí vận chuyển trước khi giao hàng, đảm bảo minh bạch.",
+    "category": "shipping"
+  },
+  {
+    "question": "Gấu Bakery có giao hàng toàn quốc không?",
+    "answer": "Có, Gấu Bakery hỗ trợ giao hàng trên toàn quốc, đặc biệt với các đơn sỉ và đơn lớn, thông qua các đối tác vận chuyển uy tín, chuyên nghiệp.",
+    "category": "shipping"
+  },
+  {
+    "question": "Tôi có thể hủy đơn hàng thanh toán COD không?",
+    "answer": "Bạn có quyền hủy đơn nếu việc giao hàng bị trễ mà không do lỗi từ phía khách hàng. Vui lòng liên hệ hotline để được hỗ trợ hủy đơn kịp thời.",
+    "category": "shipping"
+  },
+  {
+    "question": "Đặt bánh sinh nhật cần đặt trước bao lâu?",
+    "answer": "Để đảm bảo chất lượng và thời gian chuẩn bị, quý khách nên đặt bánh sinh nhật trước ít nhất 1 ngày. Với đơn đặt trước 15h, Gấu Bakery giao trong ngày; đặt sau 15h sẽ giao vào sáng hôm sau.",
+    "category": "shipping"
+  },
+  {
+    "question": "Gấu Bakery có xuất hóa đơn không?",
+    "answer": "Có. Gấu Bakery cung cấp hóa đơn đầy đủ theo đơn hàng hoặc theo yêu cầu của khách hàng, kèm thông tin rõ ràng về tên, số điện thoại và mã đơn hàng.",
+    "category": "shipping"
+  },
+  {
+    "question": "Nếu bánh bị hư hỏng khi vận chuyển thì sao?",
+    "answer": "Khách hàng có quyền từ chối nhận hàng nếu bánh bị hư hỏng. Gấu Bakery hỗ trợ đổi sản phẩm mới hoặc hoàn tiền theo chính sách đổi trả đã cam kết.",
+    "category": "returns"
+  },
+  {
+    "question": "Thanh toán qua VNPAY có an toàn không?",
+    "answer": "Thanh toán qua VNPAY được xử lý nhanh chóng bằng QR hoặc thẻ nội địa, xác nhận tự động sau khi giao dịch hoàn tất. Mọi thông tin giao dịch và thanh toán đều được Gấu Bakery bảo mật tuyệt đối.",
+    "category": "payment"
+  },
+  {
+    "question": "Khi nào đơn hàng được xử lý và giao đi?",
+    "answer": "Đơn hàng chỉ được xử lý và giao đi sau khi hệ thống xác nhận thanh toán thành công, áp dụng với hình thức chuyển khoản và VNPAY. Với COD, đơn được xử lý ngay sau khi xác nhận thông tin giao hàng.",
+    "category": "payment"
+  },
+  {
+    "question": "Điều kiện để được đổi trả bánh là gì?",
+    "answer": "Khách hàng cần cung cấp đầy đủ hóa đơn, tem nhãn còn nguyên vẹn, kèm hình ảnh hoặc video rõ nét thể hiện tình trạng sản phẩm, và gửi yêu cầu đổi trả trong vòng 24 giờ kể từ khi nhận hàng.",
+    "category": "returns"
+  },
+  {
+    "question": "Hoàn tiền mất bao lâu và qua hình thức nào?",
+    "answer": "Gấu Bakery hoàn tiền 100% qua chuyển khoản trong 3–5 ngày làm việc. Ngoài ra khách hàng cũng có thể chọn đổi sản phẩm mới có giá trị tương đương, và được miễn phí vận chuyển đổi trả.",
+    "category": "returns"
+  },
+  {
+    "question": "Gấu Bakery thu thập những thông tin cá nhân nào của khách hàng?",
+    "answer": "Gấu Bakery thu thập họ tên, số điện thoại, email và địa chỉ giao hàng do khách hàng cung cấp khi đăng ký tài khoản hoặc đặt hàng. Thông tin thanh toán chỉ được sử dụng để xử lý giao dịch, không lưu trữ trái phép.",
+    "category": "privacy"
+  },
+  {
+    "question": "Thông tin cá nhân của tôi có được chia sẻ cho bên thứ ba không?",
+    "answer": "Gấu Bakery cam kết không mua bán, trao đổi thông tin cá nhân khi chưa có sự đồng ý của khách hàng. Thông tin chỉ được cung cấp cho cơ quan chức năng khi có yêu cầu hợp pháp.",
+    "category": "privacy"
+  }
+]

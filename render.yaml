@@ -18,7 +18,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: LLM_MODEL
-        value: gemini-flash-latest
+        value: gemini-flash-lite-latest
       - key: EMBEDDING_MODEL
         value: gemini-embedding-001
       - key: LLM_TEMPERATURE

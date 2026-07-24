@@ -7,3 +7,15 @@
 .worktrees/
 tmp/dompdf/*
 !tmp/dompdf/.gitkeep
+.superpowers/
+.agents/
+.codegraph/
+skills-lock.json
+
+ai-service/venv/
+ai-service/.pytest_cache/
+ai-service/__pycache__/
+**/__pycache__/
+*.pyc
+
+*.docx

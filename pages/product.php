@@ -320,6 +320,22 @@ function slugify(string $value, ?int $id = null): string {
     return $slug;
 }
 
+function renderStars($avg): string {
+    $avg = (float) $avg;
+    if ($avg < 0) { $avg = 0.0; }
+    if ($avg > 5) { $avg = 5.0; }
+    $full = (int) floor($avg);
+    $half = ($avg - $full) >= 0.5 ? 1 : 0;
+    if ($full + $half > 5) { $half = 0; }
+    $empty = 5 - $full - $half;
+    if ($empty < 0) { $empty = 0; }
+    $html = '';
+    $html .= str_repeat('<i class="fa-solid fa-star"></i>', $full);
+    if ($half) { $html .= '<i class="fa-solid fa-star-half-stroke"></i>'; }
+    $html .= str_repeat('<i class="fa-regular fa-star"></i>', $empty);
+    return $html;
+}
+
 $extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 
 ?>
@@ -338,9 +354,31 @@ $extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 <?php include '../includes/header.php'; ?>
 
 <style>
+/* ===== Gấu Bakery — Catalog redesign "Warm Artisan" =====
+   Palette lock: cream bg, maroon primary, single caramel accent.
+   Radius system: cards 18px · controls 12px · chips/heart pill.  */
+:root {
+    --pc-cream: #FBF6EE;
+    --pc-surface: #ffffff;
+    --pc-ink: #3A2117;
+    --pc-maroon: #4A1D1F;
+    --pc-maroon-deep: #2f1415;
+    --pc-caramel: #E07B39;
+    --pc-caramel-soft: #FFF2E8;
+    --pc-sale: #C0392B;
+    --pc-gold: #E8A93C;
+    --pc-honey: #F3E0BE;
+    --pc-line: rgba(74, 29, 31, 0.10);
+    --pc-muted: #8a7a70;
+    --pc-shadow: 0 14px 30px rgba(74, 29, 31, 0.08);
+    --pc-shadow-lg: 0 22px 44px rgba(74, 29, 31, 0.16);
+    --pc-radius-card: 18px;
+    --pc-radius-ctrl: 12px;
+}
+
 body {
-    background: #ffffff;
-    color: #272727;
+    background: var(--pc-cream);
+    color: var(--pc-ink);
     font-family: 'Poppins', sans-serif;
     margin: 0;
     min-height: 100vh;
@@ -349,294 +387,441 @@ body {
     overflow-x: hidden;
 }
 
-.page-content {
-    flex: 1;
+.page-content { flex: 1; }
+
+.catalog {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 26px 20px 56px;
+    box-sizing: border-box;
 }
 
-.products-wrap {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    padding: 30px 20px 40px;
-    max-width: 1180px;
-    margin: 20px auto 10px;
-    align-items: start;
+/* ---- Sticky toolbar (clears the fixed header: 75px + 51px = 126px) ---- */
+.catalog-toolbar {
+    position: sticky;
+    top: 132px;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(251, 246, 238, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--pc-honey);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 28px;
+    box-shadow: var(--pc-shadow);
 }
 
-@media(max-width: 900px) {
-    .products-wrap { grid-template-columns: 1fr; }
+.chip-row {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.product-content {
-    background: #fff;
-    border-radius: 0;
-    border: 1px solid #f3e0be;
-    box-shadow: 0 18px 36px rgba(74, 29, 31, 0.08);
-    padding: 22px 22px 28px;
+.chip-row::-webkit-scrollbar { display: none; }
+
+.chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    border: 1px solid var(--pc-honey);
+    background: var(--pc-surface);
+    color: var(--pc-maroon);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
 }
 
-.product-toolbar {
+.chip:hover {
+    border-color: var(--pc-caramel);
+    transform: translateY(-1px);
+}
+
+.chip .chip-count {
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--pc-caramel-soft);
+    color: var(--pc-caramel);
+    border-radius: 999px;
+    padding: 1px 8px;
+}
+
+.chip.is-active {
+    background: var(--pc-caramel);
+    border-color: var(--pc-caramel);
+    color: #fff;
+}
+
+.chip.is-active .chip-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+.filter-bar {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
     gap: 12px;
-    border: 1px solid #f3e0be;
-    border-radius: 10px;
-    background: #fff9f1;
-    padding: 14px;
-    margin-bottom: 18px;
     flex-wrap: wrap;
 }
 
 .product-filter-form {
     display: flex;
     align-items: flex-end;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 .filter-field {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    min-width: 190px;
+    gap: 5px;
 }
 
 .filter-field label {
-    font-size: 13px;
+    font-size: 11.5px;
     font-weight: 600;
-    border-radius: 10px;
-    color: #4a1d1f;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--pc-muted);
 }
 
 .filter-field select {
-    border: 1px solid #e4c997;
-    border-radius: 10px;
-    padding: 10px 12px;
-    background: #fff;
-    color: #2f1415;
-    font-size: 14px;
+    border: 1px solid var(--pc-honey);
+    border-radius: var(--pc-radius-ctrl);
+    padding: 9px 12px;
+    background: var(--pc-surface);
+    color: var(--pc-ink);
+    font-size: 13.5px;
+    font-weight: 500;
     font-family: inherit;
+    cursor: pointer;
+}
+
+.filter-field select:focus {
+    outline: 2px solid var(--pc-caramel);
+    outline-offset: 1px;
+    border-color: var(--pc-caramel);
 }
 
 .reset-filter {
-    color: #4a1d1f;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--pc-maroon);
     font-weight: 600;
+    font-size: 13.5px;
     text-decoration: none;
-    border: 1px solid #4a1d1f;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 14px;
+    border: 1px solid var(--pc-honey);
+    border-radius: var(--pc-radius-ctrl);
+    padding: 9px 14px;
+    background: var(--pc-surface);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .reset-filter:hover {
-    background: #4a1d1f;
-    color: #fbedcd;
+    background: var(--pc-maroon);
+    color: var(--pc-cream);
+    border-color: var(--pc-maroon);
 }
 
+/* ---- Category header ---- */
+.cat-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 22px;
+}
+
+.cat-head h2 {
+    margin: 0;
+    color: var(--pc-maroon);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.cat-head .cat-count {
+    font-size: 13px;
+    color: var(--pc-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cat-head::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--pc-line);
+}
+
+/* ---- Product grid ---- */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
     align-content: start;
 }
 
-@media (max-width: 1120px) {
-    .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1024px) {
+    .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-@media (max-width: 640px) {
-    .products-wrap { grid-template-columns: 1fr; }
-
-    .product-content {
-        padding: 18px;
-        border-radius: 0;
-    }
-
-    .product-card img {
-        aspect-ratio: 1 / 1;
-    }
+@media (max-width: 760px) {
+    .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 }
 
-@media (max-width: 520px) {
-    .product-filter-form {
-        width: 100%;
-    }
-
-    .filter-field {
-        min-width: 100%;
-    }
-}
-
+/* ---- Card ---- */
 .product-card {
-    background: #fff;
-    border-radius: 0;
-    padding: 14px;
-    border: 1px solid #f3e0be;
-    box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
+    position: relative;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: var(--pc-surface);
+    border: 1px solid var(--pc-honey);
+    border-radius: var(--pc-radius-card);
+    padding: 12px 12px 16px;
+    box-shadow: var(--pc-shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 36px rgba(74, 29, 31, 0.16);
+    transform: translateY(-6px);
+    box-shadow: var(--pc-shadow-lg);
 }
 
-.product-card img {
+.card-media {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--pc-caramel-soft);
+}
+
+.card-media img {
+    display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
-    border-radius: 14px;
+    transition: transform 0.45s ease;
+}
+
+.product-card:hover .card-media img { transform: scale(1.06); }
+
+.badge-sale {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    background: var(--pc-sale);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 999px;
+    box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3);
+}
+
+.fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--pc-maroon);
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(74, 29, 31, 0.15);
+    transition: transform 0.2s, background 0.2s, color 0.2s;
+}
+
+.fav-btn:hover { transform: scale(1.1); background: #fff; }
+.fav-btn.is-active { background: #fff; color: var(--pc-sale); }
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-top: 12px;
 }
 
 .product-link {
     color: inherit;
+    text-decoration: none;
     display: block;
 }
 
 .product-name {
     font-weight: 600;
-    margin: 10px 0 6px;
-    font-size: 15px;
-    min-height: 42px;
+    font-size: 14.5px;
+    line-height: 1.35;
+    margin: 0 0 8px;
+    color: var(--pc-ink);
+    min-height: 40px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    color: #222;
 }
 
-.price { margin-bottom: 10px; }
-.price del { color: #bbb; font-size: 13px; margin-right: 4px; }
-.price .current-price { color: #4a1d1f; font-weight: 700; font-size: 16px; }
-.discount-rate {
-    margin-left: 8px;
+.product-link:hover .product-name { color: var(--pc-maroon); }
+
+.rating-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    min-height: 18px;
+}
+
+.stars {
+    display: inline-flex;
+    gap: 1px;
+    color: var(--pc-gold);
+    font-size: 12.5px;
+}
+
+.stars .fa-regular { color: #d8cdbf; }
+
+.rating-count, .rating-empty {
+    font-size: 12px;
+    color: var(--pc-muted);
+}
+
+.price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.price .current-price {
+    color: var(--pc-maroon);
+    font-weight: 700;
+    font-size: 16.5px;
+}
+
+.price del { color: var(--pc-muted); font-size: 13px; }
+
+.price .discount-rate {
     font-size: 12px;
     font-weight: 700;
-    color: #b42318;
+    color: var(--pc-sale);
 }
+
+.card-foot { margin-top: auto; }
 
 .add-btn {
-    background: #4a1d1f;
-    color: #fbedcd;
+    width: 100%;
+    background: var(--pc-maroon);
+    color: var(--pc-cream);
     border: none;
+    border-radius: var(--pc-radius-ctrl);
     padding: 11px;
-    border-radius: 10px;
-    cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    line-height: 1.2;
-    white-space: nowrap;
-}
-
-.add-btn:hover {
-    background: #2f1415;
-    box-shadow: 0 12px 20px rgba(74, 29, 31, 0.25);
-}
-
-.product-actions {
-    margin-top: auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.product-actions .add-btn {
-    flex: 1;
-}
-
-.fav-btn {
-    width: 46px;
-    min-width: 46px;
-    height: 46px;
-    border: 1.5px solid #f3e0be;
-    border-radius: 14px;
-    background: #fff9f1;
-    color: #4a1d1f;
+    font-size: 13.5px;
+    font-family: inherit;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 10px rgba(74, 29, 31, 0.05);
+    gap: 8px;
+    line-height: 1.2;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
-.fav-btn:hover {
-    background: #fbedcd;
-    border-color: #4a1d1f;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(74, 29, 31, 0.12);
+.add-btn:hover {
+    background: var(--pc-maroon-deep);
+    box-shadow: 0 10px 20px rgba(74, 29, 31, 0.22);
 }
 
-.fav-btn.is-active {
-    background: #ffefef;
-    border-color: #f3b8b8;
-    color: #b42318;
+.add-btn:active { transform: translateY(1px); }
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--pc-muted);
+    font-size: 14px;
 }
 
-@media (max-width: 640px) {
-    .product-actions {
-        display: flex;
-        gap: 8px;
-        width: 100%;
-        margin-top: 12px;
-    }
+.empty-state i {
+    display: block;
+    font-size: 34px;
+    color: var(--pc-honey);
+    margin-bottom: 12px;
+}
 
-    .product-actions .add-btn {
-        flex: 1;
-        min-width: 0; /* Ngăn chặn nội dung đẩy nút sibling ra ngoài */
-        min-height: 44px;
-        padding: 0 8px;
-        font-size: 13px;
-        border-radius: 12px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: block;
-        text-align: center;
-        line-height: 44px;
-    }
+/* ---- Entrance fade (opacity only, so :hover transform stays intact) ---- */
+@media (prefers-reduced-motion: no-preference) {
+    .cat:not(.hidden) .product-card { animation: pcFade 0.45s ease both; }
+    .cat:not(.hidden) .product-card:nth-child(2) { animation-delay: 0.04s; }
+    .cat:not(.hidden) .product-card:nth-child(3) { animation-delay: 0.08s; }
+    .cat:not(.hidden) .product-card:nth-child(4) { animation-delay: 0.12s; }
+    .cat:not(.hidden) .product-card:nth-child(5) { animation-delay: 0.16s; }
+    .cat:not(.hidden) .product-card:nth-child(6) { animation-delay: 0.20s; }
+    .cat:not(.hidden) .product-card:nth-child(7) { animation-delay: 0.24s; }
+    .cat:not(.hidden) .product-card:nth-child(8) { animation-delay: 0.28s; }
+}
 
-    .fav-btn {
-        width: 40px;
-        min-width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: #fff9f1;
-        border: 1px solid #f3e0be;
-        flex-shrink: 0; /* Không cho phép nút này bị co lại */
-    }
-
-    .product-grid {
-        gap: 16px;
-    }
-
-    .product-card {
-        padding: 12px;
-        border-radius: 16px;
-    }
+@keyframes pcFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 .hidden { display: none; }
 
+/* ---- Responsive: keep sticky toolbar under the shorter mobile header ---- */
+@media (max-width: 900px) {
+    .catalog-toolbar { top: 118px; } /* 64 header + 48 menu + gap */
+}
+
+@media (max-width: 600px) {
+    .catalog { padding: 18px 14px 44px; }
+    .catalog-toolbar { top: 110px; }  /* 60 header + 44 menu + gap */
+    .cat-head h2 { font-size: 18px; }
+}
+
+@media (max-width: 560px) {
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .product-filter-form { width: 100%; }
+    .filter-field { flex: 1; min-width: 0; }
+    .filter-field select { width: 100%; }
+    .reset-filter { align-self: stretch; justify-content: center; }
+}
+
+/* ---- Back-to-top (kept mid-right to avoid the chat widget in the corner) ---- */
 .scroll-top {
     position: fixed;
     right: 20px;
     top: 80%;
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     border: none;
-    background: #4a1d1f;
-    color: #fbedcd;
+    background: var(--pc-maroon);
+    color: var(--pc-cream);
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
@@ -647,7 +832,7 @@ body {
     visibility: hidden;
     transform: translateY(calc(-50% + 6px));
     transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-    z-index: 2000;
+    z-index: 1500;
 }
 
 .scroll-top.is-visible {
@@ -656,27 +841,48 @@ body {
     transform: translateY(-50%);
 }
 
-.scroll-top:hover {
-    background: #2f1415;
-}
+.scroll-top:hover { background: var(--pc-maroon-deep); }
 </style>
 
 <main class="page-content">
-<div class="products-wrap">
-    <section class="product-content">
-        <?php
-            $resetParams = [];
-            if ($search !== '') {
-                $resetParams['search'] = $search;
-            } else {
-                $resetParams['loai'] = $loai_active;
-            }
-            $resetUrl = '/cakev0/pages/product.php';
-            if (!empty($resetParams)) {
-                $resetUrl .= '?' . http_build_query($resetParams);
-            }
-        ?>
-        <div class="product-toolbar">
+<div class="catalog">
+    <?php
+        $resetParams = [];
+        if ($search !== '') {
+            $resetParams['search'] = $search;
+        } else {
+            $resetParams['loai'] = $loai_active;
+        }
+        $resetUrl = '/cakev0/pages/product.php';
+        if (!empty($resetParams)) {
+            $resetUrl .= '?' . http_build_query($resetParams);
+        }
+
+        // Chips giữ nguyên bộ lọc sort/rating hiện tại khi chuyển danh mục.
+        $chipBaseQuery = [];
+        if ($sort_active !== 'default') { $chipBaseQuery['sort'] = $sort_active; }
+        if ($rating_active !== 'all')   { $chipBaseQuery['rating'] = $rating_active; }
+        $chipCats = ['ngot', 'man', 'mi', 'kem', 'khuyenmai'];
+    ?>
+
+    <div class="catalog-toolbar">
+        <nav class="chip-row" aria-label="Danh mục sản phẩm">
+            <?php foreach ($chipCats as $c): ?>
+                <?php
+                    $chipUrl = '/cakev0/pages/product.php?' . http_build_query(array_merge(['loai' => $c], $chipBaseQuery));
+                    $chipActive = ($search === '' && $loai_active === $c);
+                    $chipCount = isset($san_pham[$c]) ? count($san_pham[$c]) : null;
+                ?>
+                <a class="chip <?= $chipActive ? 'is-active' : '' ?>" href="<?= htmlspecialchars($chipUrl) ?>">
+                    <?= htmlspecialchars($ten_loai[$c]) ?>
+                    <?php if ($chipCount !== null): ?>
+                        <span class="chip-count"><?= $chipCount ?></span>
+                    <?php endif; ?>
+                </a>
+            <?php endforeach; ?>
+        </nav>
+
+        <div class="filter-bar">
             <form method="get" class="product-filter-form" id="productFilterForm">
                 <?php if ($search !== ''): ?>
                     <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
@@ -707,55 +913,90 @@ body {
                 </div>
                 <noscript><button type="submit" class="add-btn">Áp dụng</button></noscript>
             </form>
-            <a class="reset-filter" href="<?= htmlspecialchars($resetUrl) ?>">Xóa lọc</a>
+            <a class="reset-filter" href="<?= htmlspecialchars($resetUrl) ?>">
+                <i class="fa-solid fa-arrows-rotate"></i> Xóa lọc
+            </a>
         </div>
+    </div>
 
-        <?php foreach ($san_pham as $k => $ds): ?>
-            <div id="<?= $k ?>" class="cat <?= $k == $loai_active ? '' : 'hidden' ?>">
-                <h2 style="color:#4a1d1f; margin-bottom:18px;"><?= $ten_loai[$k] ?></h2>
-                <div class="product-grid">
-                    <?php if (!$ds): ?>
-                        <p style="color:#888">Không có sản phẩm phù hợp bộ lọc.</p>
-                    <?php endif; ?>
-                    <?php foreach ($ds as $p): ?>
-                        <?php $isFavorite = isset($favoriteIds[(int) $p['id']]); ?>
-                        <div class="product-card">
-                            <?php $slug = !empty($p['slug']) ? $p['slug'] : slugify($p['ten_banh'], (int) $p['id']); ?>
+    <?php foreach ($san_pham as $k => $ds): ?>
+        <div id="<?= $k ?>" class="cat <?= $k == $loai_active ? '' : 'hidden' ?>">
+            <div class="cat-head">
+                <h2><?= htmlspecialchars($ten_loai[$k]) ?></h2>
+                <?php if ($ds): ?>
+                    <span class="cat-count"><?= count($ds) ?> sản phẩm</span>
+                <?php endif; ?>
+            </div>
+            <div class="product-grid">
+                <?php if (!$ds): ?>
+                    <div class="empty-state">
+                        <i class="fa-solid fa-cookie-bite"></i>
+                        Không có sản phẩm phù hợp bộ lọc.
+                    </div>
+                <?php endif; ?>
+                <?php foreach ($ds as $p): ?>
+                    <?php
+                        $isFavorite = isset($favoriteIds[(int) $p['id']]);
+                        $slug = !empty($p['slug']) ? $p['slug'] : slugify($p['ten_banh'], (int) $p['id']);
+                        $avgRating = (float) ($p['avg_rating'] ?? 0);
+                        $reviewCount = (int) ($p['review_count'] ?? 0);
+                        $hasSale = !empty($p['gia_khuyen_mai']);
+                        $discount = ($hasSale && $p['gia'] > 0)
+                            ? (int) round(100 - (($p['gia_khuyen_mai'] / $p['gia']) * 100))
+                            : 0;
+                    ?>
+                    <div class="product-card">
+                        <div class="card-media">
+                            <?php if ($hasSale && $discount > 0): ?>
+                                <span class="badge-sale">-<?= $discount ?>%</span>
+                            <?php endif; ?>
+                            <button type="button"
+                                    class="fav-btn <?= $isFavorite ? 'is-active' : '' ?>"
+                                    data-product-id="<?= (int) $p['id'] ?>"
+                                    aria-label="Yêu thích sản phẩm"
+                                    onclick="toggleFavorite(this)">
+                                <i class="<?= $isFavorite ? 'fa-solid' : 'fa-regular' ?> fa-heart"></i>
+                            </button>
                             <a class="product-link" href="/cakev0/product/<?= urlencode($slug) ?>">
                                 <img src="<?= img($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
+                            </a>
+                        </div>
+
+                        <div class="card-body">
+                            <a class="product-link" href="/cakev0/product/<?= urlencode($slug) ?>">
                                 <div class="product-name"><?= htmlspecialchars($p['ten_banh']) ?></div>
                             </a>
+
+                            <div class="rating-row">
+                                <?php if ($reviewCount > 0): ?>
+                                    <span class="stars"><?= renderStars($avgRating) ?></span>
+                                    <span class="rating-count"><?= number_format($avgRating, 1) ?> (<?= $reviewCount ?>)</span>
+                                <?php else: ?>
+                                    <span class="stars"><?= renderStars(0) ?></span>
+                                    <span class="rating-empty">Chưa có đánh giá</span>
+                                <?php endif; ?>
+                            </div>
+
                             <div class="price">
-                                <?php if ($p['gia_khuyen_mai']): ?>
-                                    <del><?= number_format($p['gia']) ?> VNĐ</del>
+                                <?php if ($hasSale): ?>
                                     <span class="current-price"><?= number_format($p['gia_khuyen_mai']) ?> VNĐ</span>
-                                    <?php if ($p['gia'] > 0): ?>
-                                        <?php $discount = (int) round(100 - (($p['gia_khuyen_mai'] / $p['gia']) * 100)); ?>
-                                        <span class="discount-rate">-<?= $discount ?>%</span>
-                                    <?php endif; ?>
+                                    <del><?= number_format($p['gia']) ?> VNĐ</del>
                                 <?php else: ?>
                                     <span class="current-price"><?= number_format($p['gia']) ?> VNĐ</span>
                                 <?php endif; ?>
                             </div>
-                            <div class="product-actions">
-                                <button class="add-btn"
-                                        onclick="addCartQuick(<?= $p['id'] ?>)">
+
+                            <div class="card-foot">
+                                <button class="add-btn" onclick="addCartQuick(<?= $p['id'] ?>)">
                                     <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-                                </button>
-                                <button type="button"
-                                        class="fav-btn <?= $isFavorite ? 'is-active' : '' ?>"
-                                        data-product-id="<?= (int) $p['id'] ?>"
-                                        aria-label="Yêu thích sản phẩm"
-                                        onclick="toggleFavorite(this)">
-                                    <i class="<?= $isFavorite ? 'fa-solid' : 'fa-regular' ?> fa-heart"></i>
                                 </button>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
-        <?php endforeach; ?>
-    </section>
+        </div>
+    <?php endforeach; ?>
 </div>
 
 </main>

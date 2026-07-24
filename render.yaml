@@ -34,7 +34,7 @@ services:
       - key: MYSQL_PASSWORD
         sync: false
       - key: MYSQL_DATABASE
-        value: banh_store
+        value: defaultdb
       - key: MYSQL_SSL
         value: "true"
       - key: INTERNAL_API_SECRET

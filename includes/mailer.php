@@ -300,11 +300,16 @@ function gmail_api_refresh_access_token(): ?string {
         return (string) $payload['access_token'];
     }
 
-    $error = is_array($payload) ? ($payload['error_description'] ?? $payload['error'] ?? '') : '';
-    if ($error === '' && $response['error'] !== '') {
-        $error = $response['error'];
+    $errorCode = is_array($payload) ? ($payload['error'] ?? '') : '';
+    $errorDesc = is_array($payload) ? ($payload['error_description'] ?? '') : '';
+    $errorMsg = trim($errorCode . ($errorDesc ? ': ' . $errorDesc : ''));
+    if ($errorMsg === '' && $response['error'] !== '') {
+        $errorMsg = $response['error'];
     }
-    error_log('Mailer Error: Gmail API token refresh failed. HTTP ' . $response['status'] . ($error ? ' - ' . $error : ''));
+    if ($errorMsg === '') {
+        $errorMsg = substr((string) $response['body'], 0, 300);
+    }
+    error_log('Mailer Error: Gmail API token refresh failed. HTTP ' . $response['status'] . ' - ' . $errorMsg);
     return null;
 }
 

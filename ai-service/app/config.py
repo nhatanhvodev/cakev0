@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     mysql_user: str = "root"
     mysql_password: str = ""
     mysql_database: str = "banh_store"
+    mysql_ssl: bool = False        # enable TLS (required by Aiven / managed MySQL)
+    mysql_ssl_ca: str = ""         # optional path to CA cert; verifies server when set
     internal_api_secret: str = "change-me"
     internal_order_api_url: str = "http://localhost/cakev0/api/internal/orders/create.php"
     handoff_confidence_threshold: float = 0.6

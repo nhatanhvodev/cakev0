@@ -185,8 +185,9 @@ def knowledge_index(source: str = "all",
                     engine=Depends(deps_mod.get_engine)):
     _require_admin(x_admin_bypass)
     from app.knowledge.indexer import reindex
-    conn = engine.deps.conn_factory()
+    conn = None
     try:
+        conn = engine.deps.conn_factory()
         n = reindex(engine.deps.store, conn, source)
     except Exception as e:
         import traceback
@@ -197,3 +198,26 @@ def knowledge_index(source: str = "all",
         if conn:
             conn.close()
     return {"status": "ok", "indexed_count": n}
+
+
+@router.get("/debug/db")
+def debug_db(x_admin_bypass: str | None = Header(default=None),
+             engine=Depends(deps_mod.get_engine)):
+    """Admin-only: attempt a MySQL connection and report the exact error."""
+    _require_admin(x_admin_bypass)
+    from app.config import get_settings
+    s = get_settings()
+    conn = None
+    try:
+        conn = engine.deps.conn_factory()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) AS c FROM banh")
+            n = cur.fetchone()["c"]
+        return {"db": "ok", "host": s.mysql_host, "port": s.mysql_port,
+                "ssl": s.mysql_ssl, "banh_count": n}
+    except Exception as e:
+        return {"db": "fail", "host": s.mysql_host, "port": s.mysql_port,
+                "ssl": s.mysql_ssl, "error": type(e).__name__, "message": str(e)[:500]}
+    finally:
+        if conn:
+            conn.close()

@@ -87,6 +87,27 @@
     } catch (e) { typing.remove(); bubble('bot', 'Không kết nối được, thử lại sau nhé.'); }
   }
 
+  let historyLoaded = false;
+
+  // Restore the full conversation (customer + bot + agent) after a reload or
+  // page change. Renders in order and advances lastMsgId so poll won't dup.
+  async function loadHistory() {
+    if (!sessionId) return false;
+    try {
+      const r = await fetch(`${API}/history.php?session_id=${sessionId}&guest_token=${encodeURIComponent(token)}`);
+      const data = await r.json();
+      const msgs = data.messages || [];
+      if (!msgs.length) return false;
+      list.innerHTML = '';
+      msgs.forEach(m => {
+        const who = m.sender === 'customer' ? 'customer' : (m.sender === 'agent' ? 'agent' : 'bot');
+        bubble(who, esc(m.content));
+        if (m.id > lastMsgId) lastMsgId = m.id;
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
   async function poll() {
     if (!sessionId) return;
     try {
@@ -98,12 +119,17 @@
     } catch (e) { /* silent */ }
   }
 
-  function openWin() {
+  async function openWin() {
     win.hidden = false;
     win.classList.remove('gau-min');
     toggle.classList.add('gau-hidden');
     void win.offsetWidth;                 // reflow to restart animation
     win.classList.add('gau-enter');
+    if (!historyLoaded) {
+      historyLoaded = true;
+      const restored = await loadHistory();
+      if (restored) greeted = true;
+    }
     if (!greeted) {
       greeted = true;
       bubble('bot', 'Xin chào! 🧁 Mình là trợ lý Gấu Bakery. Bạn cần tư vấn bánh, kiểm tra đơn hay chính sách gì ạ?');

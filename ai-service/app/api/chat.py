@@ -188,6 +188,11 @@ def knowledge_index(source: str = "all",
     conn = engine.deps.conn_factory()
     try:
         n = reindex(engine.deps.store, conn, source)
+    except Exception as e:
+        import traceback
+        raise HTTPException(status_code=500, detail={
+            "error": type(e).__name__, "message": str(e)[:500],
+            "trace": traceback.format_exc()[-800:]})
     finally:
         if conn:
             conn.close()

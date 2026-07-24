@@ -216,8 +216,36 @@ def debug_db(x_admin_bypass: str | None = Header(default=None),
         return {"db": "ok", "host": s.mysql_host, "port": s.mysql_port,
                 "ssl": s.mysql_ssl, "banh_count": n}
     except Exception as e:
+        # Connection to the configured DB failed — connect without a database and
+        # list what actually exists so the operator can set the right MYSQL_DATABASE.
+        dbs, banh_in = [], []
+        try:
+            import pymysql
+            kw = dict(host=s.mysql_host, port=s.mysql_port, user=s.mysql_user,
+                      password=s.mysql_password, charset="utf8mb4",
+                      cursorclass=pymysql.cursors.DictCursor, autocommit=True)
+            if s.mysql_ssl_ca:
+                kw["ssl"] = {"ca": s.mysql_ssl_ca}
+            elif s.mysql_ssl:
+                kw["ssl"] = {}
+            c2 = pymysql.connect(**kw)
+            with c2.cursor() as cur:
+                cur.execute("SHOW DATABASES")
+                dbs = [list(r.values())[0] for r in cur.fetchall()]
+                for d in dbs:
+                    if d in ("information_schema", "performance_schema", "mysql", "sys"):
+                        continue
+                    try:
+                        cur.execute(f"SELECT COUNT(*) c FROM `{d}`.banh")
+                        banh_in.append({d: cur.fetchone()["c"]})
+                    except Exception:
+                        pass
+            c2.close()
+        except Exception as e2:
+            dbs = [f"list_failed: {type(e2).__name__}: {str(e2)[:200]}"]
         return {"db": "fail", "host": s.mysql_host, "port": s.mysql_port,
-                "ssl": s.mysql_ssl, "error": type(e).__name__, "message": str(e)[:500]}
+                "ssl": s.mysql_ssl, "error": type(e).__name__, "message": str(e)[:500],
+                "databases": dbs, "banh_table_found_in": banh_in}
     finally:
         if conn:
             conn.close()

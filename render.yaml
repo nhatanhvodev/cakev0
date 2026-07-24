@@ -20,7 +20,7 @@ services:
       - key: LLM_MODEL
         value: gemini-2.0-flash
       - key: EMBEDDING_MODEL
-        value: text-embedding-004
+        value: gemini-embedding-001
       - key: LLM_TEMPERATURE
         value: "0.3"
       - key: CHROMA_PERSIST_DIR

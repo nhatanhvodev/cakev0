@@ -249,3 +249,25 @@ def debug_db(x_admin_bypass: str | None = Header(default=None),
     finally:
         if conn:
             conn.close()
+
+
+@router.get("/debug/models")
+def debug_models(x_admin_bypass: str | None = Header(default=None)):
+    """Admin-only: list Gemini models supporting embedContent + generateContent."""
+    _require_admin(x_admin_bypass)
+    from app.config import get_settings
+    s = get_settings()
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=s.gemini_api_key)
+        embed, gen = [], []
+        for m in genai.list_models():
+            methods = getattr(m, "supported_generation_methods", [])
+            if "embedContent" in methods:
+                embed.append(m.name)
+            if "generateContent" in methods:
+                gen.append(m.name)
+        return {"configured_embedding": s.embedding_model, "configured_llm": s.llm_model,
+                "embedContent_models": embed, "generateContent_models": gen[:20]}
+    except Exception as e:
+        return {"error": type(e).__name__, "message": str(e)[:500]}

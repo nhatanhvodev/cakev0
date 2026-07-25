@@ -15,10 +15,14 @@ services:
     envVars:
       - key: ENGINE
         value: multiagent
+      - key: LLM_PROVIDER
+        value: deepseek
       - key: GEMINI_API_KEY
         sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
       - key: LLM_MODEL
-        value: gemini-flash-lite-latest
+        value: deepseek-chat
       - key: EMBEDDING_MODEL
         value: gemini-embedding-001
       - key: LLM_TEMPERATURE

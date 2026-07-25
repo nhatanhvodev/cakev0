@@ -54,10 +54,72 @@ def _serialize_order(o: dict) -> dict:
     return o
 
 
+def _query_promotions(conn) -> list[dict]:
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT b.id, b.ten_banh, b.gia, b.hinh_anh, b.slug, p.gia_khuyen_mai "
+            "FROM promotions p JOIN banh b ON b.id = p.banh_id "
+            "WHERE CURDATE() BETWEEN p.ngay_bat_dau AND p.ngay_ket_thuc "
+            "ORDER BY (b.gia - p.gia_khuyen_mai) DESC LIMIT 10")
+        return list(cur.fetchall())
+
+
+def _query_bestsellers(conn, limit=5) -> list[dict]:
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT b.id, b.ten_banh, b.gia, b.hinh_anh, b.slug, "
+            "SUM(oi.quantity) AS total_sold "
+            "FROM order_items oi JOIN banh b ON b.id = oi.banh_id "
+            "JOIN orders o ON o.id = oi.order_id "
+            "WHERE o.status NOT IN ('cancelled') "
+            "GROUP BY b.id ORDER BY total_sold DESC LIMIT %s", (limit,))
+        return list(cur.fetchall())
+
+
+def _format_promotion_response(rows: list[dict]) -> tuple[str, list[dict]]:
+    if not rows:
+        return "Hiện tại chưa có chương trình khuyến mãi nào đang diễn ra.", []
+    lines = []
+    for r in rows:
+        old = fmt_vnd(r["gia"])
+        new = fmt_vnd(r["gia_khuyen_mai"])
+        lines.append(f"🔥 {r['ten_banh']} — {old} → {new}")
+    products = [{"id": r["id"], "ten_banh": r["ten_banh"], "gia": float(r["gia_khuyen_mai"]),
+                 "hinh_anh": r.get("hinh_anh"), "slug": r.get("slug")} for r in rows]
+    return "Các sản phẩm đang khuyến mãi:\n" + "\n".join(lines), products
+
+
+def _format_bestseller_response(rows: list[dict]) -> tuple[str, list[dict]]:
+    if not rows:
+        return "Mình chưa có dữ liệu bán chạy.", []
+    lines = []
+    for i, r in enumerate(rows, 1):
+        sold = int(r["total_sold"])
+        lines.append(f"#{i} {r['ten_banh']} — {fmt_vnd(r['gia'])} (đã bán {sold})")
+    products = [{"id": r["id"], "ten_banh": r["ten_banh"], "gia": float(r["gia"]),
+                 "hinh_anh": r.get("hinh_anh"), "slug": r.get("slug")} for r in rows]
+    return "Top sản phẩm bán chạy nhất:\n" + "\n".join(lines), products
+
+
 def action_node(deps, state):
     if state["intent"] == "order_create":
         from app.engines.multiagent.order_create import order_create_node  # Task 17
         return order_create_node(deps, state)
+
+    if state["intent"] in ("promotion", "bestseller"):
+        conn = deps.conn_factory()
+        if conn is None:
+            return {"response": "Không kết nối được cơ sở dữ liệu, vui lòng thử lại sau."}
+        try:
+            if state["intent"] == "promotion":
+                rows = _query_promotions(conn)
+                text, products = _format_promotion_response(rows)
+            else:
+                rows = _query_bestsellers(conn)
+                text, products = _format_bestseller_response(rows)
+        finally:
+            conn.close()
+        return {"response": text, "products": products[:5]}
 
     # order_status
     user_id = state.get("context", {}).get("user_id")

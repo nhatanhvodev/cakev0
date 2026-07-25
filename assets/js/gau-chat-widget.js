@@ -62,10 +62,16 @@
     return el;
   }
 
+  function imgUrl(path) {
+    if (!path) return '';
+    if (/^(https?:)?\/\//i.test(path) || path.startsWith('data:')) return path;
+    return '/cakev0/' + path.replace(/^\/+/, '');
+  }
+
   function productCards(products) {
     return '<div class="gau-cards">' + products.map(p =>
-      `<a class="gau-card" href="/cakev0/pages/product-detail.php?slug=san-pham-${p.id}" target="_blank">
-         <img src="${esc(p.hinh_anh || '')}" alt=""><div>${esc(p.ten_banh)}</div>
+      `<a class="gau-card" href="/cakev0/pages/product-detail.php?slug=${p.slug || ('san-pham-' + p.id)}" target="_blank">
+         <img src="${esc(imgUrl(p.hinh_anh))}" alt="${esc(p.ten_banh)}"><div>${esc(p.ten_banh)}</div>
          <strong>${Number(p.gia).toLocaleString('vi-VN')} VNĐ</strong></a>`).join('') + '</div>';
   }
 

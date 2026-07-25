@@ -1,18 +1,21 @@
 import json, re
 from app.llm import LLMClient
 
-INTENTS = ["faq", "catalog_search", "product_recommend", "order_status", "order_create",
+INTENTS = ["faq", "catalog_search", "product_recommend", "promotion", "bestseller",
+           "order_status", "order_create",
            "policy_shipping", "policy_payment", "policy_return", "complaint",
            "chitchat", "handoff_request"]
 
 ROUTER_SYSTEM = """Bạn là router của hệ thống CSKH Gấu Bakery.
 Phân loại câu của khách vào đúng 1 intent:
-faq | catalog_search | product_recommend | order_status | order_create |
+faq | catalog_search | product_recommend | promotion | bestseller | order_status | order_create |
 policy_shipping | policy_payment | policy_return | complaint | chitchat | handoff_request
 
 Ví dụ:
 - "có bánh kem dâu không" → catalog_search
 - "gợi ý bánh sinh nhật cho bé" → product_recommend
+- "có khuyến mãi gì không" → promotion
+- "bánh nào bán chạy nhất" → bestseller
 - "đơn 12 đến đâu rồi" → order_status
 - "đặt 2 bánh croissant" → order_create
 - "ship bao lâu" → policy_shipping
@@ -34,6 +37,8 @@ _KEYWORDS = [
     ("policy_shipping", ["giao hàng", "phí ship", "vận chuyển"]),
     ("policy_payment", ["thanh toán", "chuyển khoản", "vnpay", "thanh toán khi nhận hàng"]),
     ("policy_return", ["đổi trả", "đổi bánh", "trả hàng"]),
+    ("promotion", ["khuyến mãi", "khuyen mai", "giảm giá", "giam gia", "sale", "ưu đãi", "uu dai", "đang giảm"]),
+    ("bestseller", ["bán chạy", "ban chay", "best seller", "bestseller", "must try", "phổ biến", "nên thử", "nen thu", "nhiều người mua", "hot nhất"]),
     ("catalog_search", ["có bánh", "tìm bánh", "menu", "giá bánh"]),
     ("chitchat", ["chào", "cảm ơn", "hello", "hi "]),
 ]

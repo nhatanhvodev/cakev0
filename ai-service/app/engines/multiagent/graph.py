@@ -10,7 +10,7 @@ from app.nlp.normalizer import normalize
 
 RETRIEVAL_INTENTS = {"faq", "catalog_search", "product_recommend",
                      "policy_shipping", "policy_payment", "policy_return"}
-ACTION_INTENTS = {"order_status", "order_create"}
+ACTION_INTENTS = {"order_status", "order_create", "promotion", "bestseller"}
 HANDOFF_INTENTS = {"complaint", "handoff_request"}
 EXIT_DRAFT_WORDS = {"thôi", "thoi", "hủy", "huy", "hủy đơn", "huy don", "dừng", "dung",
                     "quên", "quen", "bỏ", "bo", "cancel"}

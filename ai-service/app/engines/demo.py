@@ -13,6 +13,8 @@ _FALLBACK = {
     "faq": "Dạ shop mở cửa từ 8h đến 21h, anh/chị gọi hotline 0901 234 567 để được tư vấn ạ.",
     "catalog_search": "Dạ anh/chị xem đầy đủ sản phẩm trong trang catalog của shop nhé.",
     "product_recommend": "Dạ shop gợi ý bánh kem Chocolate hoặc Tiramisu, rất được yêu thích ạ.",
+    "promotion": "Dạ anh/chị xem mục khuyến mãi trên website để cập nhật ưu đãi mới nhất ạ.",
+    "bestseller": "Dạ các món bán chạy nhất là Bánh kem Chocolate và Tiramisu ạ.",
     "order_status": "Dạ anh/chị cho shop xin mã đơn hoặc số điện thoại để tra cứu giúp ạ.",
     "order_create": "Dạ anh/chị cho shop xin tên bánh, số lượng, họ tên, SĐT và địa chỉ giao ạ.",
     "policy_shipping": "Dạ đơn đặt trước 15h shop giao trong ngày, sau 15h giao sáng hôm sau ạ.",

@@ -135,6 +135,19 @@ def debug_config():
     }
 
 
+@app.get("/debug/llm-test")
+def debug_llm_test():
+    import traceback
+    try:
+        from app.llm import build_llm_client
+        client = build_llm_client(settings)
+        result = client.generate("Reply with exactly: OK", "test")
+        return {"status": "ok", "response": result[:200]}
+    except Exception as e:
+        return {"status": "error", "type": type(e).__name__,
+                "message": str(e)[:500], "trace": traceback.format_exc()[-1000:]}
+
+
 def _safe_count() -> int:
     try:
         from app import deps as deps_mod

@@ -1346,8 +1346,6 @@ body {
                                     <span class="stock-pill is-out">Tạm hết hàng</span>
                                 <?php elseif ($tracksStock && $stock <= 5): ?>
                                     <span class="stock-pill is-low">Chỉ còn <?= $stock ?> sản phẩm</span>
-                                <?php else: ?>
-                                    <span class="stock-pill">Còn hàng</span>
                                 <?php endif; ?>
                             </div>
 

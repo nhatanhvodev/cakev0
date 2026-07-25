@@ -1450,8 +1450,6 @@ body {
                 <span class="availability is-out">Tạm hết hàng</span>
             <?php elseif ($tracksStock && $stock <= 5): ?>
                 <span class="availability is-low">Chỉ còn <?= $stock ?> sản phẩm</span>
-            <?php else: ?>
-                <span class="availability"><?= $tracksStock ? 'Còn ' . $stock . ' sản phẩm' : 'Còn hàng' ?></span>
             <?php endif; ?>
 
             <p class="detail-summary"><?= htmlspecialchars($descriptionExcerpt) ?></p>

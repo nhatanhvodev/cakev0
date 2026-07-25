@@ -101,7 +101,11 @@
       list.innerHTML = '';
       msgs.forEach(m => {
         const who = m.sender === 'customer' ? 'customer' : (m.sender === 'agent' ? 'agent' : 'bot');
-        bubble(who, esc(m.content));
+        let html = esc(m.content);
+        const meta = m.metadata;
+        if (meta && meta.products && meta.products.length) html += productCards(meta.products);
+        if (meta && meta.citations && meta.citations.length) html += '<div class="gau-cite">Nguồn: ' + meta.citations.map(c => esc(c.source)).join(', ') + '</div>';
+        bubble(who, html);
         if (m.id > lastMsgId) lastMsgId = m.id;
       });
       return true;

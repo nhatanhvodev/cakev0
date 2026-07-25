@@ -1,5 +1,6 @@
 import hashlib
 import hmac as _hmac
+import json
 import time
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -42,9 +43,14 @@ def chat_send(req: ChatSendRequest, engine=Depends(deps_mod.get_engine)):
         ctx = dict(req.context); ctx["session"] = session; ctx["user_id"] = req.user_id
         reply = engine.handle(history, req.message, ctx)
         if conn is not None:
+            msg_meta = {"intent": reply.intent, "confidence": reply.confidence}
+            if reply.products:
+                msg_meta["products"] = reply.products[:5]
+            if reply.citations:
+                msg_meta["citations"] = reply.citations
             chat_repo.append_message(conn, session["id"], "bot", reply.content,
                                      content_type=reply.type if reply.type in ("text", "product_card", "order_card") else "text",
-                                     metadata={"intent": reply.intent, "confidence": reply.confidence})
+                                     metadata=msg_meta)
             update_fields = {}
             if reply.intent and reply.intent != "unknown":
                 update_fields["intent_label"] = reply.intent
@@ -100,6 +106,7 @@ def chat_history(session_id: int, user_id: int | None = None, guest_token: str |
         conn.close()
     messages = [{"id": m["id"], "sender": m["sender"], "content": m["content"],
                  "content_type": m.get("content_type"),
+                 "metadata": json.loads(m["metadata"]) if m.get("metadata") else None,
                  "created_at": str(m["created_at"]) if m.get("created_at") is not None else None}
                 for m in rows]
     return {"session_id": session_id, "messages": messages}

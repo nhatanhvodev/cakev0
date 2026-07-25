@@ -124,6 +124,17 @@ def health():
             "products_indexed": _safe_count()}
 
 
+@app.get("/debug/config")
+def debug_config():
+    return {
+        "llm_provider": settings.llm_provider,
+        "llm_model": settings.llm_model,
+        "deepseek_key_set": bool(settings.deepseek_api_key),
+        "deepseek_key_len": len(settings.deepseek_api_key),
+        "gemini_key_set": bool(settings.gemini_api_key),
+    }
+
+
 def _safe_count() -> int:
     try:
         from app import deps as deps_mod

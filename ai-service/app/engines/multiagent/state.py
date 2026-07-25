@@ -13,5 +13,6 @@ class AgentState(TypedDict, total=False):
     should_handoff: bool
     handoff_reasons: list
     retry_count: int
+    needs_retry: bool
     history: list
     context: dict

@@ -33,12 +33,21 @@ def _rerank_by_promotion(products: list, promoted: set) -> list:
     return sorted(products, key=lambda p: p.get("id") not in promoted)
 
 
+def _history_block(state) -> str:
+    history = state.get("history") or []
+    if not history:
+        return ""
+    recent = history[-6:]
+    return "LỊCH SỬ:\n" + "\n".join(f"{m['sender']}: {m['content']}" for m in recent) + "\n\n"
+
+
 def retrieval_node(deps, state):
     col = _COLLECTION.get(state["intent"], "faq")
     docs = deps.store.query(col, state["normalized_query"], top_k=5)
     block = "\n---\n".join(f"[{d.id}] {d.text}" for d in docs)
+    hist = _history_block(state)
     parsed = parse_llm_json(deps.llm.generate(
-        RETRIEVAL_SYSTEM, f"TÀI LIỆU:\n{block}\n\nKHÁCH: {state['query']}"))
+        RETRIEVAL_SYSTEM, f"TÀI LIỆU:\n{block}\n\n{hist}KHÁCH: {state['query']}"))
     by_id = {d.id: d for d in docs}
     cits = [{"source": s, "excerpt": by_id[s].text[:120]} for s in parsed["sources"] if s in by_id]
     products = [(d.metadata or {}) | {"ten_banh": d.text.split("\n")[0].replace("SAN PHAM: ", "")}

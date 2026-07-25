@@ -67,15 +67,10 @@ def test_knowledge_index_without_db_indexes_policies_and_faq(fake_store):
     app.dependency_overrides.clear()
 
 
-def test_get_engine_falls_back_to_baseline_when_multiagent_missing(fake_store, monkeypatch):
-    # default settings.engine == "multiagent" (see app/config.py). As of Task 12
-    # the multiagent engine module exists, so simulate an ImportError (e.g. a
-    # missing optional dependency) to verify get_engine() still catches it and
-    # falls back to BaselineEngine.
-    import sys
-    assert get_settings().engine == "multiagent"
+def test_get_engine_returns_demo_engine_when_configured(fake_store, monkeypatch):
+    from app.engines.demo import DemoEngine
     d = EngineDeps(llm=FakeLLM([]), store=fake_store, settings=get_settings(), conn_factory=lambda: None)
     monkeypatch.setattr(deps, "build_deps", lambda: d)
-    monkeypatch.setitem(sys.modules, "app.engines.multiagent.graph", None)
+    monkeypatch.setattr(get_settings(), "engine", "demo")
     eng = deps.get_engine()
-    assert isinstance(eng, BaselineEngine)
+    assert isinstance(eng, DemoEngine)

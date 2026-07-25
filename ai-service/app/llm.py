@@ -32,8 +32,35 @@ class GeminiClient:
         try:
             return self._chat.invoke([SystemMessage(system), HumanMessage(user)]).content
         except Exception:
-            time.sleep(2)  # spec §11: retry 1 lần rồi mới propagate
+            time.sleep(2)
             return self._chat.invoke([SystemMessage(system), HumanMessage(user)]).content
+
+
+class DeepSeekClient:
+    def __init__(self, settings: Settings):
+        from langchain_openai import ChatOpenAI
+        self._chat = ChatOpenAI(
+            model=settings.llm_model,
+            api_key=settings.deepseek_api_key,
+            base_url="https://api.deepseek.com",
+            temperature=settings.llm_temperature,
+        )
+
+    def generate(self, system: str, user: str) -> str:
+        from langchain_core.messages import SystemMessage, HumanMessage
+        import time
+
+        try:
+            return self._chat.invoke([SystemMessage(system), HumanMessage(user)]).content
+        except Exception:
+            time.sleep(2)
+            return self._chat.invoke([SystemMessage(system), HumanMessage(user)]).content
+
+
+def build_llm_client(settings: Settings) -> "GeminiClient | DeepSeekClient":
+    if settings.llm_provider == "deepseek":
+        return DeepSeekClient(settings)
+    return GeminiClient(settings)
 
 
 def gemini_embed(settings: Settings):

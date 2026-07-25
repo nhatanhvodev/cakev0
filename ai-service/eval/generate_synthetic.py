@@ -19,7 +19,7 @@ import sys
 
 from app.config import get_settings
 from app.engines.multiagent.router import INTENTS
-from app.llm import GeminiClient
+from app.llm import build_llm_client
 
 STYLES = [
     ("formal", "viết đầy đủ dấu, câu chuẩn mực, lịch sự bình thường"),
@@ -81,7 +81,7 @@ def generate_for(llm, intent: str, style_key: str, style_desc: str, start_idx: i
 
 def main():
     settings = get_settings()
-    llm = GeminiClient(settings)
+    llm = build_llm_client(settings)
     for intent in INTENTS:
         for style_key, style_desc in STYLES:
             for sample in generate_for(llm, intent, style_key, style_desc, 0):

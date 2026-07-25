@@ -2,10 +2,12 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    engine: str = "multiagent"                 # baseline | multiagent
+    engine: str = "multiagent"                 # baseline | multiagent | demo
+    llm_provider: str = "deepseek"             # gemini | deepseek
     gemini_api_key: str = ""
-    llm_model: str = "gemini-2.0-flash"
-    embedding_model: str = "text-embedding-004"
+    deepseek_api_key: str = ""
+    llm_model: str = "deepseek-chat"
+    embedding_model: str = "gemini-embedding-001"  # embeddings still use Gemini (free)
     llm_temperature: float = 0.3
     chroma_persist_dir: str = "./data/chroma_db"
     mysql_host: str = "127.0.0.1"
@@ -24,6 +26,8 @@ class Settings(BaseSettings):
     cors_origins: str = ""  # required in prod; empty in dev blocks browsers explicitly
     site_base_url: str = "https://cake-i8l0.onrender.com/cakev0"
     enable_normalizer: bool = True
+    telegram_bot_token: str = ""       # handoff notification via Telegram
+    telegram_chat_id: str = ""         # chat/group ID to receive handoff alerts
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

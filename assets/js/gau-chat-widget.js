@@ -64,7 +64,7 @@
 
   function productCards(products) {
     return '<div class="gau-cards">' + products.map(p =>
-      `<a class="gau-card" href="/cakev0/pages/product.php?id=${p.id}">
+      `<a class="gau-card" href="/cakev0/pages/product-detail.php?slug=san-pham-${p.id}" target="_blank">
          <img src="${esc(p.hinh_anh || '')}" alt=""><div>${esc(p.ten_banh)}</div>
          <strong>${Number(p.gia).toLocaleString('vi-VN')} VNĐ</strong></a>`).join('') + '</div>';
   }

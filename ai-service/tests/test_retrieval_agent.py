@@ -23,9 +23,9 @@ def test_low_confidence_retries_then_handoff(fake_store):
 
 
 def test_high_confidence_no_retry(fake_store):
-    fake_store.add("faq", ["faq-1"], ["HOI: ship\nDAP: trong ngày"], [{}])
-    replies = ['{"intent": "faq", "confidence": 0.9}',
-               '{"answer": "Giao trong ngày ạ", "confidence": 0.88, "sources": ["faq-1"]}']
+    # "ship bao lâu" normalizes to "giao hàng bao lâu" → keyword policy_shipping (0.55), router skipped
+    fake_store.add("policies", ["faq-1"], ["HOI: ship\nDAP: trong ngày"], [{}])
+    replies = ['{"answer": "Giao trong ngày ạ", "confidence": 0.88, "sources": ["faq-1"]}']
     eng = _eng(fake_store, replies)
     r = eng.handle([], "ship bao lâu", {})
     assert r.handoff is False

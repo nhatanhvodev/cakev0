@@ -49,13 +49,22 @@ def build_graph(deps: EngineDeps):
     def router_node(state: AgentState):
         if state.get("intent") == "order_create":
             return {"intent": "order_create", "confidence": 1.0}
-        intent, conf = router_mod.classify_intent(deps.llm, state["normalized_query"])
+        history = state.get("history") or []
+        intent, conf = router_mod.classify_intent(deps.llm, state["normalized_query"], history)
         return {"intent": intent, "confidence": conf}
 
+    def _history_block(state: AgentState) -> str:
+        history = state.get("history") or []
+        if not history:
+            return ""
+        recent = history[-6:]
+        return "LỊCH SỬ:\n" + "\n".join(f"{m['sender']}: {m['content']}" for m in recent) + "\n\n"
+
     def chitchat_node(state: AgentState):
+        hist = _history_block(state)
         resp = deps.llm.generate(
             "Bạn là trợ lý Gấu Bakery, đáp ngắn gọn thân thiện tiếng Việt.",
-            state["query"])
+            f"{hist}KHÁCH: {state['query']}")
         return {"response": resp}
 
     def rewrite_node(state: AgentState):

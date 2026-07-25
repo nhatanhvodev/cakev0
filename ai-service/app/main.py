@@ -10,6 +10,7 @@ from app.api.messenger import router as messenger_router
 
 app = FastAPI(title="Gau Bakery AI Service")
 settings = get_settings()
+_admin_chat_workflow_ready = None
 
 # --- Rate limiting (spec §12): 20 req/min per key on /chat/send -------------
 RATE_LIMIT_MAX_REQUESTS = 20
@@ -96,6 +97,34 @@ app.include_router(chat_router)
 app.include_router(messenger_router)
 
 
+@app.on_event('startup')
+def _ensure_admin_chat_workflow():
+    '''Best-effort additive schema upgrade for independently deployed services.'''
+    global _admin_chat_workflow_ready
+    conn = None
+    _admin_chat_workflow_ready = False
+    try:
+        from app.db import mysql
+        from app.db.admin_chat_migration import ensure_admin_chat_workflow
+
+        conn = mysql.get_conn(get_settings())
+        if conn is None:
+            print('[startup] admin chat migration skipped: database unavailable')
+            return
+        ready = ensure_admin_chat_workflow(conn)
+        _admin_chat_workflow_ready = bool(ready)
+        state = 'ready' if ready else 'base schema unavailable'
+        print(f'[startup] admin chat workflow: {state}')
+    except Exception as error:
+        print(
+            '[startup] admin chat migration skipped: '
+            f'{type(error).__name__}: {error}'
+        )
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 @app.on_event("startup")
 def _auto_reindex_if_empty():
     """Free-tier Render has no persistent disk, so the Chroma index is wiped on
@@ -121,7 +150,8 @@ def _auto_reindex_if_empty():
 @app.get("/health")
 def health():
     return {"status": "ok", "engine": settings.engine,
-            "products_indexed": _safe_count()}
+            "products_indexed": _safe_count(),
+            "admin_chat_workflow_ready": _admin_chat_workflow_ready}
 
 
 @app.get("/debug/config")

@@ -336,6 +336,11 @@ function renderStars($avg): string {
     return $html;
 }
 
+$activeProducts = $san_pham[$loai_active] ?? [];
+$activeProductCount = count($activeProducts);
+$activeCategoryLabel = $ten_loai[$loai_active] ?? 'Sản phẩm';
+$hasActiveFilters = $sort_active !== 'default' || $rating_active !== 'all' || $search !== '';
+
 $extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 
 ?>
@@ -380,6 +385,8 @@ body {
     background: var(--pc-cream);
     color: var(--pc-ink);
     font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
     margin: 0;
     min-height: 100vh;
     display: flex;
@@ -397,6 +404,91 @@ body {
     box-sizing: border-box;
 }
 
+.catalog :where(h1, h2, h3) { text-wrap: balance; }
+.catalog :where(p, li) { text-wrap: pretty; }
+
+.catalog-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 20px;
+    color: var(--pc-muted);
+    font-size: 13px;
+}
+
+.catalog-breadcrumb a {
+    color: var(--pc-maroon);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.catalog-breadcrumb a:hover { color: var(--pc-caramel); }
+
+.catalog-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.catalog-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--pc-caramel);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.catalog-intro h1 {
+    max-width: 18ch;
+    margin: 0;
+    color: var(--pc-maroon);
+    font-size: clamp(30px, 5vw, 48px);
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+}
+
+.catalog-intro p {
+    max-width: 62ch;
+    margin: 12px 0 0;
+    color: #6f5d53;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.catalog-result {
+    min-width: 152px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #fff7ea;
+    box-shadow: inset 0 0 0 1px var(--pc-honey);
+    color: var(--pc-maroon);
+    text-align: right;
+}
+
+.catalog-result strong {
+    display: block;
+    font-size: 26px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.catalog-result span {
+    display: block;
+    margin-top: 4px;
+    color: var(--pc-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.mobile-filter-trigger,
+.mobile-toolbar-head,
+.filter-backdrop { display: none; }
+
 /* ---- Toolbar (scrolls with the page; not sticky so it never covers cards) ---- */
 .catalog-toolbar {
     display: flex;
@@ -409,6 +501,36 @@ body {
     margin-bottom: 28px;
     box-shadow: var(--pc-shadow);
 }
+
+.active-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -12px 0 24px;
+}
+
+.active-filters-label {
+    color: var(--pc-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.active-filter {
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--pc-caramel-soft);
+    color: var(--pc-maroon);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.active-filter i { color: var(--pc-caramel); }
 
 .chip-row {
     display: flex;
@@ -426,7 +548,9 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 7px;
+    min-height: 44px;
     padding: 9px 15px;
+    box-sizing: border-box;
     border-radius: 999px;
     border: 1px solid var(--pc-honey);
     background: var(--pc-surface);
@@ -493,6 +617,7 @@ body {
 }
 
 .filter-field select {
+    min-height: 44px;
     border: 1px solid var(--pc-honey);
     border-radius: var(--pc-radius-ctrl);
     padding: 9px 12px;
@@ -522,6 +647,8 @@ body {
     border: 1px solid var(--pc-honey);
     border-radius: var(--pc-radius-ctrl);
     padding: 9px 14px;
+    min-height: 44px;
+    box-sizing: border-box;
     background: var(--pc-surface);
     transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
@@ -592,9 +719,8 @@ body {
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.product-card:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--pc-shadow-lg);
+.product-card.is-sold-out .card-media img {
+    filter: saturate(0.65);
 }
 
 .card-media {
@@ -613,7 +739,14 @@ body {
     transition: transform 0.45s ease;
 }
 
-.product-card:hover .card-media img { transform: scale(1.06); }
+@media (hover: hover) and (pointer: fine) {
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--pc-shadow-lg);
+    }
+
+    .product-card:hover .card-media img { transform: scale(1.04); }
+}
 
 .badge-sale {
     position: absolute;
@@ -634,9 +767,9 @@ body {
     top: 8px;
     right: 8px;
     z-index: 2;
-    width: 38px;
-    min-width: 38px;
-    height: 38px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
     border: none;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.92);
@@ -703,6 +836,36 @@ body {
     color: var(--pc-muted);
 }
 
+.stock-row {
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -2px 0 8px;
+}
+
+.stock-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #25663f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.stock-pill::before {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2f8a54;
+    content: "";
+}
+
+.stock-pill.is-low { color: #9a4e1d; }
+.stock-pill.is-low::before { background: var(--pc-caramel); }
+.stock-pill.is-out { color: #9b3131; }
+.stock-pill.is-out::before { background: #b42318; }
+
 .price {
     display: flex;
     align-items: baseline;
@@ -753,6 +916,18 @@ body {
 
 .add-btn:active { transform: translateY(1px); }
 
+.add-btn:disabled {
+    background: #c8b9af;
+    color: #fffaf5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.catalog :focus-visible {
+    outline: 3px solid rgba(224, 123, 57, 0.45);
+    outline-offset: 3px;
+}
+
 .empty-state {
     grid-column: 1 / -1;
     text-align: center;
@@ -794,11 +969,133 @@ body {
 }
 
 @media (max-width: 560px) {
+    .catalog-intro {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .catalog-result {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        min-width: 0;
+        padding: 12px 14px;
+        text-align: left;
+    }
+
+    .catalog-result strong { font-size: 20px; }
+
+    .mobile-filter-trigger {
+        width: 100%;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 0 16px;
+        border: 1px solid var(--pc-honey);
+        border-radius: 14px;
+        background: var(--pc-surface);
+        color: var(--pc-maroon);
+        font: 600 14px/1 'Poppins', sans-serif;
+        box-shadow: var(--pc-shadow);
+        cursor: pointer;
+    }
+
+    .mobile-filter-trigger .filter-state {
+        color: var(--pc-muted);
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .filter-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1990;
+        display: block;
+        border: 0;
+        background: rgba(47, 20, 21, 0.46);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 180ms cubic-bezier(0.23, 1, 0.32, 1), visibility 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .filter-backdrop.is-open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .catalog-toolbar {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 2000;
+        max-height: min(84vh, 620px);
+        margin: 0;
+        padding: 16px 16px 24px;
+        border-radius: 24px 24px 0 0;
+        overflow-y: auto;
+        visibility: hidden;
+        transform: translateY(104%);
+        transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1), visibility 240ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .catalog-toolbar.is-open {
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .mobile-toolbar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .mobile-toolbar-head strong {
+        color: var(--pc-maroon);
+        font-size: 18px;
+    }
+
+    .mobile-filter-close {
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--pc-honey);
+        border-radius: 50%;
+        background: var(--pc-surface);
+        color: var(--pc-maroon);
+        cursor: pointer;
+    }
+
     .filter-bar { flex-direction: column; align-items: stretch; }
     .product-filter-form { width: 100%; }
     .filter-field { flex: 1; min-width: 0; }
     .filter-field select { width: 100%; }
     .reset-filter { align-self: stretch; justify-content: center; }
+
+    body.filter-drawer-open { overflow: hidden; }
+}
+
+@media (max-width: 390px) {
+    .product-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .product-card { padding: 12px; }
+    .product-name { min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .catalog *,
+    .catalog *::before,
+    .catalog *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* ---- Back-to-top (kept mid-right to avoid the chat widget in the corner) ---- */
@@ -853,9 +1150,56 @@ body {
         if ($sort_active !== 'default') { $chipBaseQuery['sort'] = $sort_active; }
         if ($rating_active !== 'all')   { $chipBaseQuery['rating'] = $rating_active; }
         $chipCats = ['ngot', 'man', 'mi', 'kem', 'khuyenmai'];
+
+        $clearSortParams = $search !== '' ? ['search' => $search] : ['loai' => $loai_active];
+        if ($rating_active !== 'all') { $clearSortParams['rating'] = $rating_active; }
+        $clearSortUrl = '/cakev0/pages/product.php?' . http_build_query($clearSortParams);
+
+        $clearRatingParams = $search !== '' ? ['search' => $search] : ['loai' => $loai_active];
+        if ($sort_active !== 'default') { $clearRatingParams['sort'] = $sort_active; }
+        $clearRatingUrl = '/cakev0/pages/product.php?' . http_build_query($clearRatingParams);
+
+        $filterStateParts = [];
+        if ($sort_active !== 'default') { $filterStateParts[] = $sort_labels[$sort_active]; }
+        if ($rating_active !== 'all') { $filterStateParts[] = $rating_labels[$rating_active]; }
+        $mobileFilterState = empty($filterStateParts) ? 'Mặc định' : implode(' · ', $filterStateParts);
     ?>
 
-    <div class="catalog-toolbar">
+    <nav class="catalog-breadcrumb" aria-label="Đường dẫn trang">
+        <a href="/cakev0/">Trang chủ</a>
+        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        <span aria-current="page"><?= htmlspecialchars($search !== '' ? 'Tìm kiếm sản phẩm' : $activeCategoryLabel) ?></span>
+    </nav>
+
+    <header class="catalog-intro">
+        <div>
+            <span class="catalog-eyebrow">Bánh tươi mỗi ngày</span>
+            <h1><?= $search !== '' ? 'Kết quả cho “' . htmlspecialchars($search) . '”' : htmlspecialchars($activeCategoryLabel) ?></h1>
+            <p>
+                <?= $search !== ''
+                    ? 'Khám phá những sản phẩm phù hợp từ thực đơn hiện có của Gấu Bakery.'
+                    : 'Chọn chiếc bánh hợp khẩu vị, xem đánh giá thật và đặt nhanh cho khoảnh khắc ngọt ngào của bạn.' ?>
+            </p>
+        </div>
+        <div class="catalog-result" aria-live="polite">
+            <strong><?= $activeProductCount ?></strong>
+            <span>sản phẩm phù hợp</span>
+        </div>
+    </header>
+
+    <button class="mobile-filter-trigger" type="button" id="mobileFilterTrigger" aria-expanded="false" aria-controls="catalogFilters">
+        <span><i class="fa-solid fa-sliders" aria-hidden="true"></i> Bộ lọc &amp; sắp xếp</span>
+        <span class="filter-state"><?= htmlspecialchars($mobileFilterState) ?></span>
+    </button>
+    <button class="filter-backdrop" type="button" id="filterBackdrop" aria-label="Đóng bộ lọc" tabindex="-1"></button>
+
+    <section class="catalog-toolbar" id="catalogFilters" aria-label="Bộ lọc và sắp xếp sản phẩm" tabindex="-1">
+        <div class="mobile-toolbar-head">
+            <strong id="catalogFilterTitle">Lọc sản phẩm</strong>
+            <button class="mobile-filter-close" type="button" id="mobileFilterClose" aria-label="Đóng bộ lọc">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
         <nav class="chip-row" aria-label="Danh mục sản phẩm">
             <?php foreach ($chipCats as $c): ?>
                 <?php
@@ -907,7 +1251,28 @@ body {
                 <i class="fa-solid fa-arrows-rotate"></i> Xóa lọc
             </a>
         </div>
-    </div>
+    </section>
+
+    <?php if ($hasActiveFilters): ?>
+        <div class="active-filters" aria-label="Bộ lọc đang áp dụng">
+            <span class="active-filters-label">Đang áp dụng:</span>
+            <?php if ($search !== ''): ?>
+                <a class="active-filter" href="/cakev0/pages/product.php">
+                    Từ khóa: <?= htmlspecialchars($search) ?> <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </a>
+            <?php endif; ?>
+            <?php if ($sort_active !== 'default'): ?>
+                <a class="active-filter" href="<?= htmlspecialchars($clearSortUrl) ?>">
+                    <?= htmlspecialchars($sort_labels[$sort_active]) ?> <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </a>
+            <?php endif; ?>
+            <?php if ($rating_active !== 'all'): ?>
+                <a class="active-filter" href="<?= htmlspecialchars($clearRatingUrl) ?>">
+                    <?= htmlspecialchars($rating_labels[$rating_active]) ?> <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <?php foreach ($san_pham as $k => $ds): ?>
         <div id="<?= $k ?>" class="cat <?= $k == $loai_active ? '' : 'hidden' ?>">
@@ -934,8 +1299,11 @@ body {
                         $discount = ($hasSale && $p['gia'] > 0)
                             ? (int) round(100 - (($p['gia_khuyen_mai'] / $p['gia']) * 100))
                             : 0;
+                        $tracksStock = array_key_exists('stock', $p);
+                        $stock = $tracksStock ? max(0, (int) $p['stock']) : null;
+                        $inStock = !$tracksStock || $stock > 0;
                     ?>
-                    <div class="product-card">
+                    <article class="product-card <?= $inStock ? '' : 'is-sold-out' ?>">
                         <div class="card-media">
                             <?php if ($hasSale && $discount > 0): ?>
                                 <span class="badge-sale">-<?= $discount ?>%</span>
@@ -943,12 +1311,18 @@ body {
                             <button type="button"
                                     class="fav-btn <?= $isFavorite ? 'is-active' : '' ?>"
                                     data-product-id="<?= (int) $p['id'] ?>"
-                                    aria-label="Yêu thích sản phẩm"
+                                    aria-label="<?= $isFavorite ? 'Bỏ lưu' : 'Lưu' ?> <?= htmlspecialchars($p['ten_banh']) ?>"
+                                    aria-pressed="<?= $isFavorite ? 'true' : 'false' ?>"
                                     onclick="toggleFavorite(this)">
                                 <i class="<?= $isFavorite ? 'fa-solid' : 'fa-regular' ?> fa-heart"></i>
                             </button>
-                            <a class="product-link" href="/cakev0/product/<?= urlencode($slug) ?>">
-                                <img src="<?= img($p['hinh_anh']) ?>" alt="<?= htmlspecialchars($p['ten_banh']) ?>">
+                            <a class="product-link" href="/cakev0/product/<?= urlencode($slug) ?>" aria-label="Xem chi tiết <?= htmlspecialchars($p['ten_banh']) ?>">
+                                <img src="<?= img($p['hinh_anh']) ?>"
+                                     alt="<?= htmlspecialchars($p['ten_banh']) ?>"
+                                     loading="lazy"
+                                     decoding="async"
+                                     width="640"
+                                     height="640">
                             </a>
                         </div>
 
@@ -967,6 +1341,16 @@ body {
                                 <?php endif; ?>
                             </div>
 
+                            <div class="stock-row">
+                                <?php if ($tracksStock && !$inStock): ?>
+                                    <span class="stock-pill is-out">Tạm hết hàng</span>
+                                <?php elseif ($tracksStock && $stock <= 5): ?>
+                                    <span class="stock-pill is-low">Chỉ còn <?= $stock ?> sản phẩm</span>
+                                <?php else: ?>
+                                    <span class="stock-pill">Còn hàng</span>
+                                <?php endif; ?>
+                            </div>
+
                             <div class="price">
                                 <?php if ($hasSale): ?>
                                     <span class="current-price"><?= number_format($p['gia_khuyen_mai']) ?> VNĐ</span>
@@ -977,12 +1361,16 @@ body {
                             </div>
 
                             <div class="card-foot">
-                                <button class="add-btn" onclick="addCartQuick(<?= $p['id'] ?>)">
-                                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                                <button class="add-btn"
+                                        type="button"
+                                        <?= $inStock ? '' : 'disabled aria-disabled="true"' ?>
+                                        onclick="addCartQuick(<?= (int) $p['id'] ?>, this)">
+                                    <i class="fa-solid <?= $inStock ? 'fa-cart-plus' : 'fa-clock' ?>" aria-hidden="true"></i>
+                                    <?= $inStock ? 'Thêm vào giỏ' : 'Tạm hết hàng' ?>
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -996,7 +1384,15 @@ body {
 <button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Len dau trang">^</button>
 
 <script>
-function addCartQuick(productId) {
+function addCartQuick(productId, button) {
+    if (button && button.disabled) return;
+    const originalButtonHtml = button ? button.innerHTML : '';
+    if (button) {
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Đang thêm...';
+    }
+
     const goLogin = () => {
         const redirect = encodeURIComponent(window.location.pathname + window.location.search);
         setTimeout(() => {
@@ -1040,6 +1436,13 @@ function addCartQuick(productId) {
     .catch(() => {
         window.showToast('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.', 'error');
         goLogin();
+    })
+    .finally(() => {
+        if (button) {
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+            button.innerHTML = originalButtonHtml;
+        }
     });
 }
 
@@ -1065,6 +1468,8 @@ function toggleFavorite(button) {
         const isFav = !!d.is_favorite;
         const icon = button.querySelector('i');
         button.classList.toggle('is-active', isFav);
+        button.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+        button.setAttribute('aria-label', (isFav ? 'Bỏ lưu ' : 'Lưu ') + (button.closest('.product-card')?.querySelector('.product-name')?.textContent || 'sản phẩm'));
         if (icon) {
             icon.className = (isFav ? 'fa-solid' : 'fa-regular') + ' fa-heart';
         }
@@ -1092,7 +1497,64 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('scroll', toggleScrollTop, { passive: true });
 
     scrollTopBtn.addEventListener('click', function () {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const trigger = document.getElementById('mobileFilterTrigger');
+    const panel = document.getElementById('catalogFilters');
+    const closeButton = document.getElementById('mobileFilterClose');
+    const backdrop = document.getElementById('filterBackdrop');
+    if (!trigger || !panel || !closeButton || !backdrop) return;
+
+    const isMobile = () => window.matchMedia('(max-width: 560px)').matches;
+
+    const setOpen = (open, restoreFocus = true) => {
+        const shouldOpen = open && isMobile();
+        trigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        panel.classList.toggle('is-open', shouldOpen);
+        backdrop.classList.toggle('is-open', shouldOpen);
+        document.body.classList.toggle('filter-drawer-open', shouldOpen);
+        if (shouldOpen) {
+            closeButton.focus();
+        } else if (restoreFocus && isMobile()) {
+            trigger.focus();
+        }
+    };
+
+    trigger.addEventListener('click', () => setOpen(true));
+    closeButton.addEventListener('click', () => setOpen(false));
+    backdrop.addEventListener('click', () => setOpen(false));
+
+    panel.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            return;
+        }
+        if (event.key !== 'Tab' || !panel.classList.contains('is-open')) return;
+
+        const focusable = [...panel.querySelectorAll('a[href], button:not([disabled]), select:not([disabled]), input:not([disabled])')];
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (!isMobile() && panel.classList.contains('is-open')) {
+            setOpen(false, false);
+        }
     });
 });
 </script>

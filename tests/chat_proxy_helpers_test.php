@@ -16,4 +16,9 @@ $guest = chat_build_forward_payload(['message' => 'hi', 'guest_token' => 'abc'],
 assert_same('abc', $guest['guest_token'], 'guest token passthrough');
 assert_true(!isset($guest['user_id']), 'no user_id for guest');
 
+$_SESSION['csrf_token'] = 'known-token';
+assert_true(chat_admin_csrf_valid('known-token'), 'admin CSRF token accepted');
+assert_true(!chat_admin_csrf_valid('wrong-token'), 'wrong admin CSRF token rejected');
+assert_true(!chat_admin_csrf_valid(null), 'missing admin CSRF token rejected');
+
 echo "OK\n";

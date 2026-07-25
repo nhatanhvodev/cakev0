@@ -52,10 +52,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $admin = $stmt->get_result()->fetch_assoc();
                 $stmt->close();
 
-                if ($admin && password_verify($password, $admin['password'])) {
+                $adminPasswordVerified = $admin
+                    && password_verify($password, (string) $admin['password']);
+
+                // One-time upgrade for the invalid sentinel hash shipped by
+                // older database dumps. This is not a general login fallback:
+                // only that exact legacy row may bootstrap, and it is replaced
+                // atomically with a real password_hash() before authentication.
+                $legacyAdminSentinel = '$2y$10$YvZ5e5e5e5e5e5e5e5e5e5u5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e';
+                if (
+                    !$adminPasswordVerified
+                    && $admin
+                    && $username === 'admin'
+                    && $password === 'admin123'
+                    && hash_equals(
+                        $legacyAdminSentinel,
+                        (string) $admin['password']
+                    )
+                ) {
+                    $upgradedHash = password_hash(
+                        $password,
+                        PASSWORD_DEFAULT
+                    );
+                    $adminId = (int) $admin['id'];
+                    $legacyHash = (string) $admin['password'];
+                    $upgrade = $conn->prepare(
+                        'UPDATE admins SET password = ? '
+                        . 'WHERE id = ? AND password = ?'
+                    );
+                    if ($upgrade) {
+                        $upgrade->bind_param(
+                            'sis',
+                            $upgradedHash,
+                            $adminId,
+                            $legacyHash
+                        );
+                        $upgrade->execute();
+                        $adminPasswordVerified = $upgrade->affected_rows === 1;
+                        $upgrade->close();
+                    }
+                }
+
+                if ($adminPasswordVerified) {
                     session_regenerate_id(true);
                     $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_id'] = $admin['id'];
+                    $_SESSION['admin_id'] = (int) $admin['id'];
                     $_SESSION['username'] = $admin['username'];
                     $_SESSION['role'] = 'admin';
                     $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
@@ -66,19 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $e) {
             // Nếu không có bảng admins thì bỏ qua và xử lý như user thường.
-        }
-
-        // Fallback tài khoản admin demo
-        if ($username === 'admin' && $password === 'admin123') {
-            session_regenerate_id(true);
-            $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_id'] = 0;
-            $_SESSION['username'] = $username;
-            $_SESSION['role'] = 'admin';
-            $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
-            unset($_SESSION['csrf_token']);
-            header("Location: /cakev0/admin/admin.php");
-            exit;
         }
 
         // Truy vấn thông tin user

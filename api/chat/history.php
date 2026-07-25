@@ -1,9 +1,12 @@
 <?php
+// Cursor-aware chat history proxy.
 // api/chat/history.php
 require_once __DIR__ . '/../../config/bootstrap.php';
 require_once __DIR__ . '/../../includes/chat_proxy_helpers.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -20,7 +23,33 @@ if ($sessionId <= 0) {
     exit;
 }
 
-$query = ['session_id' => $sessionId];
+$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 50;
+$limit = max(1, min($limit, 100));
+$beforeId = isset($_GET['before_id']) ? (int) $_GET['before_id'] : null;
+$afterId = isset($_GET['after_id']) ? (int) $_GET['after_id'] : null;
+
+if (($beforeId !== null && $beforeId <= 0) || ($afterId !== null && $afterId <= 0)) {
+    http_response_code(422);
+    echo json_encode(['error' => 'message cursors must be positive integers']);
+    exit;
+}
+if ($beforeId !== null && $afterId !== null) {
+    http_response_code(422);
+    echo json_encode(['error' => 'use only one message cursor']);
+    exit;
+}
+
+$query = [
+    'session_id' => $sessionId,
+    'limit' => $limit,
+];
+if ($beforeId !== null) {
+    $query['before_id'] = $beforeId;
+}
+if ($afterId !== null) {
+    $query['after_id'] = $afterId;
+}
+
 $adminBypass = false;
 if (!empty($_SESSION['admin_logged_in'])) {
     $adminBypass = true;

@@ -51,7 +51,40 @@ def test_chat_history_without_db_returns_empty_list(fake_store):
     r = client.get("/chat/history", params={"session_id": 1})
     assert r.status_code == 200
     body = r.json()
-    assert body == {"session_id": 1, "messages": []}
+    assert body == {"session_id": 1, "messages": [], "has_more": False,
+                    "oldest_id": None, "latest_id": None}
+    app.dependency_overrides.clear()
+
+
+def test_chat_history_rejects_conflicting_cursors(fake_store):
+    d = EngineDeps(llm=FakeLLM([]), store=fake_store, settings=get_settings(), conn_factory=lambda: None)
+    app.dependency_overrides[deps.get_engine] = lambda: BaselineEngine(d)
+    client = TestClient(app)
+    r = client.get("/chat/history", params={"session_id": 1, "before_id": 10, "after_id": 20})
+    assert r.status_code == 422
+    app.dependency_overrides.clear()
+
+
+def test_admin_sessions_without_db_exposes_workflow_stats(fake_store):
+    d = EngineDeps(llm=FakeLLM([]), store=fake_store, settings=get_settings(), conn_factory=lambda: None)
+    app.dependency_overrides[deps.get_engine] = lambda: BaselineEngine(d)
+    client = TestClient(app)
+    r = client.get("/admin/sessions", params={"view": "mine", "admin_id": 1},
+                   headers=_admin_header())
+    assert r.status_code == 200
+    assert r.json() == {
+        "sessions": [],
+        "stats": {
+            "today_sessions": 0,
+            "waiting_sessions": 0,
+            "handoff_sessions": 0,
+            "in_progress_sessions": 0,
+            "mine_sessions": 0,
+            "closed_sessions": 0,
+            "intent_counts": {},
+        },
+        "workflow_ready": False,
+    }
     app.dependency_overrides.clear()
 
 

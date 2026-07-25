@@ -73,5 +73,120 @@
     "question": "Thông tin cá nhân của tôi có được chia sẻ cho bên thứ ba không?",
     "answer": "Gấu Bakery cam kết không mua bán, trao đổi thông tin cá nhân khi chưa có sự đồng ý của khách hàng. Thông tin chỉ được cung cấp cho cơ quan chức năng khi có yêu cầu hợp pháp.",
     "category": "privacy"
+  },
+  {
+    "question": "Cửa hàng Gấu Bakery ở đâu?",
+    "answer": "Gấu Bakery tọa lạc tại 59 Mạc Đĩnh Chi, phường Đa Kao, Tân Định, TP. Hồ Chí Minh 71007. Quý khách có thể ghé trực tiếp cửa hàng hoặc đặt bánh online để được giao tận nơi.",
+    "category": "contact"
+  },
+  {
+    "question": "Gấu Bakery mở cửa mấy giờ?",
+    "answer": "Gấu Bakery mở cửa từ 08:00 đến 21:00 tất cả các ngày trong tuần (Thứ 2 đến Chủ nhật). Quý khách có thể đặt bánh online 24/7, đơn sẽ được xử lý trong giờ làm việc.",
+    "category": "contact"
+  },
+  {
+    "question": "Làm sao để liên hệ với Gấu Bakery?",
+    "answer": "Quý khách có thể liên hệ Gấu Bakery qua hotline 0901 234 567 hoặc email hello@gaubakery.vn. Chúng tôi luôn sẵn sàng hỗ trợ tư vấn đặt bánh, đổi trả và giải đáp thắc mắc trong giờ mở cửa 08:00–21:00.",
+    "category": "contact"
+  },
+  {
+    "question": "Làm thế nào để đặt bánh online tại Gấu Bakery?",
+    "answer": "Rất đơn giản: quý khách chọn sản phẩm yêu thích, thêm vào giỏ hàng, điền thông tin và địa chỉ giao hàng, chọn hình thức thanh toán (VNPAY, COD hoặc chuyển khoản) rồi xác nhận đơn. Hệ thống sẽ gửi thông báo xác nhận ngay sau khi đặt hàng thành công.",
+    "category": "ordering"
+  },
+  {
+    "question": "Tôi có thể đặt bánh thiết kế theo yêu cầu riêng không?",
+    "answer": "Có. Gấu Bakery nhận đặt bánh theo yêu cầu về hình dáng, hương vị và thông điệp trang trí. Để đội ngũ có thời gian chuẩn bị chu đáo, quý khách vui lòng liên hệ hotline 0901 234 567 trước ít nhất 1–2 ngày để được tư vấn mẫu và báo giá.",
+    "category": "ordering"
+  },
+  {
+    "question": "Tôi muốn đặt bánh số lượng lớn hoặc đặt sỉ thì liên hệ ở đâu?",
+    "answer": "Với đơn sỉ và số lượng lớn, quý khách vui lòng liên hệ hotline 0901 234 567 để được báo giá ưu đãi và sắp xếp giao hàng. Gấu Bakery hỗ trợ giao đơn sỉ trên toàn quốc thông qua các đối tác vận chuyển uy tín.",
+    "category": "ordering"
+  },
+  {
+    "question": "Tôi có cần tạo tài khoản để đặt bánh không?",
+    "answer": "Quý khách được khuyến khích tạo tài khoản để dễ dàng theo dõi đơn hàng, lưu địa chỉ giao hàng và xem lại lịch sử mua sắm. Việc đăng ký chỉ cần họ tên, số điện thoại và email, hoàn toàn miễn phí và nhanh chóng.",
+    "category": "account"
+  },
+  {
+    "question": "Làm sao để theo dõi tình trạng đơn hàng của tôi?",
+    "answer": "Quý khách đăng nhập tài khoản và vào mục Đơn hàng của tôi để xem trạng thái xử lý và giao hàng theo thời gian thực. Nếu cần hỗ trợ thêm, vui lòng liên hệ hotline 0901 234 567 kèm mã đơn hàng.",
+    "category": "account"
+  },
+  {
+    "question": "Tôi quên mật khẩu tài khoản thì phải làm sao?",
+    "answer": "Quý khách sử dụng chức năng Quên mật khẩu tại trang đăng nhập để đặt lại mật khẩu qua email đã đăng ký. Nếu gặp khó khăn, vui lòng liên hệ hotline 0901 234 567 để được hỗ trợ khôi phục tài khoản.",
+    "category": "account"
+  },
+  {
+    "question": "Bánh của Gấu Bakery nên được bảo quản như thế nào?",
+    "answer": "Bánh kem nên được bảo quản lạnh ở nhiệt độ 2–8°C để lớp kem giữ độ mịn và không bị tách lớp, hạn sử dụng 3–5 ngày kể từ ngày sản xuất. Trước khi thưởng thức, quý khách để bánh ở nhiệt độ phòng khoảng 15–20 phút và tránh ánh nắng, nhiệt độ cao.",
+    "category": "product"
+  },
+  {
+    "question": "Bánh của Gấu Bakery có chứa thành phần gây dị ứng không?",
+    "answer": "Các sản phẩm của Gấu Bakery có thể chứa trứng, sữa, bột mì, bơ và một số loại hạt. Nếu quý khách có tiền sử dị ứng, vui lòng liên hệ hotline 0901 234 567 trước khi đặt để được tư vấn thành phần chi tiết của từng loại bánh.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có nhận đặt bánh ít đường hoặc cho người ăn kiêng không?",
+    "answer": "Gấu Bakery có thể điều chỉnh độ ngọt cho một số dòng bánh theo yêu cầu. Để được tư vấn lựa chọn phù hợp với nhu cầu ăn kiêng hoặc ít đường, quý khách vui lòng liên hệ hotline 0901 234 567 trước khi đặt hàng.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery hiện có chương trình khuyến mãi nào không?",
+    "answer": "Gấu Bakery thường xuyên có các chương trình ưu đãi theo dịp. Quý khách có thể hỏi trực tiếp trợ lý để xem các khuyến mãi đang áp dụng, hoặc theo dõi trang chủ và fanpage để cập nhật ưu đãi mới nhất.",
+    "category": "promotion"
+  },
+  {
+    "question": "Tôi sử dụng mã giảm giá ở bước nào khi đặt hàng?",
+    "answer": "Quý khách nhập mã giảm giá tại bước thanh toán trước khi xác nhận đơn; hệ thống sẽ tự động trừ số tiền được ưu đãi vào tổng đơn. Mỗi mã có điều kiện và thời hạn áp dụng riêng, vui lòng kiểm tra trước khi sử dụng.",
+    "category": "promotion"
+  },
+  {
+    "question": "Trợ lý Gấu Bakery có thể giúp tôi những gì?",
+    "answer": "Trợ lý Gấu Bakery có thể tư vấn và gợi ý bánh theo nhu cầu, tìm bánh theo loại và mức giá, cho biết sản phẩm đang khuyến mãi hoặc bán chạy, tra cứu tình trạng đơn hàng, hỗ trợ đặt bánh và giải đáp chính sách. Nếu cần, trợ lý sẽ kết nối quý khách với nhân viên hỗ trợ.",
+    "category": "assistant"
+  },
+  {
+    "question": "Tôi có thể nói chuyện với nhân viên thật không?",
+    "answer": "Có. Quý khách chỉ cần nhắn 'gặp nhân viên' hoặc 'cho gặp hỗ trợ viên', hội thoại sẽ được chuyển cho nhân viên Gấu Bakery tiếp nhận và trả lời trực tiếp trong khung chat. Ngoài ra quý khách có thể gọi hotline 0901 234 567 trong giờ mở cửa 08:00–21:00.",
+    "category": "assistant"
+  },
+  {
+    "question": "Tôi kiểm tra tình trạng đơn hàng ngay trong khung chat được không?",
+    "answer": "Được. Quý khách cung cấp số điện thoại đã dùng khi đặt hàng hoặc mã đơn (ví dụ 'đơn #123'), trợ lý sẽ tra cứu và báo trạng thái đơn ngay. Nếu đã đăng nhập tài khoản, trợ lý tự nhận diện đơn của quý khách mà không cần nhập lại thông tin.",
+    "category": "assistant"
+  },
+  {
+    "question": "Tôi có thể đặt bánh trực tiếp qua trợ lý chat không?",
+    "answer": "Có. Quý khách nhắn tên bánh và số lượng (ví dụ 'đặt 2 bánh kem chocolate') để trợ lý hỗ trợ tạo đơn, hoặc bấm vào thẻ sản phẩm trong khung chat để mở trang chi tiết và đặt hàng như bình thường.",
+    "category": "assistant"
+  },
+  {
+    "question": "Gấu Bakery có những loại bánh nào?",
+    "answer": "Gấu Bakery có 4 nhóm chính: Bánh kem, Bánh ngọt, Bánh mặn và Bánh mì. Quý khách có thể nhắn tên loại bánh muốn xem (ví dụ 'xem bánh kem') để trợ lý gợi ý các sản phẩm phù hợp kèm hình ảnh và giá.",
+    "category": "product"
+  },
+  {
+    "question": "Bánh của Gấu Bakery có được làm mới mỗi ngày không?",
+    "answer": "Gấu Bakery ưu tiên làm bánh theo ngày để đảm bảo độ tươi ngon và chất lượng. Với các dòng bánh kem và bánh theo yêu cầu, sản phẩm được chuẩn bị gần thời điểm giao nhất có thể để bánh đến tay quý khách trong trạng thái tốt nhất.",
+    "category": "product"
+  },
+  {
+    "question": "Tôi có thể chọn khung giờ giao bánh cụ thể không?",
+    "answer": "Quý khách có thể ghi chú thời gian mong muốn khi đặt hàng, và liên hệ hotline 0901 234 567 để Gấu Bakery sắp xếp giao đúng khung giờ trong khả năng. Với đơn đặt trước 15h, chúng tôi giao trong ngày; đặt sau 15h sẽ giao vào sáng hôm sau.",
+    "category": "shipping"
+  },
+  {
+    "question": "Tôi muốn đổi địa chỉ hoặc thời gian giao sau khi đã đặt thì làm sao?",
+    "answer": "Quý khách vui lòng liên hệ hotline 0901 234 567 càng sớm càng tốt, trước khi đơn được giao đi, kèm mã đơn hàng. Gấu Bakery sẽ hỗ trợ cập nhật địa chỉ hoặc thời gian giao nếu đơn chưa được xử lý vận chuyển.",
+    "category": "shipping"
+  },
+  {
+    "question": "Gấu Bakery có giao hàng vào cuối tuần và ngày lễ không?",
+    "answer": "Có. Gấu Bakery phục vụ tất cả các ngày trong tuần từ 08:00 đến 21:00, bao gồm cuối tuần và ngày lễ. Vào các dịp cao điểm, quý khách nên đặt sớm để chủ động về thời gian giao hàng.",
+    "category": "shipping"
   }
 ]

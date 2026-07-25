@@ -1,6 +1,5 @@
 <?php
-// Authenticated admin reply proxy.
-// api/chat/agent_reply.php
+// api/chat/session_action.php
 require_once __DIR__ . '/../../config/bootstrap.php';
 require_once __DIR__ . '/../../includes/chat_proxy_helpers.php';
 
@@ -30,23 +29,18 @@ if (!chat_admin_csrf_valid($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null)) {
 
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
 $sessionId = isset($input['session_id']) ? (int) $input['session_id'] : 0;
-$content = trim((string) ($input['content'] ?? ''));
+$action = (string) ($input['action'] ?? '');
 
-if ($sessionId <= 0 || $content === '') {
+if ($sessionId <= 0 || !in_array($action, ['claim', 'close', 'reopen'], true)) {
     http_response_code(422);
-    echo json_encode(['error' => 'session_id and content are required']);
+    echo json_encode(['error' => 'invalid_session_action']);
     exit;
 }
 
-$content = function_exists('mb_substr')
-    ? mb_substr($content, 0, 5000, 'UTF-8')
-    : substr($content, 0, 5000);
-
-// admin_id is always injected from the authenticated server-side session.
 $payload = [
     'session_id' => $sessionId,
     'admin_id' => (int) $_SESSION['admin_id'],
-    'content' => $content,
+    'action' => $action,
 ];
 
 $headers = ['Content-Type: application/json'];
@@ -55,7 +49,7 @@ if ($bypass !== null) {
     $headers[] = $bypass;
 }
 
-$ch = curl_init(chat_ai_service_url() . '/admin/reply');
+$ch = curl_init(chat_ai_service_url() . '/admin/session-action');
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
     CURLOPT_HTTPHEADER => $headers,

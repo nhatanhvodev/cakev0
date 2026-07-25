@@ -27,6 +27,7 @@
           <button data-q="Xem menu bánh kem">🎂 Menu bánh kem</button>
           <button data-q="Kiểm tra đơn hàng">📦 Kiểm tra đơn</button>
           <button data-q="Chính sách giao hàng">🚚 Giao hàng</button>
+          <button data-q="Cho mình gặp nhân viên">🙋 Gặp nhân viên</button>
         </div>
         <form class="gau-chat-input">
           <input placeholder="Nhập tin nhắn..." aria-label="Tin nhắn" />
@@ -70,7 +71,7 @@
 
   function productCards(products) {
     return '<div class="gau-cards">' + products.map(p =>
-      `<a class="gau-card" href="/cakev0/pages/product-detail.php?slug=${p.slug || ('san-pham-' + p.id)}" target="_blank">
+      `<a class="gau-card" href="/cakev0/pages/product-detail.php?slug=${p.slug || ('san-pham-' + p.id)}">
          <img src="${esc(imgUrl(p.hinh_anh))}" alt="${esc(p.ten_banh)}"><div>${esc(p.ten_banh)}</div>
          <strong>${Number(p.gia).toLocaleString('vi-VN')} VNĐ</strong></a>`).join('') + '</div>';
   }

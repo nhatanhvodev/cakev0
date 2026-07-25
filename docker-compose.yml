@@ -23,6 +23,8 @@ services:
       - DB_PASS=root_password
       - DB_NAME=banh_store
       - DB_CHARSET=utf8mb4
+      - AI_SERVICE_URL=http://ai-service:8000
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET:-change-me}
       - VNPAY_TMN_CODE=${VNPAY_TMN_CODE:-GO1IEGFS}
       - VNPAY_HASH_SECRET=${VNPAY_HASH_SECRET:-FALJ15YAAF9B9AEWXHVGBVQL6WO4SONA}
       - VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
@@ -66,6 +68,8 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./database/banh_store.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./database/migrations/2026_07_19_create_chat_tables.sql:/docker-entrypoint-initdb.d/02-chat.sql:ro
+      - ./database/migrations/2026_07_25_admin_chat_workflow.sql:/docker-entrypoint-initdb.d/03-admin-chat-workflow.sql:ro
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password" ]
       interval: 5s

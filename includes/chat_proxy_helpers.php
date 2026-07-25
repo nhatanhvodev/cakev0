@@ -30,3 +30,16 @@ function chat_admin_bypass_header(): ?string
     $ts = time();
     return 'X-Admin-Bypass: ' . $ts . ':' . hash_hmac('sha256', 'admin:' . $ts, $secret);
 }
+
+function chat_admin_csrf_valid(?string $providedToken): bool
+{
+    if (
+        $providedToken === null
+        || $providedToken === ''
+        || empty($_SESSION['csrf_token'])
+    ) {
+        return false;
+    }
+
+    return hash_equals((string) $_SESSION['csrf_token'], $providedToken);
+}

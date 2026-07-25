@@ -2943,7 +2943,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <span class="ac-stat-value" id="ac-stat-intents" style="font-size:13px;">-</span>
                     </div>
                 </div>
-                <div id="admin-chat-root"></div>
+                <div id="admin-chat-root"
+                    data-csrf-token="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>"></div>
                 <link rel="stylesheet" href="/cakev0/assets/css/admin-chat.css">
                 <script src="/cakev0/assets/js/admin-chat.js"></script>
             </div>
@@ -3887,6 +3888,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             // 1. Logic chuyển Tab
             function activateTab(tabName) {
                 if (!tabName) return;
+                document.body.classList.toggle('admin-chat-view', tabName === 'chat');
                 var tabContent = document.getElementsByClassName("tab-content");
                 for (var i = 0; i < tabContent.length; i++) {
                     tabContent[i].classList.remove("active");

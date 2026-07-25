@@ -1,4 +1,5 @@
 <?php
+// Filtered admin session-list proxy.
 // api/chat/sessions.php
 require_once __DIR__ . '/../../config/bootstrap.php';
 require_once __DIR__ . '/../../includes/chat_proxy_helpers.php';
@@ -21,12 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
+$allowedViews = ['waiting', 'mine', 'in_progress', 'closed', 'all'];
+$view = (string) ($_GET['view'] ?? 'waiting');
+if (!in_array($view, $allowedViews, true)) {
+    http_response_code(422);
+    echo json_encode(['error' => 'invalid_session_view']);
+    exit;
+}
+
+$query = http_build_query([
+    'view' => $view,
+    'admin_id' => (int) $_SESSION['admin_id'],
+]);
+$url = chat_ai_service_url() . '/admin/sessions?' . $query;
+
 $headers = ['Content-Type: application/json'];
 $bypass = chat_admin_bypass_header();
 if ($bypass !== null) {
     $headers[] = $bypass;
 }
-$ch = curl_init(chat_ai_service_url() . '/admin/sessions');
+
+$ch = curl_init($url);
 curl_setopt_array($ch, [
     CURLOPT_HTTPHEADER => $headers,
     CURLOPT_RETURNTRANSFER => true,

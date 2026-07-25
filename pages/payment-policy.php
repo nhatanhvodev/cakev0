@@ -2,274 +2,138 @@
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
+$pageTitle = 'Chính sách thanh toán';
 ?>
-<?php
-$pageTitle = 'Chính sách Thanh toán';
-?>
-
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-    <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <style>
-        body {
-            background: #ffffff;
-            color: #272727;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .policy-wrapper {
-            background: #ffffff;
-            border-radius: 32px;
-            padding: 36px;
-            border: 1px solid #f3e0be;
-            box-shadow: 0 24px 48px rgba(74, 29, 31, 0.12);
-        }
-
-        .notebook {
-            background: linear-gradient(180deg, #fff7ea 0%, #fdf1db 100%);
-
-            border-radius: 24px;
-            padding: 32px;
-            position: relative;
-        }
-
-        .notebook-page {
-            background: #fff;
-            border-radius: 18px !important;
-            margin-bottom: 18px;
-            border: none;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
-            overflow: hidden;
-        }
-
-        .accordion-button {
-            border-radius: 18px !important;
-            font-weight: 600;
-            font-size: 17px;
-            padding: 20px 24px;
-            background: #f7efe1;
-            color: #4a1d1f;
-            border: none;
-            box-shadow: none !important;
-        }
-
-        .accordion-button:not(.collapsed) {
-            background: #f0e2c8;
-            color: #4a1d1f;
-        }
-
-        .accordion-button::after {
-            display: none;
-        }
-
-        .page-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            margin-right: 14px;
-            font-size: 18px;
-        }
-
-        .bg-blue {
-            background: #3b82f6;
-        }
-
-        .bg-red {
-            background: #ef4444;
-        }
-
-        .bg-green {
-            background: #10b981;
-        }
-
-        .policy-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .policy-list li {
-            display: flex;
-            gap: 16px;
-            background: #fdf7ef;
-            padding: 18px 20px;
-            border-radius: 16px;
-            margin-bottom: 16px;
-            border: 1px solid #f3e0be;
-        }
-
-        .policy-list li:last-child {
-            margin-bottom: 0;
-        }
-
-        .policy-item-icon {
-            font-size: 22px;
-            min-width: 30px;
-        }
-
-        .policy-item-content strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .policy-item-content p {
-            margin: 0;
-            color: #4a4a4a;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 768px) {
-            .notebook { padding: 20px; }
-            .accordion-button { font-size: 15px; padding: 14px 16px; }
-            .policy-list li { flex-direction: column; align-items: flex-start; }
-            .page-icon { margin-right: 0; margin-bottom: 8px; }
-        }
-
-        @media (max-width: 520px) {
-            .policy-wrapper { border-radius: 24px; padding: 24px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?> | Gấu Bakery</title>
+  <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/policy-pages.css">
 </head>
+<body class="policy-body">
+  <a class="policy-skip-link" href="#main-content">Bỏ qua đến nội dung chính</a>
+  <?php include '../includes/header.php'; ?>
 
-<body>
+  <main id="main-content" class="policy-page">
+    <div class="policy-shell">
+      <nav class="policy-breadcrumb" aria-label="Đường dẫn">
+        <ol>
+          <li><a href="../index.php">Trang chủ</a></li>
+          <li aria-current="page">Chính sách thanh toán</li>
+        </ol>
+      </nav>
 
-    <?php include '../includes/header.php'; ?>
-
-    <section class="container my-5">
-        <div class="card shadow-lg border-0 rounded-4 p-4">
-
-            <h1 class="text-center mb-4 fw-bold text-dark">
-                <i class="fa-solid fa-wallet"></i> CHÍNH SÁCH THANH TOÁN
-            </h1>
-
-            <div class="notebook">
-                <div class="accordion" id="paymentNotebook">
-
-                    <div class="accordion-item notebook-page">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#paymentA">
-                                <span class="page-icon bg-blue"><i class="fa-solid fa-credit-card"></i></span>
-                                Hình thức thanh toán
-                            </button>
-                        </h2>
-                        <div id="paymentA" class="accordion-collapse collapse" data-bs-parent="#paymentNotebook">
-                            <div class="accordion-body">
-                                <ul class="policy-list">
-
-                                    <li>
-                                        <span class="policy-item-icon text-success"><i
-                                                class="fa-solid fa-money-bill-wave"></i></span>
-                                        <div class="policy-item-content">
-                                            <strong>Thanh toán khi nhận hàng (COD)</strong>
-                                            <p>Thanh toán trực tiếp bằng tiền mặt cho nhân viên giao hàng khi nhận sản
-                                                phẩm.</p>
-                                        </div>
-                                    </li>
-
-                                    <li>
-                                        <span class="policy-item-icon text-primary"><i
-                                                class="fa-solid fa-building-columns"></i></span>
-                                        <div class="policy-item-content">
-                                            <strong>Chuyển khoản ngân hàng</strong>
-                                            <p>Thanh toán qua tài khoản ngân hàng theo thông tin Gấu Bakery cung cấp.
-                                            </p>
-                                        </div>
-                                    </li>
-
-                                    <li>
-                                        <span class="policy-item-icon text-info"><i
-                                                class="fa-solid fa-qrcode"></i></span>
-                                        <div class="policy-item-content">
-                                            <strong>Thanh toán qua VNPAY</strong>
-                                            <p>Thanh toán nhanh chóng qua cổng VNPAY bằng QR hoặc thẻ nội địa, xác nhận
-                                                tự động sau khi giao dịch hoàn tất.</p>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item notebook-page">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#paymentB">
-                                <span class="page-icon bg-red"><i class="fa-solid fa-circle-exclamation"></i></span>
-                                Quy định thanh toán
-                            </button>
-                        </h2>
-                        <div id="paymentB" class="accordion-collapse collapse" data-bs-parent="#paymentNotebook">
-                            <div class="accordion-body">
-                                <ul class="policy-list">
-
-                                    <li>
-                                        <span class="policy-item-icon text-warning"><i
-                                                class="fa-solid fa-file-invoice"></i></span>
-                                        <div class="policy-item-content">
-                                            <strong>Xác nhận đơn hàng</strong>
-                                            <p>Đơn hàng sẽ chỉ được xử lý và giao đi sau khi hệ thống xác nhận thanh
-                                                toán thành công (đối với chuyển khoản và VNPAY).</p>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item notebook-page">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#paymentC">
-                                <span class="page-icon bg-green"><i class="fa-solid fa-shield-halved"></i></span>
-                                Bảo mật thanh toán
-                            </button>
-                        </h2>
-                        <div id="paymentC" class="accordion-collapse collapse" data-bs-parent="#paymentNotebook">
-                            <div class="accordion-body">
-                                <ul class="policy-list">
-
-                                    <li>
-                                        <span class="policy-item-icon text-success"><i
-                                                class="fa-solid fa-lock"></i></span>
-                                        <div class="policy-item-content">
-                                            <strong>Bảo mật thông tin</strong>
-                                            <p>Mọi thông tin giao dịch và thanh toán của khách hàng đều được cam kết bảo
-                                                mật tuyệt đối.</p>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <p class="text-center fw-semibold mt-4 text-secondary">
-                    <i class="fa-regular fa-credit-card" style="color: #8b4513;"></i> Cảm ơn Quý khách đã tin tưởng
-                    <strong>Gấu Bakery</strong>
-                </p>
-            </div>
+      <header class="policy-hero">
+        <div class="policy-hero__inner">
+          <div>
+            <p class="policy-eyebrow">Tóm tắt chính sách</p>
+            <h1>Chính sách thanh toán</h1>
+            <p class="policy-lead">
+              Các hình thức thanh toán được hỗ trợ, quy định xác nhận đơn hàng
+              và cam kết bảo mật thông tin giao dịch.
+            </p>
+            <ul class="policy-meta" aria-label="Thông tin tài liệu">
+              <li><i class="fa-regular fa-calendar" aria-hidden="true"></i> Cập nhật: 25/07/2026</li>
+              <li><i class="fa-regular fa-clock" aria-hidden="true"></i> Thời gian đọc: 2 phút</li>
+            </ul>
+          </div>
+          <div class="policy-hero__icon" aria-hidden="true">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
         </div>
-    </section>
+      </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include '../includes/footer.html'; ?>
+      <div class="policy-layout">
+        <aside class="policy-toc" aria-labelledby="payment-toc-title">
+          <div class="policy-toc__card">
+            <h2 id="payment-toc-title">Trong trang này</h2>
+            <ol>
+              <li><a href="#hinh-thuc">Hình thức thanh toán</a></li>
+              <li><a href="#quy-dinh">Quy định thanh toán</a></li>
+              <li><a href="#bao-mat">Bảo mật thanh toán</a></li>
+            </ol>
+          </div>
+        </aside>
 
+        <article class="policy-content" aria-label="Nội dung chính sách thanh toán">
+          <section id="hinh-thuc" class="policy-section" aria-labelledby="hinh-thuc-title">
+            <header class="policy-section__header">
+              <span class="policy-section__number" aria-hidden="true"><i class="fa-solid fa-credit-card"></i></span>
+              <h2 id="hinh-thuc-title">Hình thức thanh toán</h2>
+            </header>
+            <ul class="policy-items">
+              <li class="policy-item">
+                <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-money-bill-wave"></i></span>
+                <div>
+                  <strong>Thanh toán khi nhận hàng (COD)</strong>
+                  <p>Thanh toán trực tiếp bằng tiền mặt cho nhân viên giao hàng khi nhận sản phẩm.</p>
+                </div>
+              </li>
+              <li class="policy-item">
+                <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-building-columns"></i></span>
+                <div>
+                  <strong>Chuyển khoản ngân hàng</strong>
+                  <p>Thanh toán qua tài khoản ngân hàng theo thông tin Gấu Bakery cung cấp.</p>
+                </div>
+              </li>
+              <li class="policy-item">
+                <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-qrcode"></i></span>
+                <div>
+                  <strong>Thanh toán qua VNPAY</strong>
+                  <p>Thanh toán nhanh chóng qua cổng VNPAY bằng QR hoặc thẻ nội địa, xác nhận tự động sau khi giao dịch hoàn tất.</p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section id="quy-dinh" class="policy-section" aria-labelledby="quy-dinh-title">
+            <header class="policy-section__header">
+              <span class="policy-section__number" aria-hidden="true"><i class="fa-solid fa-circle-exclamation"></i></span>
+              <h2 id="quy-dinh-title">Quy định thanh toán</h2>
+            </header>
+            <ul class="policy-items">
+              <li class="policy-item">
+                <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-file-invoice"></i></span>
+                <div>
+                  <strong>Xác nhận đơn hàng</strong>
+                  <p>Đơn hàng sẽ chỉ được xử lý và giao đi sau khi hệ thống xác nhận thanh toán thành công (đối với chuyển khoản và VNPAY).</p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section id="bao-mat" class="policy-section" aria-labelledby="bao-mat-title">
+            <header class="policy-section__header">
+              <span class="policy-section__number" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+              <h2 id="bao-mat-title">Bảo mật thanh toán</h2>
+            </header>
+            <ul class="policy-items">
+              <li class="policy-item">
+                <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+                <div>
+                  <strong>Bảo mật thông tin</strong>
+                  <p>Mọi thông tin giao dịch và thanh toán của khách hàng đều được cam kết bảo mật tuyệt đối.</p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <div class="policy-closing" role="note">
+            <span class="policy-closing__icon" aria-hidden="true"><i class="fa-regular fa-credit-card"></i></span>
+            <p>Cảm ơn Quý khách đã tin tưởng <strong>Gấu Bakery</strong></p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <?php include '../includes/footer.html'; ?>
 </body>
-
 </html>

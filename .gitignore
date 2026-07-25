@@ -10,6 +10,8 @@ tmp/dompdf/*
 .superpowers/
 .agents/
 .codegraph/
+.claude/
+*.egg-info/
 skills-lock.json
 
 ai-service/venv/

@@ -89,7 +89,6 @@
       const rep = data.reply || {};
       let html = esc(rep.content || 'Xin lỗi, có lỗi xảy ra.');
       if (rep.products && rep.products.length) html += productCards(rep.products);
-      if (rep.citations && rep.citations.length) html += '<div class="gau-cite">Nguồn: ' + rep.citations.map(c => esc(c.source)).join(', ') + '</div>';
       bubble('bot', html);
     } catch (e) { typing.remove(); bubble('bot', 'Không kết nối được, thử lại sau nhé.'); }
   }
@@ -111,7 +110,6 @@
         let html = esc(m.content);
         const meta = m.metadata;
         if (meta && meta.products && meta.products.length) html += productCards(meta.products);
-        if (meta && meta.citations && meta.citations.length) html += '<div class="gau-cite">Nguồn: ' + meta.citations.map(c => esc(c.source)).join(', ') + '</div>';
         bubble(who, html);
         if (m.id > lastMsgId) lastMsgId = m.id;
       });

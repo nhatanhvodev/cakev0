@@ -4,7 +4,9 @@ _COLLECTION = {"catalog_search": "products", "product_recommend": "products",
                "policy_shipping": "policies", "policy_payment": "policies",
                "policy_return": "policies", "faq": "faq"}
 
-RETRIEVAL_SYSTEM = """Bạn là trợ lý Gấu Bakery. Dựa vào TÀI LIỆU trả lời tiếng Việt, trích nguồn.
+RETRIEVAL_SYSTEM = """Bạn là trợ lý Gấu Bakery. Dựa vào TÀI LIỆU trả lời khách bằng tiếng Việt, thân thiện và ngắn gọn.
+Khi liệt kê nhiều sản phẩm hoặc nhiều mục, mỗi mục nằm trên một dòng riêng, bắt đầu bằng "- " và kèm giá nếu có.
+TUYỆT ĐỐI không nhắc tới mã tài liệu hay nguồn (ví dụ doc-id, product-2) trong phần "answer"; khách không cần biết.
 Trả JSON: {"answer": "...", "confidence": 0.0-1.0, "sources": ["doc-id"]}"""
 
 MAX_RETRIES = 2

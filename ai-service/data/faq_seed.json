@@ -188,5 +188,65 @@
     "question": "Gấu Bakery có giao hàng vào cuối tuần và ngày lễ không?",
     "answer": "Có. Gấu Bakery phục vụ tất cả các ngày trong tuần từ 08:00 đến 21:00, bao gồm cuối tuần và ngày lễ. Vào các dịp cao điểm, quý khách nên đặt sớm để chủ động về thời gian giao hàng.",
     "category": "shipping"
+  },
+  {
+    "question": "Tôi muốn viết lời chúc hoặc tên lên bánh kem thì làm sao?",
+    "answer": "Quý khách chỉ cần ghi lời chúc hoặc tên muốn viết lên bánh khi đặt hàng, Gấu Bakery sẽ trang trí kèm miễn phí. Với yêu cầu chữ nhiều màu hoặc kiểu trang trí đặc biệt, vui lòng liên hệ hotline 0901 234 567 để được tư vấn.",
+    "category": "custom"
+  },
+  {
+    "question": "Tôi gửi hình mẫu bánh, Gấu Bakery có làm theo được không?",
+    "answer": "Được. Quý khách gửi hình mẫu qua hotline 0901 234 567, Gấu Bakery sẽ tư vấn khả năng thực hiện và báo giá theo độ phức tạp của mẫu. Bánh thiết kế riêng nên đặt trước 1–2 ngày để đội ngũ chuẩn bị chu đáo.",
+    "category": "custom"
+  },
+  {
+    "question": "Bánh kem cỡ nào thì phù hợp với số lượng khách của tôi?",
+    "answer": "Cỡ bánh phù hợp tùy theo số người dùng và dịp tổ chức. Quý khách cho biết số lượng khách dự kiến, Gấu Bakery sẽ tư vấn đường kính và trọng lượng bánh hợp lý qua hotline 0901 234 567 để tránh thừa hoặc thiếu.",
+    "category": "custom"
+  },
+  {
+    "question": "Đặt bánh thiết kế riêng có cần đặt cọc trước không?",
+    "answer": "Với bánh thiết kế riêng hoặc đơn số lượng lớn, Gấu Bakery có thể yêu cầu đặt cọc một phần để chuẩn bị nguyên liệu. Mức cọc và cách thanh toán sẽ được nhân viên thông báo rõ khi xác nhận đơn.",
+    "category": "custom"
+  },
+  {
+    "question": "Gấu Bakery có nhận làm bánh cưới, thôi nôi, đầy tháng không?",
+    "answer": "Có. Gấu Bakery nhận làm bánh cho các dịp đặc biệt như sinh nhật, cưới hỏi, thôi nôi, đầy tháng và khai trương. Quý khách vui lòng đặt trước và liên hệ hotline 0901 234 567 để được tư vấn mẫu bánh phù hợp với chủ đề buổi tiệc.",
+    "category": "custom"
+  },
+  {
+    "question": "Bánh của Gấu Bakery có dùng chất bảo quản không?",
+    "answer": "Gấu Bakery ưu tiên làm bánh theo ngày từ nguyên liệu tươi, nên hạn sử dụng ngắn (thường 3–5 ngày khi bảo quản lạnh 2–8°C). Vì vậy bánh hạn chế tối đa chất bảo quản, quý khách nên dùng sớm để cảm nhận độ ngon trọn vẹn.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có nhận làm bánh ít trứng sữa hoặc thuần chay không?",
+    "answer": "Một số dòng bánh có thể điều chỉnh theo nhu cầu ăn kiêng hoặc hạn chế trứng sữa. Do phụ thuộc công thức từng loại, quý khách vui lòng liên hệ hotline 0901 234 567 trước khi đặt để Gấu Bakery tư vấn lựa chọn phù hợp.",
+    "category": "product"
+  },
+  {
+    "question": "Bánh của Gấu Bakery có đảm bảo an toàn vệ sinh thực phẩm không?",
+    "answer": "Gấu Bakery cam kết tuân thủ quy trình vệ sinh an toàn thực phẩm, sử dụng nguyên liệu rõ nguồn gốc và bảo quản đúng nhiệt độ. Sức khỏe và trải nghiệm của khách hàng luôn là ưu tiên hàng đầu của chúng tôi.",
+    "category": "product"
+  },
+  {
+    "question": "Trời nóng thì bánh kem giao đi có bị chảy hỏng không?",
+    "answer": "Bánh kem được đóng gói cẩn thận và giao trong thời gian ngắn để giữ form và độ tươi. Ngay khi nhận, quý khách nên bảo quản bánh trong ngăn mát tủ lạnh (2–8°C) và lấy ra trước khi dùng khoảng 15–20 phút để bánh ngon nhất.",
+    "category": "shipping"
+  },
+  {
+    "question": "Gấu Bakery có giao gấp trong vài giờ không?",
+    "answer": "Tùy khu vực nội thành và tình trạng đơn, Gấu Bakery có thể hỗ trợ giao nhanh. Quý khách vui lòng gọi hotline 0901 234 567 để được ưu tiên sắp xếp giao gấp trong thời gian sớm nhất có thể.",
+    "category": "shipping"
+  },
+  {
+    "question": "Đặt bánh cho công ty có xuất hóa đơn VAT không?",
+    "answer": "Có. Gấu Bakery hỗ trợ xuất hóa đơn cho khách hàng doanh nghiệp. Quý khách vui lòng cung cấp thông tin xuất hóa đơn (tên công ty, mã số thuế, địa chỉ) khi đặt hàng để chúng tôi chuẩn bị đầy đủ.",
+    "category": "payment"
+  },
+  {
+    "question": "Đặt bánh sinh nhật có kèm nến và dụng cụ cắt bánh không?",
+    "answer": "Bánh sinh nhật của Gấu Bakery được kèm nến và dụng cụ cơ bản để quý khách sử dụng ngay. Nếu cần thêm nến số, topper trang trí hay phụ kiện đặc biệt, quý khách vui lòng ghi chú khi đặt để chúng tôi chuẩn bị.",
+    "category": "custom"
   }
 ]

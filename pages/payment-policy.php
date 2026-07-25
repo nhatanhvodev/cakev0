@@ -39,10 +39,6 @@ $pageTitle = 'Chính sách thanh toán';
               Các hình thức thanh toán được hỗ trợ, quy định xác nhận đơn hàng
               và cam kết bảo mật thông tin giao dịch.
             </p>
-            <ul class="policy-meta" aria-label="Thông tin tài liệu">
-              <li><i class="fa-regular fa-calendar" aria-hidden="true"></i> Cập nhật: 25/07/2026</li>
-              <li><i class="fa-regular fa-clock" aria-hidden="true"></i> Thời gian đọc: 2 phút</li>
-            </ul>
           </div>
           <div class="policy-hero__icon" aria-hidden="true">
             <i class="fa-solid fa-wallet"></i>

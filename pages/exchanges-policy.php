@@ -39,10 +39,6 @@ $pageTitle = 'Chính sách đổi trả';
               Gấu Bakery cam kết mang đến sản phẩm chất lượng và trải nghiệm mua sắm tốt nhất.
               Trong trường hợp phát sinh sự cố, vui lòng tham khảo chính sách dưới đây.
             </p>
-            <ul class="policy-meta" aria-label="Thông tin tài liệu">
-              <li><i class="fa-regular fa-calendar" aria-hidden="true"></i> Cập nhật: 25/07/2026</li>
-              <li><i class="fa-regular fa-clock" aria-hidden="true"></i> Thời gian đọc: 2 phút</li>
-            </ul>
           </div>
           <div class="policy-hero__icon" aria-hidden="true">
             <i class="fa-solid fa-rotate-left"></i>

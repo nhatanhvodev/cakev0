@@ -22,7 +22,7 @@ services:
       - key: DEEPSEEK_API_KEY
         sync: false
       - key: LLM_MODEL
-        value: deepseek-chat
+        value: deepseek-v4-flash
       - key: EMBEDDING_MODEL
         value: gemini-embedding-001
       - key: LLM_TEMPERATURE

@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     llm_provider: str = "deepseek"             # gemini | deepseek
     gemini_api_key: str = ""
     deepseek_api_key: str = ""
-    llm_model: str = "deepseek-chat"
+    llm_model: str = "deepseek-v4-flash"
     embedding_model: str = "gemini-embedding-001"  # embeddings still use Gemini (free)
     llm_temperature: float = 0.3
     chroma_persist_dir: str = "./data/chroma_db"

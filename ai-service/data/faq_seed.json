@@ -248,5 +248,105 @@
     "question": "Đặt bánh sinh nhật có kèm nến và dụng cụ cắt bánh không?",
     "answer": "Bánh sinh nhật của Gấu Bakery được kèm nến và dụng cụ cơ bản để quý khách sử dụng ngay. Nếu cần thêm nến số, topper trang trí hay phụ kiện đặc biệt, quý khách vui lòng ghi chú khi đặt để chúng tôi chuẩn bị.",
     "category": "custom"
+  },
+  {
+    "question": "Gấu Bakery có bán cupcake không?",
+    "answer": "Có. Gấu Bakery có 3 vị cupcake:\n- Cupcake Red Velvet (45.000đ) — cốt bánh đỏ mịn, kem cheese frosting\n- Cupcake Chocolate (40.000đ) — cốt chocolate xốp, ganache chocolate Bỉ\n- Cupcake Vani (35.000đ) — cốt bơ thơm, buttercream vani\nPhù hợp làm quà tặng, tiệc sinh nhật hoặc trà chiều.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có macaron không? Giá bao nhiêu?",
+    "answer": "Có. Gấu Bakery có Macaron hộp 6 vị giá 120.000đ, gồm: chocolate, matcha, dâu tây, chanh, vani và caramel muối. Vỏ giòn mỏng, nhân ganache mềm mịn, đóng hộp sang trọng — lý tưởng làm quà tặng.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có bánh mousse không?",
+    "answer": "Có. Gấu Bakery có 2 loại mousse:\n- Mousse Chocolate (90.000đ) — chocolate Bỉ đậm đà, ít ngọt, đáy biscuit giòn\n- Mousse Chanh dây (85.000đ) — chua ngọt tươi mát, lớp jelly chanh dây bên trên\nCả hai đều nhẹ nhàng, phù hợp người thích vị thanh.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có brownie không?",
+    "answer": "Có. Brownie Chocolate giá 45.000đ — kiểu Mỹ fudgy, bên ngoài hơi giòn, bên trong ẩm mềm, dùng chocolate đen cao cấp và bơ Pháp, rắc hạt óc chó rang. Bảo quản nhiệt độ phòng 1-2 ngày hoặc tủ lạnh 5 ngày.",
+    "category": "product"
+  },
+  {
+    "question": "Chiffon cake là gì? Gấu Bakery có không?",
+    "answer": "Chiffon cake là loại bánh bông lan kiểu Nhật, nhẹ xốp như mây, ít đường ít dầu. Gấu Bakery có Chiffon cake Vani size 18cm giá 130.000đ, phù hợp 4-6 người. Có thể kèm kem tươi và trái cây theo yêu cầu.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có éclair không?",
+    "answer": "Có. Éclair Chocolate giá 35.000đ — vỏ choux giòn xốp Pháp cổ điển, nhân kem custard vani béo ngậy, phủ ganache chocolate bóng mượt. Thưởng thức ngon nhất khi mới làm, bảo quản lạnh 2 ngày.",
+    "category": "product"
+  },
+  {
+    "question": "Mille Crepe là gì? Giá bao nhiêu?",
+    "answer": "Mille Crepe là bánh gồm hơn 20 lớp crepe mỏng mịn xen kẽ lớp kem, rất trending hiện nay. Gấu Bakery có Mille Crepe Matcha giá 160.000đ (size 16cm, 4-6 người) — vị trà xanh Uji đắng nhẹ hòa quyện kem ngọt thanh.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có pain au chocolat không?",
+    "answer": "Có. Pain au Chocolat giá 30.000đ — bánh ngàn lớp kiểu Pháp, giòn xốp, bọc hai thanh chocolate đen bên trong. Nướng vàng thơm mỗi sáng, kết hợp hoàn hảo cùng cà phê. Nên ăn khi còn ấm.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có danish pastry không?",
+    "answer": "Có. Danish Trái cây giá 35.000đ — vỏ pastry giòn xốp nhiều lớp, nhân kem custard vani và trái cây tươi theo mùa (dâu tây, việt quất, kiwi). Lý tưởng cho bữa sáng hoặc trà chiều.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có bán donut không?",
+    "answer": "Có. Donut hộp 4 chiếc giá 60.000đ gồm 4 vị: đường phủ, chocolate, dâu tây và matcha. Vỏ mềm xốp, topping rực rỡ. Phù hợp chia sẻ cùng gia đình hoặc bạn bè.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có panna cotta không?",
+    "answer": "Có. Panna Cotta Vani giá 45.000đ — tráng miệng Ý truyền thống, mềm mượt như lụa, hương vani Madagascar. Phủ coulis dâu tây hoặc caramel tùy chọn. Nhẹ nhàng, thanh mát.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có bán bánh flan không?",
+    "answer": "Có. Bánh Flan Caramel giá 20.000đ — flan truyền thống Việt Nam, mềm mịn thơm béo mùi trứng sữa, lớp caramel đắng nhẹ cân bằng. Ăn lạnh hoặc thêm đá đều ngon.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có cookie bơ bán theo hộp không?",
+    "answer": "Có. Cookie Bơ hộp 12 chiếc giá 80.000đ, gồm hai vị: bơ truyền thống và chocolate chip. Dùng bơ Pháp và chocolate chip Bỉ. Đóng hộp đẹp, thích hợp làm quà biếu. Bảo quản nhiệt độ phòng mát 7-10 ngày.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có bánh mặn nào ngoài bánh mì?",
+    "answer": "Ngoài bánh mì, Gấu Bakery có nhiều bánh mặn:\n- Bánh Patê Sô (25.000đ) — puff pastry giòn, nhân patê gan truyền thống\n- Quiche Lorraine (55.000đ) — vỏ tart bơ, nhân trứng kem thịt xông khói phô mai\n- Bánh Bao nhân thịt (20.000đ) — vỏ mềm trắng, nhân thịt trứng cút nấm mèo\n- Puff Pastry Xúc xích (30.000đ) — vỏ ngàn lớp cuộn xúc xích Đức",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có bánh patê sô không?",
+    "answer": "Có. Bánh Patê Sô giá 25.000đ — puff pastry giòn ngàn lớp, nhân patê gan heo thơm béo kết hợp thịt heo xay. Nướng vàng mỗi ngày, ăn sáng hoặc ăn vặt đều ngon. Hâm nóng 180°C/5 phút trước khi ăn.",
+    "category": "product"
+  },
+  {
+    "question": "Quiche là gì? Gấu Bakery có không?",
+    "answer": "Quiche là bánh tart mặn kiểu Pháp với vỏ giòn và nhân trứng kem béo. Gấu Bakery có Quiche Lorraine giá 55.000đ (size 12cm, 1-2 người) — nhân thịt xông khói, phô mai Gruyère và hành tây caramel. Phù hợp bữa brunch.",
+    "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có bánh bao không?",
+    "answer": "Có. Bánh Bao nhân thịt giá 20.000đ — vỏ mềm trắng mịn, nhân thịt heo xay kết hợp trứng cút, nấm mèo và miến. Hấp nóng tại tiệm mỗi ngày. Bữa sáng tiện lợi, no lâu.",
+    "category": "product"
+  },
+  {
+    "question": "Bánh nào của Gấu Bakery phù hợp ăn sáng?",
+    "answer": "Gấu Bakery gợi ý cho bữa sáng:\n- Croissant (25.000đ) — giòn xốp thơm bơ\n- Pain au Chocolat (30.000đ) — ngàn lớp nhân chocolate\n- Danish Trái cây (35.000đ) — pastry giòn nhân kem custard và trái cây\n- Bánh mì Việt Nam (25.000đ) — bánh mì truyền thống\n- Bánh Patê Sô (25.000đ) — giòn rụm nhân patê\n- Bánh Bao nhân thịt (20.000đ) — mềm nóng no lâu",
+    "category": "product"
+  },
+  {
+    "question": "Bánh nào phù hợp làm quà tặng?",
+    "answer": "Gấu Bakery gợi ý quà tặng:\n- Macaron hộp 6 vị (120.000đ) — đóng hộp sang trọng\n- Cookie Bơ hộp 12 (80.000đ) — đóng hộp đẹp, bảo quản lâu\n- Bánh kem theo yêu cầu (từ 210.000đ) — thiết kế riêng\n- Donut hộp 4 (60.000đ) — vui nhộn, nhiều vị\n- Cupcake (35-45.000đ/chiếc) — nhỏ xinh, đa dạng vị",
+    "category": "product"
+  },
+  {
+    "question": "Bánh nào của Gấu Bakery ít ngọt, phù hợp người không thích đồ ngọt?",
+    "answer": "Gấu Bakery gợi ý cho người thích vị nhẹ:\n- Chiffon cake Vani (130.000đ) — ít đường, ít dầu, xốp nhẹ kiểu Nhật\n- Mousse Chocolate (90.000đ) — đắng nhẹ, ngọt thanh\n- Mousse Chanh dây (85.000đ) — chua ngọt cân bằng\n- Croissant (25.000đ) — bơ giòn, không phủ đường\n- Quiche Lorraine (55.000đ) — bánh mặn hoàn toàn",
+    "category": "product"
   }
 ]

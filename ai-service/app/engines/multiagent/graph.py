@@ -10,8 +10,12 @@ from app.nlp.normalizer import normalize
 
 RETRIEVAL_INTENTS = {"faq", "catalog_search", "product_recommend",
                      "policy_shipping", "policy_payment", "policy_return"}
-ACTION_INTENTS = {"order_status", "order_create", "promotion", "bestseller"}
+ACTION_INTENTS = {"order_status", "order_create", "promotion", "bestseller",
+                  "coupon_inquiry", "review_lookup", "product_compare",
+                  "favorite_add", "favorite_view", "dietary_inquiry", "custom_cake_quote"}
 HANDOFF_INTENTS = {"complaint", "handoff_request"}
+# Multi-turn intents that must not be re-classified once a draft is open.
+PINNED_INTENTS = {"order_create", "custom_cake_quote"}
 EXIT_DRAFT_WORDS = {"thôi", "thoi", "hủy", "huy", "hủy đơn", "huy don", "dừng", "dung",
                     "quên", "quen", "bỏ", "bo", "cancel"}
 _EXIT_TOKEN_RE = re.compile(r"[\wÀ-ỹ]+")
@@ -33,6 +37,13 @@ def _open_draft(session) -> bool:
     d = meta.get("order_draft") or {}
     return bool(d.get("items")) or d.get("step") not in (None, "items")
 
+
+def _open_custom_quote(session) -> bool:
+    meta = session.get("metadata")
+    meta = json.loads(meta) if isinstance(meta, str) else (meta or {})
+    d = meta.get("custom_quote") or {}
+    return d.get("step") not in (None, "occasion") or bool(d.get("occasion"))
+
 def build_graph(deps: EngineDeps):
     from app.engines.multiagent.retrieval import retrieval_node
     from app.engines.multiagent.action import action_node
@@ -47,8 +58,8 @@ def build_graph(deps: EngineDeps):
         return {"normalized_query": normalize(state["query"])}
 
     def router_node(state: AgentState):
-        if state.get("intent") == "order_create":
-            return {"intent": "order_create", "confidence": 1.0}
+        if state.get("intent") in PINNED_INTENTS:
+            return {"intent": state["intent"], "confidence": 1.0}
         history = state.get("history") or []
         intent, conf = router_mod.classify_intent(deps.llm, state["normalized_query"], history)
         return {"intent": intent, "confidence": conf}
@@ -120,9 +131,13 @@ class MultiAgentEngine:
                              "retry_count": 0, "citations": [], "products": [],
                              "should_handoff": False, "handoff_reasons": []}
         session = (context or {}).get("session") or {}
-        if _open_draft(session) and not _has_exit_word(user_message):
-            state["intent"] = "order_create"
-            state["confidence"] = 1.0
+        if not _has_exit_word(user_message):
+            if _open_draft(session):
+                state["intent"] = "order_create"
+                state["confidence"] = 1.0
+            elif _open_custom_quote(session):
+                state["intent"] = "custom_cake_quote"
+                state["confidence"] = 1.0
         out = self._graph.invoke(state)
         return EngineReply(
             type=out.get("action_result", {}).get("type", "text"),

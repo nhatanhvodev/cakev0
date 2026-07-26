@@ -348,5 +348,35 @@
     "question": "Bánh nào của Gấu Bakery ít ngọt, phù hợp người không thích đồ ngọt?",
     "answer": "Gấu Bakery gợi ý cho người thích vị nhẹ:\n- Chiffon cake Vani (130.000đ) — ít đường, ít dầu, xốp nhẹ kiểu Nhật\n- Mousse Chocolate (90.000đ) — đắng nhẹ, ngọt thanh\n- Mousse Chanh dây (85.000đ) — chua ngọt cân bằng\n- Croissant (25.000đ) — bơ giòn, không phủ đường\n- Quiche Lorraine (55.000đ) — bánh mặn hoàn toàn",
     "category": "product"
+  },
+  {
+    "question": "Gấu Bakery có mã giảm giá cho khách mới không?",
+    "answer": "Có! Khách mới dùng mã WELCOME10 để được giảm 10% cho đơn hàng từ 100.000đ. Bạn nhập mã ở bước thanh toán trước khi xác nhận đơn. Bạn cũng có thể hỏi trợ lý 'có mã giảm giá nào không' để xem ưu đãi đang áp dụng.",
+    "category": "promotion"
+  },
+  {
+    "question": "Làm sao xem đánh giá của một loại bánh?",
+    "answer": "Bạn chỉ cần hỏi trợ lý, ví dụ 'bánh kem chocolate đánh giá thế nào' — trợ lý sẽ cho biết điểm trung bình và một vài nhận xét từ khách đã mua. Sau khi nhận hàng, bạn cũng có thể để lại đánh giá cho sản phẩm ngay trong tài khoản của mình.",
+    "category": "assistant"
+  },
+  {
+    "question": "Tôi muốn đặt bánh thiết kế riêng và được báo giá thì làm thế nào?",
+    "answer": "Bạn nhắn trợ lý 'đặt bánh thiết kế riêng' hoặc 'báo giá bánh theo yêu cầu', trợ lý sẽ hỏi lần lượt: dịp, số người, vị bánh, ngày cần, ghi chú trang trí và số điện thoại. Sau khi bạn xác nhận, nhân viên Gấu Bakery sẽ liên hệ tư vấn và báo giá trong giờ làm việc 08:00–21:00.",
+    "category": "ordering"
+  },
+  {
+    "question": "Tôi bị dị ứng, làm sao tìm bánh không chứa trứng, sữa, gluten hoặc hạt?",
+    "answer": "Bạn hỏi trợ lý ví dụ 'bánh nào không có trứng', 'bánh không sữa' hoặc 'bánh thuần chay', trợ lý sẽ lọc và gợi ý các sản phẩm phù hợp. Lưu ý thông tin mang tính tham khảo — nếu bạn dị ứng nặng, vui lòng gọi hotline 0901 234 567 để được xác nhận thành phần chính xác trước khi đặt.",
+    "category": "product"
+  },
+  {
+    "question": "Tôi có thể lưu bánh yêu thích trong khung chat không?",
+    "answer": "Được, khi bạn đã đăng nhập tài khoản. Chỉ cần nhắn 'lưu bánh [tên bánh] vào yêu thích' để thêm, hoặc 'xem bánh yêu thích của tôi' để xem lại danh sách. Bánh yêu thích cũng hiển thị trong mục tài khoản của bạn.",
+    "category": "assistant"
+  },
+  {
+    "question": "Tôi muốn so sánh hai loại bánh thì hỏi trợ lý thế nào?",
+    "answer": "Bạn nhắn 'so sánh [bánh A] và [bánh B]', ví dụ 'so sánh tiramisu và mousse chocolate'. Trợ lý sẽ cho bạn xem nhanh giá, loại và cỡ bánh của cả hai để dễ lựa chọn.",
+    "category": "assistant"
   }
 ]

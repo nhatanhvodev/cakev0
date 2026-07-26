@@ -101,10 +101,28 @@ def _format_bestseller_response(rows: list[dict]) -> tuple[str, list[dict]]:
     return "Top sản phẩm bán chạy nhất:\n" + "\n".join(lines), products
 
 
+_FEATURE_HANDLERS = {
+    "coupon_inquiry": "coupon_inquiry_node",
+    "review_lookup": "review_lookup_node",
+    "product_compare": "product_compare_node",
+    "favorite_add": "favorite_add_node",
+    "favorite_view": "favorite_view_node",
+    "dietary_inquiry": "dietary_inquiry_node",
+}
+
+
 def action_node(deps, state):
     if state["intent"] == "order_create":
         from app.engines.multiagent.order_create import order_create_node  # Task 17
         return order_create_node(deps, state)
+
+    if state["intent"] == "custom_cake_quote":
+        from app.engines.multiagent.custom_quote import custom_quote_node
+        return custom_quote_node(deps, state)
+
+    if state["intent"] in _FEATURE_HANDLERS:
+        from app.engines.multiagent import features
+        return getattr(features, _FEATURE_HANDLERS[state["intent"]])(deps, state)
 
     if state["intent"] in ("promotion", "bestseller"):
         conn = deps.conn_factory()

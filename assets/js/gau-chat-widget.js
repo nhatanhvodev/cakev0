@@ -25,6 +25,7 @@
         <div class="gau-chat-messages"></div>
         <div class="gau-chat-quick">
           <button data-q="Xem menu bánh kem">🎂 Menu bánh kem</button>
+          <button data-q="Có mã giảm giá nào không">🎁 Ưu đãi</button>
           <button data-q="Kiểm tra đơn hàng">📦 Kiểm tra đơn</button>
           <button data-q="Chính sách giao hàng">🚚 Giao hàng</button>
           <button data-q="Cho mình gặp nhân viên">🙋 Gặp nhân viên</button>

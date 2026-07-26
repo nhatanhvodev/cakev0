@@ -1,11 +1,11 @@
--- Migration: Add 18 new bakery products
+-- Migration: Add 20 new bakery products
 -- Date: 2026-07-26
--- Categories: ngot (14), man (4)
+-- Categories: ngot (16), man (4)
 -- All use placeholder images (admin can update via CMS)
 
 INSERT INTO `banh` (`id`, `ten_banh`, `slug`, `gia`, `hinh_anh`, `loai`, `mo_ta`, `is_featured`, `stock`, `is_best_manual`, `best_rank`) VALUES
 
--- === BÁNH NGỌT (14 sản phẩm) ===
+-- === BÁNH NGỌT (16 sản phẩm) ===
 
 (54, 'Cupcake Red Velvet', 'cupcake-red-velvet-54', 45000.00,
  'assets/uploads/banhngot/placeholder_cupcake_redvelvet.jpg', 'ngot',

@@ -3,12 +3,16 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 function mail_driver(): string {
     $driver = strtolower(trim((string) env_value('MAIL_DRIVER', 'smtp')));
-    return in_array($driver, ['smtp', 'gmail_api'], true) ? $driver : 'smtp';
+    return in_array($driver, ['smtp', 'gmail_api', 'resend'], true) ? $driver : 'smtp';
 }
 
 function mail_required_config_missing(): array {
-    if (mail_driver() === 'gmail_api') {
+    $driver = mail_driver();
+    if ($driver === 'gmail_api') {
         return gmail_api_config_missing();
+    }
+    if ($driver === 'resend') {
+        return resend_config_missing();
     }
 
     $requiredKeys = [
@@ -456,14 +460,95 @@ function smtp_send_message(string $to, string $subject, string $body, ?string $f
     }
 }
 
+function resend_config_missing(): array {
+    $requiredKeys = [
+        'RESEND_API_KEY',
+        'MAIL_FROM_ADDRESS',
+    ];
+
+    $missing = [];
+    foreach ($requiredKeys as $key) {
+        $value = env_value($key);
+        if ($value === null || trim($value) === '') {
+            $missing[] = $key;
+        }
+    }
+
+    return $missing;
+}
+
+function resend_http_post(string $url, string $apiKey, string $jsonBody): array {
+    return gmail_api_http_post($url, [
+        'Authorization: Bearer ' . $apiKey,
+        'Content-Type: application/json',
+    ], $jsonBody);
+}
+
+function resend_send_message(string $to, string $subject, string $body, ?string $fromName = null, array $attachments = []): bool {
+    $missingConfig = resend_config_missing();
+    if (!empty($missingConfig)) {
+        error_log('Mailer Error: Missing Resend config: ' . implode(', ', $missingConfig));
+        return false;
+    }
+
+    $fromAddress = env_value('MAIL_FROM_ADDRESS');
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL) || !filter_var($fromAddress, FILTER_VALIDATE_EMAIL)) {
+        error_log('Mailer Error: Invalid sender or recipient email address.');
+        return false;
+    }
+
+    $fromName = mail_sanitize_header($fromName ?? env_value('MAIL_FROM_NAME', 'Gau Bakery'));
+    $from = $fromName !== '' ? $fromName . ' <' . $fromAddress . '>' : $fromAddress;
+
+    $payload = [
+        'from' => $from,
+        'to' => [$to],
+        'subject' => $subject,
+        'html' => $body,
+    ];
+
+    if (!empty($attachments)) {
+        $payload['attachments'] = [];
+        foreach ($attachments as $attachment) {
+            $payload['attachments'][] = [
+                'filename' => (string) ($attachment['filename'] ?? 'attachment'),
+                'content' => base64_encode((string) ($attachment['content'] ?? '')),
+            ];
+        }
+    }
+
+    $apiKey = env_value('RESEND_API_KEY');
+    $response = resend_http_post(
+        'https://api.resend.com/emails',
+        $apiKey,
+        json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    );
+
+    if ($response['status'] >= 200 && $response['status'] < 300) {
+        return true;
+    }
+
+    $responsePayload = json_decode($response['body'], true);
+    $error = is_array($responsePayload) ? ($responsePayload['message'] ?? '') : '';
+    if ($error === '' && $response['error'] !== '') {
+        $error = $response['error'];
+    }
+    error_log('Mailer Error: Resend API send failed. HTTP ' . $response['status'] . ($error ? ' - ' . $error : ''));
+    return false;
+}
+
 function send_custom_mail_with_attachments(string $to, string $subject, string $body, array $attachments, ?string $fromName = null): bool {
-    if (mail_driver() === 'gmail_api') {
+    $driver = mail_driver();
+    if ($driver === 'gmail_api') {
         return gmail_api_send_built_message(
             $to,
             static function (string $fromAddress) use ($to, $subject, $body, $fromName, $attachments): string {
                 return gmail_api_build_raw_message_with_attachment($to, $subject, $body, $fromAddress, $fromName, $attachments);
             }
         );
+    }
+    if ($driver === 'resend') {
+        return resend_send_message($to, $subject, $body, $fromName, $attachments);
     }
 
     return smtp_send_message($to, $subject, $body, $fromName, $attachments);
@@ -480,7 +565,7 @@ function mail_html_to_text(string $html): string {
 }
 
 /**
- * Gui email qua driver da cau hinh: Gmail API hoac PHPMailer SMTP.
+ * Gui email qua driver da cau hinh: Resend, Gmail API, hoac PHPMailer SMTP.
  *
  * @param string $to Email nguoi nhan
  * @param string $subject Tieu de email
@@ -489,8 +574,12 @@ function mail_html_to_text(string $html): string {
  * @return bool true neu gui thanh cong, false neu that bai
  */
 function send_custom_mail($to, $subject, $body, $fromName = null) {
-    if (mail_driver() === 'gmail_api') {
+    $driver = mail_driver();
+    if ($driver === 'gmail_api') {
         return send_custom_mail_gmail_api($to, $subject, $body, $fromName);
+    }
+    if ($driver === 'resend') {
+        return resend_send_message($to, $subject, $body, $fromName);
     }
 
     return smtp_send_message($to, $subject, $body, $fromName);

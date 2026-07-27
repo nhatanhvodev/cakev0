@@ -26,6 +26,10 @@ if (!function_exists('admin_csrf_get_ok')) {
 }
 
 // (GET-delete routes plug in here, one per tab, each guarded by admin_csrf_get_ok())
+if (isset($_GET['delete_order_id'])) {
+    require_once __DIR__ . '/handlers/orders.php';
+    handle_delete_order($conn);
+}
 
 // POST dispatch — CSRF-checked, then routed to handlers/<domain>.php per action.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,6 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //       handle_update_order_statuses($conn);
     //   }
     // -----------------------------------------------------------------
+    if (isset($_POST['update_order_statuses'])) {
+        require_once __DIR__ . '/handlers/orders.php';
+        handle_update_order_statuses($conn);
+    }
 }
 
 $tab = $_GET['tab'] ?? 'dashboard';

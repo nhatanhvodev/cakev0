@@ -245,6 +245,42 @@ function handle_delete_product_image(mysqli $conn): void
     redirectToTab('products');
 }
 
+function handle_toggle_product_visibility(mysqli $conn): void
+{
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        setAdminToast("Phiên làm việc hết hạn, vui lòng thử lại.", "error");
+        redirectToTab('products');
+    }
+
+    $productId = (int) ($_POST['product_id'] ?? 0);
+    $isHidden = (int) ($_POST['is_hidden'] ?? 0);
+    $isHidden = $isHidden === 1 ? 1 : 0;
+
+    if ($productId <= 0) {
+        setAdminToast("Sản phẩm không hợp lệ.", "error");
+        redirectToTab('products');
+    }
+
+    $stmt = $conn->prepare("UPDATE banh SET is_hidden = ? WHERE id = ?");
+    if (!$stmt) {
+        setAdminToast("Không cập nhật được trạng thái sản phẩm.", "error");
+        redirectToTab('products');
+    }
+
+    $stmt->bind_param('ii', $isHidden, $productId);
+    $stmt->execute();
+    $updated = $stmt->affected_rows >= 0;
+    $stmt->close();
+
+    if ($updated) {
+        setAdminToast($isHidden ? "Đã ẩn sản phẩm khỏi cửa hàng." : "Đã hiển thị lại sản phẩm.");
+    } else {
+        setAdminToast("Không cập nhật được trạng thái sản phẩm.", "error");
+    }
+
+    redirectToTab('products');
+}
+
 function handle_delete_product(mysqli $conn): void
 {
     // GET-triggered delete — legacy had no CSRF check on this link at all

@@ -116,7 +116,7 @@ function fetchProducts(
         ? "LEFT JOIN (\n                SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS review_count\n                FROM product_reviews\n                GROUP BY product_id\n            ) rv ON rv.product_id = b.id"
         : '';
 
-    $sql = "SELECT b.*, p.gia_khuyen_mai,\n                   COALESCE(p.gia_khuyen_mai, b.gia) AS final_price,\n                   {$ratingSelectSql}\n            FROM banh b\n            LEFT JOIN promotions p ON b.id=p.banh_id\n            AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?\n            {$ratingJoinSql}\n            WHERE {$whereSql}\n            {$orderBySql}";
+    $sql = "SELECT b.*, p.gia_khuyen_mai,\n                   COALESCE(p.gia_khuyen_mai, b.gia) AS final_price,\n                   {$ratingSelectSql}\n            FROM banh b\n            LEFT JOIN promotions p ON b.id=p.banh_id\n            AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?\n            {$ratingJoinSql}\n            WHERE b.is_hidden = 0 AND ({$whereSql})\n            {$orderBySql}";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {

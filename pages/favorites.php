@@ -122,6 +122,25 @@ if (isset($_POST['action'])) {
     }
 
     $isFavorite = $exists;
+    if ($action === 'add' || ($action === 'toggle' && !$exists)) {
+        $productVisible = false;
+        $stmtProduct = $conn->prepare("SELECT id FROM banh WHERE id = ? AND is_hidden = 0 LIMIT 1");
+        if ($stmtProduct) {
+            $stmtProduct->bind_param('i', $banhId);
+            $stmtProduct->execute();
+            $productVisible = (bool) $stmtProduct->get_result()->fetch_assoc();
+            $stmtProduct->close();
+        }
+
+        if (!$productVisible) {
+            echo json_encode([
+                'success' => false,
+                'is_favorite' => false,
+                'message' => 'Sản phẩm đang tạm ẩn.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
     $message = 'Đã cập nhật danh sách yêu thích.';
 
     if ($action === 'toggle') {
@@ -171,7 +190,12 @@ if (isset($_POST['action'])) {
     }
 
     $favoriteCount = 0;
-    $stmtCount = $conn->prepare("SELECT COUNT(*) AS total FROM favorites WHERE user_id = ?");
+    $stmtCount = $conn->prepare(
+        "SELECT COUNT(*) AS total
+         FROM favorites f
+         JOIN banh b ON b.id = f.banh_id
+         WHERE f.user_id = ? AND b.is_hidden = 0"
+    );
     if ($stmtCount) {
         $stmtCount->bind_param('i', $userId);
         $stmtCount->execute();
@@ -205,7 +229,7 @@ $stmt = $conn->prepare(
      JOIN banh b ON f.banh_id = b.id
      LEFT JOIN promotions p ON b.id = p.banh_id
      AND p.ngay_bat_dau <= ? AND p.ngay_ket_thuc >= ?
-     WHERE f.user_id = ?
+     WHERE f.user_id = ? AND b.is_hidden = 0
      ORDER BY f.created_at DESC"
 );
 if ($stmt) {

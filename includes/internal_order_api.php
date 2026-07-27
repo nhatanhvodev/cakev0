@@ -41,7 +41,7 @@ function create_order_internal(mysqli $conn, array $p): array
         foreach ($p['items'] as $item) {
             $banhId = (int) $item['banh_id'];
             $qty = (int) $item['quantity'];
-            $stmt = $conn->prepare('SELECT id, gia, stock FROM banh WHERE id = ? FOR UPDATE');
+            $stmt = $conn->prepare('SELECT id, gia, stock FROM banh WHERE id = ? AND is_hidden = 0 FOR UPDATE');
             $stmt->bind_param('i', $banhId);
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();

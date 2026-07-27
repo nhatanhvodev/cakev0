@@ -26,7 +26,12 @@ if (isset($conn)) {
 }
 if (isset($conn) && isset($_SESSION['user_id'])) {
   $uid = (int) $_SESSION['user_id'];
-  $stmtCount = $conn->prepare("SELECT COUNT(*) as total FROM cart WHERE user_id = ?");
+  $stmtCount = $conn->prepare(
+    "SELECT COUNT(*) as total
+     FROM cart c
+     JOIN banh b ON b.id = c.banh_id
+     WHERE c.user_id = ? AND b.is_hidden = 0"
+  );
   if ($stmtCount) {
     $stmtCount->bind_param("i", $uid);
     $stmtCount->execute();
@@ -36,7 +41,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   if ($favoritesTableReady) {
-    $stmtFavoriteCount = $conn->prepare("SELECT COUNT(*) as total FROM favorites WHERE user_id = ?");
+    $stmtFavoriteCount = $conn->prepare(
+      "SELECT COUNT(*) as total
+       FROM favorites f
+       JOIN banh b ON b.id = f.banh_id
+       WHERE f.user_id = ? AND b.is_hidden = 0"
+    );
     if ($stmtFavoriteCount) {
       $stmtFavoriteCount->bind_param("i", $uid);
       $stmtFavoriteCount->execute();

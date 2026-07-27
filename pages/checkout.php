@@ -34,7 +34,7 @@ ensureCartCouponInfrastructure($conn);
 // 4. Lấy giỏ hàng từ Database (Ưu tiên Source thay vì LocalStorage)
 $sql = "SELECT c.banh_id, b.ten_banh, b.gia, c.quantity 
         FROM cart c JOIN banh b ON c.banh_id = b.id 
-        WHERE c.user_id = ?";
+        WHERE c.user_id = ? AND b.is_hidden = 0";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();

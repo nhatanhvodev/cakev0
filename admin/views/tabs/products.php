@@ -1,6 +1,7 @@
 <?php
 /* admin/views/tabs/products.php — expects $conn (mysqli), $tab in scope (see admin/views/layout.php) */
 require_once __DIR__ . '/../components/data_table.php';
+require_once __DIR__ . '/../components/badge.php';
 require_once __DIR__ . '/../../lib/images.php';
 
 // =====================================================================
@@ -55,6 +56,7 @@ if (!function_exists('admin_product_description_text')) {
 $rowsHtml = '';
 foreach ($products as $p) {
     $productId = (int) $p['id'];
+    $isHidden = !empty($p['is_hidden']);
     $img = buildImageUrl((string) $p['hinh_anh']);
     $descriptionText = admin_product_description_text($p['mo_ta'] ?? '');
 
@@ -76,15 +78,20 @@ foreach ($products as $p) {
     }
 
     $deleteUrl = '?tab=products&delete_product_id=' . $productId . '&csrf=' . urlencode($_SESSION['csrf_token']);
+    $visibilityLabel = $isHidden ? 'Hiện sản phẩm' : 'Ẩn sản phẩm';
+    $visibilityIcon = $isHidden ? 'bi-eye' : 'bi-eye-slash';
+    $visibilityNextValue = $isHidden ? 0 : 1;
+    $visibilityButtonClass = $isHidden ? 'btn-ghost' : 'btn-ghost product-hide-btn';
 
-    $rowsHtml .= '<tr>'
+    $rowsHtml .= '<tr' . ($isHidden ? ' class="product-row-hidden"' : '') . '>'
         . '<td><img src="' . htmlspecialchars($img['url']) . '" width="50" height="50" style="object-fit:cover;border-radius:8px;"></td>'
         . '<td>' . htmlspecialchars((string) $p['ten_banh']) . '</td>'
         . '<td>' . htmlspecialchars((string) $p['loai']) . '</td>'
         . '<td style="font-weight:700;">' . number_format((float) $p['gia'], 0, ',', '.') . ' VNĐ</td>'
         . '<td>' . ($descriptionText !== '' ? 'Có mô tả' : 'Chưa có') . '</td>'
+        . '<td>' . render_badge($isHidden ? 'product-hidden' : 'product-visible') . '</td>'
         . '<td>' . $galleryHtml . '</td>'
-        . '<td>'
+        . '<td><div class="product-actions">'
         . '<button type="button" class="btn btn-ghost product-edit-btn"'
         . ' data-id="' . $productId . '"'
         . ' data-name="' . htmlspecialchars((string) $p['ten_banh'], ENT_QUOTES) . '"'
@@ -92,9 +99,16 @@ foreach ($products as $p) {
         . ' data-price="' . (int) $p['gia'] . '"'
         . ' data-desc="' . htmlspecialchars($descriptionText, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"'
         . ' data-image="' . htmlspecialchars((string) $p['hinh_anh'], ENT_QUOTES) . '"'
-        . ' title="Sửa sản phẩm"><i class="bi bi-pencil"></i></button> '
+        . ' title="Sửa sản phẩm" aria-label="Sửa sản phẩm"><i class="bi bi-pencil"></i></button> '
+        . '<form method="POST" class="product-visibility-form">'
+        . '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">'
+        . '<input type="hidden" name="tab" value="products">'
+        . '<input type="hidden" name="product_id" value="' . $productId . '">'
+        . '<input type="hidden" name="is_hidden" value="' . $visibilityNextValue . '">'
+        . '<button type="submit" name="toggle_product_visibility" class="btn ' . $visibilityButtonClass . '" title="' . $visibilityLabel . '" aria-label="' . $visibilityLabel . '"><i class="bi ' . $visibilityIcon . '"></i></button>'
+        . '</form>'
         . '<button type="button" class="btn btn-danger" data-delete-url="' . htmlspecialchars($deleteUrl) . '" data-confirm-text="Sản phẩm sẽ bị xóa vĩnh viễn và không thể khôi phục." title="Xóa sản phẩm"><i class="bi bi-trash"></i></button>'
-        . '</td>'
+        . '</div></td>'
         . '</tr>';
 }
 ?>
@@ -152,7 +166,7 @@ foreach ($products as $p) {
     <h2>Danh Sách Sản Phẩm</h2>
     <input type="text" id="productSearchInput" placeholder="Tìm theo tên, loại, giá..." style="max-width:280px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">
   </div>
-  <?php render_table(['Ảnh', 'Tên', 'Loại', 'Giá', 'Mô tả', 'Gallery', 'Hành động'], $rowsHtml); ?>
+  <?php render_table(['Ảnh', 'Tên', 'Loại', 'Giá', 'Mô tả', 'Trạng thái', 'Gallery', 'Hành động'], $rowsHtml); ?>
 </div>
 
 <script>

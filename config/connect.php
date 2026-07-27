@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/product_visibility.php';
 
 $host = (string) env_value('DB_HOST', '127.0.0.1');
 $user = (string) env_value('DB_USER', 'root');
@@ -38,4 +39,5 @@ $dbTimeZone = sprintf(
     intdiv($offsetSeconds % 3600, 60)
 );
 $conn->query("SET time_zone = '{$dbTimeZone}'");
+ensureProductVisibilityInfrastructure($conn);
 ?>

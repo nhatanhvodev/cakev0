@@ -67,7 +67,7 @@ def list_favorites(conn, user_id: int, limit: int = 8) -> list[dict]:
         cur.execute(
             f"SELECT {cols} "
             "FROM favorites f JOIN banh b ON b.id = f.banh_id "
-            "WHERE f.user_id = %s ORDER BY f.created_at DESC LIMIT %s",
+            "WHERE f.user_id = %s AND b.is_hidden = 0 ORDER BY f.created_at DESC LIMIT %s",
             (user_id, limit))
         return list(cur.fetchall())
 
@@ -97,5 +97,5 @@ def filter_by_dietary(conn, exclude: list[str], limit: int = 8) -> list[dict]:
     where = " AND ".join(f"{c} = 0" for c in cols)
     with conn.cursor() as cur:
         cur.execute(
-            f"SELECT {_PRODUCT_COLS} FROM banh WHERE {where} LIMIT %s", (limit,))
+            f"SELECT {_PRODUCT_COLS} FROM banh WHERE is_hidden = 0 AND {where} LIMIT %s", (limit,))
         return list(cur.fetchall())

@@ -8,6 +8,7 @@ function render_badge(string $status): string {
     'review-approved' => ['success','Đã duyệt'], 'rejected' => ['danger','Đã từ chối'],
     'request-approved' => ['success','Đã duyệt'],
     'coupon-active' => ['success','Hoạt động'], 'coupon-inactive' => ['info','Tạm tắt'],
+    'product-visible' => ['success','Đang bán'], 'product-hidden' => ['warn','Đã ẩn'],
     'contact-pending' => ['warn','Chờ xử lý'], 'contact-replied' => ['success','Đã phản hồi'],
   ];
   $key = strtolower(trim($status));

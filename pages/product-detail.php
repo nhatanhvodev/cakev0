@@ -108,7 +108,7 @@ $stmt = $conn->prepare(
      FROM banh b
      LEFT JOIN promotions p ON b.id = p.banh_id
      AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?
-     WHERE b.slug = ?
+     WHERE b.slug = ? AND b.is_hidden = 0
      LIMIT 1"
 );
 $stmt->bind_param('sss', $today, $today, $slugParam);
@@ -123,7 +123,7 @@ if (!$selected && preg_match('/-(\d+)$/', $slugParam, $matches)) {
          FROM banh b
          LEFT JOIN promotions p ON b.id = p.banh_id
          AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?
-         WHERE b.id = ?
+         WHERE b.id = ? AND b.is_hidden = 0
          LIMIT 1"
     );
     $stmt->bind_param('ssi', $today, $today, $id);
@@ -181,7 +181,7 @@ if (!empty($flavors)) {
             FROM banh b
             LEFT JOIN promotions p ON b.id = p.banh_id
             AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?
-            WHERE b.id <> ? AND b.loai = ? AND (" . $placeholders . ")
+            WHERE b.is_hidden = 0 AND b.id <> ? AND b.loai = ? AND (" . $placeholders . ")
             LIMIT 6";
     $stmt = $conn->prepare($sql);
     $types = 'ssis' . str_repeat('s', count($flavors));
@@ -205,7 +205,7 @@ if (count($related) < 6) {
             FROM banh b
             LEFT JOIN promotions p ON b.id = p.banh_id
             AND p.ngay_bat_dau<=? AND p.ngay_ket_thuc>=?
-            WHERE b.id <> ? AND b.loai = ?
+            WHERE b.is_hidden = 0 AND b.id <> ? AND b.loai = ?
             ORDER BY b.id DESC
             LIMIT {$limit}";
     $stmt = $conn->prepare($sql);

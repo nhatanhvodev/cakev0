@@ -7,10 +7,10 @@ def build_in_placeholders(ids: list) -> str:
 
 
 def list_products(conn) -> list[dict]:
-    """List all products from banh table."""
+    """List visible products from banh table."""
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, ten_banh, loai, gia, mo_ta, hinh_anh, slug FROM banh"
+            "SELECT id, ten_banh, loai, gia, mo_ta, hinh_anh, slug FROM banh WHERE is_hidden = 0"
         )
         return list(cur.fetchall())
 
@@ -22,7 +22,7 @@ def find_products_by_ids(conn, ids: list[int]) -> list[dict]:
     ph = build_in_placeholders(ids)
     with conn.cursor() as cur:
         cur.execute(
-            f"SELECT id, ten_banh, loai, gia, mo_ta, hinh_anh, slug FROM banh WHERE id IN ({ph})",
+            f"SELECT id, ten_banh, loai, gia, mo_ta, hinh_anh, slug FROM banh WHERE id IN ({ph}) AND is_hidden = 0",
             ids,
         )
         return list(cur.fetchall())
@@ -34,7 +34,7 @@ def search_products_like(conn, keyword: str, limit: int = 5) -> list[dict]:
     with conn.cursor() as cur:
         cur.execute(
             "SELECT id, ten_banh, loai, gia, mo_ta, hinh_anh, slug FROM banh "
-            "WHERE ten_banh LIKE %s OR loai LIKE %s LIMIT %s",
+            "WHERE is_hidden = 0 AND (ten_banh LIKE %s OR loai LIKE %s) LIMIT %s",
             (like, like, limit),
         )
         return list(cur.fetchall())

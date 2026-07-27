@@ -52,6 +52,24 @@ if (isset($_POST['action'])) {
             ]);
         }
 
+        $productVisible = $conn->query("
+            SELECT id FROM banh
+            WHERE id = $banh_id AND is_hidden = 0
+            LIMIT 1
+        ");
+        if (!$productVisible) {
+            $respondJson([
+                'success' => false,
+                'message' => $databaseErrorMessage('KhÃ´ng kiá»ƒm tra Ä‘Æ°á»£c tráº¡ng thÃ¡i sáº£n pháº©m')
+            ]);
+        }
+        if ($productVisible->num_rows === 0) {
+            $respondJson([
+                'success' => false,
+                'message' => 'Sản phẩm đang tạm ẩn.'
+            ]);
+        }
+
         $check = $conn->query("
             SELECT id FROM cart 
             WHERE user_id = $user_id AND banh_id = $banh_id
@@ -92,7 +110,12 @@ if (isset($_POST['action'])) {
         }
 
         // Đếm lại số loại sản phẩm (số dòng) trong giỏ
-        $countRes = $conn->query("SELECT COUNT(*) as cnt FROM cart WHERE user_id = $user_id");
+        $countRes = $conn->query("
+            SELECT COUNT(*) as cnt
+            FROM cart c
+            JOIN banh b ON b.id = c.banh_id
+            WHERE c.user_id = $user_id AND b.is_hidden = 0
+        ");
         if (!$countRes) {
             $respondJson([
                 'success' => true,
@@ -207,7 +230,7 @@ function buildImageUrl($path) {
 $sql = "SELECT c.id AS cart_id, c.quantity, b.ten_banh, b.hinh_anh, b.gia 
         FROM cart c 
         JOIN banh b ON c.banh_id = b.id 
-        WHERE c.user_id = ?";
+        WHERE c.user_id = ? AND b.is_hidden = 0";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();

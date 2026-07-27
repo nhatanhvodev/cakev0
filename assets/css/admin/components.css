@@ -100,6 +100,12 @@ th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacin
 td { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 13.5px; }
 tbody tr:hover { background: var(--surface-2); }
 
+.product-actions { display: inline-flex; align-items: center; gap: 6px; }
+.product-visibility-form { display: inline-flex; margin: 0; }
+.product-row-hidden { opacity: .68; }
+.product-hide-btn { color: var(--warn); }
+.product-hide-btn:hover { background: var(--warn-bg); color: var(--warn); }
+
 /* Customer info and pills */
 .cust { display: flex; align-items: center; gap: 10px; }
 .cust .ava { width: 30px; height: 30px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 12px; }

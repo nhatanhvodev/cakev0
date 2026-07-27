@@ -80,6 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/handlers/products.php';
         handle_delete_product_image($conn);
     }
+    if (isset($_POST['toggle_product_visibility'])) {
+        require_once __DIR__ . '/handlers/products.php';
+        handle_toggle_product_visibility($conn);
+    }
     if (isset($_POST['update_best_selling'])) {
         require_once __DIR__ . '/handlers/best_selling.php';
         handle_update_best_selling($conn);

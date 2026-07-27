@@ -59,7 +59,7 @@ def _query_promotions(conn) -> list[dict]:
         cur.execute(
             "SELECT b.id, b.ten_banh, b.gia, b.hinh_anh, b.slug, p.gia_khuyen_mai "
             "FROM promotions p JOIN banh b ON b.id = p.banh_id "
-            "WHERE CURDATE() BETWEEN p.ngay_bat_dau AND p.ngay_ket_thuc "
+            "WHERE b.is_hidden = 0 AND CURDATE() BETWEEN p.ngay_bat_dau AND p.ngay_ket_thuc "
             "ORDER BY (b.gia - p.gia_khuyen_mai) DESC LIMIT 10")
         return list(cur.fetchall())
 
@@ -71,7 +71,7 @@ def _query_bestsellers(conn, limit=5) -> list[dict]:
             "SUM(oi.quantity) AS total_sold "
             "FROM order_items oi JOIN banh b ON b.id = oi.banh_id "
             "JOIN orders o ON o.id = oi.order_id "
-            "WHERE o.status NOT IN ('cancelled') "
+            "WHERE b.is_hidden = 0 AND o.status NOT IN ('cancelled') "
             "GROUP BY b.id ORDER BY total_sold DESC LIMIT %s", (limit,))
         return list(cur.fetchall())
 

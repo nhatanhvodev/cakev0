@@ -1,3 +1,6 @@
+import re
+
+from app.db import catalog_repo
 from app.engines.baseline import parse_llm_json
 
 _COLLECTION = {"catalog_search": "products", "product_recommend": "products",
@@ -10,6 +13,36 @@ TUYỆT ĐỐI không nhắc tới mã tài liệu hay nguồn (ví dụ doc-id,
 Trả JSON: {"answer": "...", "confidence": 0.0-1.0, "sources": ["doc-id"]}"""
 
 MAX_RETRIES = 2
+_PRODUCT_DOC_ID_RE = re.compile(r"^product-(\d+)$")
+
+
+def _visible_product_docs(deps, docs: list) -> list:
+    ids = []
+    for doc in docs:
+        match = _PRODUCT_DOC_ID_RE.match(doc.id)
+        if match:
+            ids.append(int(match.group(1)))
+
+    if not ids:
+        return docs
+
+    conn = deps.conn_factory()
+    if conn is None:
+        return docs
+
+    try:
+        rows = catalog_repo.find_products_by_ids(conn, ids)
+        visible_doc_ids = set()
+        for row in rows:
+            product_id = row.get("id")
+            if product_id is None:
+                return docs
+            visible_doc_ids.add(f"product-{int(product_id)}")
+        return [doc for doc in docs if doc.id in visible_doc_ids or not doc.id.startswith("product-")]
+    except Exception:
+        return docs
+    finally:
+        conn.close()
 
 
 def _promoted_ids(conn) -> set:
@@ -46,6 +79,8 @@ def _history_block(state) -> str:
 def retrieval_node(deps, state):
     col = _COLLECTION.get(state["intent"], "faq")
     docs = deps.store.query(col, state["normalized_query"], top_k=5)
+    if col == "products":
+        docs = _visible_product_docs(deps, docs)
     block = "\n---\n".join(f"[{d.id}] {d.text}" for d in docs)
     hist = _history_block(state)
     parsed = parse_llm_json(deps.llm.generate(

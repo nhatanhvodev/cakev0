@@ -7,8 +7,9 @@
 <link rel="stylesheet" href="../assets/css/admin/tokens.css">
 <link rel="stylesheet" href="../assets/css/admin/layout.css">
 <link rel="stylesheet" href="../assets/css/admin/components.css">
+<?php if (($tab ?? '') === 'chat'): ?><link rel="stylesheet" href="../assets/css/admin-chat.css"><?php endif; ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head><body>
+</head><body class="<?= ($tab ?? '') === 'chat' ? 'admin-chat-view' : '' ?>">
 <div class="app" id="app">
   <div class="backdrop"></div>
   <aside class="sidebar"><?php require __DIR__ . '/partials/sidebar.php'; ?></aside>
@@ -27,4 +28,5 @@
 <script src="../assets/js/admin/nav.js"></script>
 <script src="../assets/js/admin/modals.js"></script>
 <script src="../assets/js/admin/dashboard.js"></script>
+<?php if (($tab ?? '') === 'chat'): ?><script src="../assets/js/admin-chat.js"></script><?php endif; ?>
 </body></html>

@@ -108,6 +108,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/handlers/coupons.php';
         handle_update_coupon($conn);
     }
+    if (isset($_POST['reply_contact'])) {
+        require_once __DIR__ . '/handlers/contacts.php';
+        handle_reply_contact($conn);
+    }
+    if (isset($_POST['delete_contact'])) {
+        require_once __DIR__ . '/handlers/contacts.php';
+        handle_delete_contact($conn);
+    }
 }
 
 $tab = $_GET['tab'] ?? 'dashboard';

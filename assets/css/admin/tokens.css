@@ -1,0 +1,40 @@
+/* assets/css/admin/tokens.css */
+:root {
+  --bg:#0f1211; --surface:#171b19; --surface-2:#1e2320; --border:#262b28;
+  --text:#e7eae6; --muted:#98a09a; --faint:#6d746e;
+  --accent:#8aa079; --accent-soft:rgba(138,160,121,.15); --caramel:#cd9a5e;
+  --warn:#d9a24a; --info:#6aa3d8; --success:#6fae7a; --danger:#d9756b;
+  --warn-bg:rgba(217,162,74,.16); --info-bg:rgba(106,163,216,.16);
+  --success-bg:rgba(111,174,122,.16); --danger-bg:rgba(217,117,107,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.35);
+  --radius:12px; --sidebar-w:240px;
+  --z-header:100; --z-sticky:200; --z-modal:3000;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f5f4f0; --surface:#fff; --surface-2:#f0efe9; --border:#e2e0d7;
+  --text:#22251f; --muted:#6b7168; --faint:#9aa093;
+  --accent:#5f7350; --accent-soft:rgba(95,115,80,.12); --caramel:#b7823f;
+  --warn:#c98a2b; --info:#3f7cc0; --success:#4e9a5f; --danger:#c65a4e;
+  --warn-bg:rgba(201,138,43,.14); --info-bg:rgba(63,124,192,.14);
+  --success-bg:rgba(78,154,95,.14); --danger-bg:rgba(198,90,78,.14);
+  --shadow:0 1px 2px rgba(30,35,25,.06),0 8px 24px rgba(30,35,25,.05);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0f1211; --surface:#171b19; --surface-2:#1e2320; --border:#262b28;
+  --text:#e7eae6; --muted:#98a09a; --faint:#6d746e;
+  --accent:#8aa079; --accent-soft:rgba(138,160,121,.15); --caramel:#cd9a5e;
+  --warn:#d9a24a; --info:#6aa3d8; --success:#6fae7a; --danger:#d9756b;
+  --warn-bg:rgba(217,162,74,.16); --info-bg:rgba(106,163,216,.16);
+  --success-bg:rgba(111,174,122,.16); --danger-bg:rgba(217,117,107,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

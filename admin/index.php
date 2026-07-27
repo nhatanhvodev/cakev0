@@ -42,6 +42,10 @@ if (isset($_GET['delete_promotion_id'])) {
     require_once __DIR__ . '/handlers/promotions.php';
     handle_delete_promotion($conn);
 }
+if (isset($_GET['delete_coupon_id'])) {
+    require_once __DIR__ . '/handlers/coupons.php';
+    handle_delete_coupon($conn);
+}
 
 // POST dispatch — CSRF-checked, then routed to handlers/<domain>.php per action.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -95,6 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_promotion'])) {
         require_once __DIR__ . '/handlers/promotions.php';
         handle_update_promotion($conn);
+    }
+    if (isset($_POST['add_coupon'])) {
+        require_once __DIR__ . '/handlers/coupons.php';
+        handle_add_coupon($conn);
+    }
+    if (isset($_POST['update_coupon'])) {
+        require_once __DIR__ . '/handlers/coupons.php';
+        handle_update_coupon($conn);
     }
 }
 

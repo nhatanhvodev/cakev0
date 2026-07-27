@@ -1,223 +1,296 @@
-# Kịch bản Demo — Bảo vệ khóa luận
+# Kịch bản demo - Bảo vệ khóa luận
 
 > Hướng dẫn demo hệ thống AI CSKH Gấu Bakery trước hội đồng.
-> Chạy trên: https://cake-i8l0.onrender.com/cakev0/
-> Engine: `ENGINE=demo` (fault-tolerant) hoặc `ENGINE=multiagent` (full).
+> Website: `https://cake-i8l0.onrender.com/cakev0/`
+> Engine đề xuất: `ENGINE=multiagent`. Dùng `ENGINE=demo` khi cần fallback chống lỗi LLM/API trong buổi demo.
 
 ---
 
 ## Chuẩn bị trước demo
 
-1. Mở website Gấu Bakery, đảm bảo trang load bình thường
-2. Bật widget chat (icon góc phải dưới)
-3. Chuẩn bị 2 tab: (a) website chat, (b) Render dashboard hoặc terminal logs
-4. Nếu demo Telegram notify: mở Telegram group trên điện thoại
+1. Mở website Gấu Bakery và kiểm tra widget chat góc phải dưới.
+2. Mở tab admin `admin/admin.php?tab=chat#chat` để demo handoff nếu có tài khoản admin.
+3. Kiểm tra AI service `/health`: phải trả `status=ok`, engine đúng và `products_indexed` không âm.
+4. Nếu demo Telegram, mở sẵn Telegram group nhận thông báo.
+5. Chuẩn bị một tài khoản khách đã đăng nhập để demo: tra cứu đơn, tạo đơn COD, yêu thích.
+6. Nếu không chắc LLM/API ổn định, đổi `ENGINE=demo` trước buổi bảo vệ và giải thích đây là cơ chế fallback.
 
-**Lưu ý:** Dùng `ENGINE=demo` để tránh lỗi Gemini quota. Nếu API ổn, dùng `ENGINE=multiagent` cho demo thật.
+Lưu ý: một số kịch bản cần DB và đăng nhập. Nếu đang ở môi trường khách vãng lai, ưu tiên demo FAQ, catalog, policy, custom quote và handoff.
 
 ---
 
-## Kịch bản 1: FAQ — Hỏi thông tin cửa hàng
-
-**Mục đích:** Cho thấy retrieval agent truy xuất từ collection `faq`.
+## Kịch bản 1: FAQ và chính sách giao hàng
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"shop mở mấy giờ vậy"** | Bot trả lời giờ mở cửa, có trích nguồn từ FAQ |
-| 2 | Gõ: **"ship bao lau"** (không dấu) | Normalizer xử lý → "ship bao lâu" → policy_shipping intent |
+|---|---|---|
+| 1 | Gõ: **"shop mở cửa mấy giờ vậy"** | Bot trả lời thông tin giờ mở cửa/FAQ. |
+| 2 | Gõ: **"ship bao lau"** | Normalizer map `ship -> giao hàng`; router nhận `policy_shipping`; bot trả lời chính sách giao hàng. |
 
-**Điểm nhấn cho hội đồng:**
-- Router phân loại đúng `faq` và `policy_shipping`
-- Vietnamese normalizer xử lý text không dấu
-- Citation trỏ về đúng nguồn trong knowledge base
+Điểm nhấn:
+
+- Normalizer hiện là dictionary teencode, không phải mô hình phục hồi dấu tổng quát.
+- Retrieval dùng collection phù hợp thay vì search toàn bộ tri thức.
 
 ---
 
-## Kịch bản 2: Tìm sản phẩm — Catalog Search
-
-**Mục đích:** Cho thấy hybrid retrieval (dense + BM25) trên collection `products`.
+## Kịch bản 2: Tìm sản phẩm - Catalog Search
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"có bánh kem dâu không"** | Trả về sản phẩm bánh kem dâu với thông tin giá, mô tả |
-| 2 | Gõ: **"cái đó giá bao nhiêu"** | Router dùng history context → hiểu "cái đó" = bánh kem dâu |
+|---|---|---|
+| 1 | Gõ: **"có bánh kem dâu không"** | Bot trả lời sản phẩm liên quan và hiển thị product cards. |
+| 2 | Gõ: **"cái đó giá bao nhiêu"** | Bot dùng lịch sử hội thoại để hiểu ngữ cảnh sản phẩm vừa hỏi. |
 
-**Điểm nhấn:**
-- Hybrid search: BM25 bắt keyword "kem dâu" + dense embedding bắt semantic
-- History-aware: câu 2 không nhắc tên bánh nhưng bot hiểu nhờ lịch sử 6 messages
-- Product cards hiển thị metadata (giá, loại)
+Điểm nhấn:
+
+- Hybrid search: ChromaDB cho ngữ nghĩa, BM25 cho từ khóa tên bánh.
+- Router fallback sang LLM nếu câu hiện tại không có keyword rõ.
 
 ---
 
-## Kịch bản 3: Gợi ý sản phẩm — Product Recommend
-
-**Mục đích:** Cho thấy promotion-aware reranking.
+## Kịch bản 3: Gợi ý sản phẩm
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"sinh nhật bé trai nên mua bánh gì"** | Bot gợi ý 3-5 bánh, sản phẩm đang khuyến mãi ưu tiên lên đầu |
+|---|---|---|
+| 1 | Gõ: **"sinh nhật bé trai nên mua bánh gì"** | Bot gợi ý 3-5 sản phẩm phù hợp. |
 
-**Điểm nhấn:**
-- Intent `product_recommend` → retrieval agent
-- `_promoted_ids()` query MySQL promotions table
-- `_rerank_by_promotion()` đẩy sản phẩm KM lên đầu (stable sort)
+Điểm nhấn:
+
+- Intent `product_recommend` đi qua Retrieval Agent.
+- Nếu có sản phẩm đang khuyến mãi, code có `_rerank_by_promotion()` để ưu tiên trong danh sách.
 
 ---
 
-## Kịch bản 4: Chính sách — Policy Query
-
-**Mục đích:** Cho thấy retrieval từ collection `policies` với citation chính xác.
+## Kịch bản 4: Chính sách thanh toán và đổi trả
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"thanh toán vnpay được không"** | Bot trả lời chính sách thanh toán, trích nguồn policy doc |
-| 2 | Gõ: **"đổi bánh được ko a"** | Normalizer: "ko" → "không" → policy_return intent |
+|---|---|---|
+| 1 | Gõ: **"thanh toán vnpay được không"** | Bot trả lời chính sách thanh toán. |
+| 2 | Gõ: **"đổi bánh được ko a"** | Normalizer map `ko -> không`, router nhận `policy_return`. |
 
-**Điểm nhấn:**
-- Teencode normalization: "ko" → "không"
-- 3 collection riêng biệt (products, policies, faq) → citation không lẫn
+Điểm nhấn:
+
+- Các policy được tách collection riêng.
+- Trả lời nên bám policy, không bịa quy định ngoài tài liệu.
 
 ---
 
-## Kịch bản 5: Tra cứu đơn hàng — Order Status
-
-**Mục đích:** Cho thấy action agent truy vấn MySQL realtime.
+## Kịch bản 5: Khuyến mãi và mã giảm giá
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Đăng nhập tài khoản test có đơn hàng | |
-| 2 | Gõ: **"đơn hàng của tôi đến đâu rồi"** | Bot trả về danh sách đơn hàng với trạng thái, số tiền |
+|---|---|---|
+| 1 | Gõ: **"có khuyến mãi gì không"** | Bot liệt kê sản phẩm đang khuyến mãi nếu có. |
+| 2 | Gõ: **"có mã giảm giá nào không"** | Bot trả mã coupon công khai, ví dụ `WELCOME10` nếu DB đã chạy migration. |
 
-**Điểm nhấn:**
-- Router → `order_status` intent → action agent (không phải retrieval)
-- `extract_phone()` và `extract_order_id()` dùng regex
-- `lookup_orders()` query MySQL realtime
-- Status mapping: "pending" → "Chờ xác nhận" (tiếng Việt)
+Điểm nhấn:
 
-**Fallback nếu chưa đăng nhập:**
-- Gõ: **"kiểm tra đơn 0901234567"** → bot extract phone number từ text
+- `promotion` khác `coupon_inquiry`.
+- Coupon chỉ hiện nếu mã đang active và còn hiệu lực trong `cart_coupons`.
 
 ---
 
-## Kịch bản 6: Đặt bánh COD — Order Create (In-chat)
-
-**Mục đích:** Cho thấy slot-filling conversational flow.
+## Kịch bản 6: Đánh giá và so sánh sản phẩm
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"đặt 2 bánh croissant"** | Bot hỏi thông tin: tên, SĐT, địa chỉ giao |
-| 2 | Trả lời từng bước theo hướng dẫn bot | Bot confirm đơn trước khi tạo |
-| 3 | Xác nhận | Đơn hàng tạo trong MySQL `orders` table |
+|---|---|---|
+| 1 | Gõ: **"bánh tiramisu đánh giá thế nào"** | Bot tóm tắt rating và vài nhận xét nếu có. |
+| 2 | Gõ: **"so sánh tiramisu và mousse chocolate"** | Bot so sánh giá, loại, kích cỡ nếu resolve được sản phẩm. |
 
-**Điểm nhấn:**
-- `_open_draft()` check session metadata → giữ context order_create qua nhiều turn
-- `_has_exit_word()` detect "hủy", "thôi" → cancel draft
-- Tạo đơn qua PHP internal API (1 nguồn sự thật business logic)
+Điểm nhấn:
+
+- Đây là action intent, không chỉ retrieval text.
+- Bot vừa query DB vừa trả product cards.
 
 ---
 
-## Kịch bản 7: Chitchat — Hội thoại thường
-
-**Mục đích:** Cho thấy router phân biệt chitchat vs retrieval.
+## Kịch bản 7: Tư vấn thành phần/dị ứng
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"chào shop"** | Bot chào lại thân thiện, ngắn gọn |
-| 2 | Gõ: **"cảm ơn nha"** | Bot đáp lịch sự, không retrieval |
+|---|---|---|
+| 1 | Gõ: **"bánh nào không có trứng"** | Bot lọc sản phẩm theo cột `co_trung`. |
+| 2 | Gõ: **"có bánh không gluten không"** | Bot lọc theo `co_gluten` và kèm disclaimer an toàn. |
 
-**Điểm nhấn:**
-- Keyword "chào", "cảm ơn" → `chitchat` @ 0.55 → skip LLM router call
-- Chitchat node dùng LLM generate trực tiếp (không query VectorStore)
-- Tiết kiệm 1 LLM call nhờ keyword-first optimization
+Điểm nhấn:
+
+- Dữ liệu thành phần nằm trong bảng `banh`: `co_trung`, `co_sua`, `co_gluten`, `co_hat`.
+- Câu trả lời có lưu ý gọi hotline nếu dị ứng nặng.
 
 ---
 
-## Kịch bản 8: Khiếu nại + Handoff — Escalation
+## Kịch bản 8: Sản phẩm yêu thích
 
-**Mục đích:** Cho thấy multi-factor handoff policy + Telegram notification.
+Điều kiện: khách đã đăng nhập.
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"bánh giao bị móp, bực quá, hoàn tiền cho tôi"** | Bot nhận khiếu nại, tạo ticket, thông báo Telegram |
-| 2 | Kiểm tra Telegram group | Nhận alert: session ID, priority HIGH, reason codes |
+|---|---|---|
+| 1 | Gõ: **"lưu bánh kem dâu vào yêu thích"** | Bot thêm sản phẩm vào bảng `favorites`. |
+| 2 | Gõ: **"xem bánh yêu thích của tôi"** | Bot trả danh sách sản phẩm đã lưu. |
 
-**Điểm nhấn:**
-- `decide_handoff()` — 4 factors: intent (`complaint`), keyword ("hoàn tiền"), confidence, retry_count
-- Ticket tạo trong MySQL `support_tickets` table với draft response
-- `notify_handoff()` gửi async Telegram (daemon thread, non-blocking)
-- Bot response: "Đã chuyển cho nhân viên... hotline 0901 234 567"
+Nếu chưa đăng nhập, bot yêu cầu đăng nhập trước.
 
 ---
 
-## Kịch bản 9: Yêu cầu gặp người thật — Direct Handoff
+## Kịch bản 9: Tra cứu đơn hàng
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ: **"cho gặp nhân viên"** | Bot chuyển ngay, skip LLM draft generation |
+|---|---|---|
+| 1 | Đăng nhập tài khoản có đơn hàng. | Widget gửi `user_id` qua PHP proxy. |
+| 2 | Gõ: **"đơn hàng của tôi đến đâu rồi"** | Bot trả các đơn gần nhất với trạng thái, tổng tiền, sản phẩm. |
 
-**Điểm nhấn:**
-- `handoff_request` intent → handoff node
-- Skip `llm.generate()` draft (optimization: khách đã yêu cầu rõ ràng)
+Fallback nếu chưa đăng nhập:
+
+- Gõ: **"kiểm tra đơn 0901234567"** để bot tra theo số điện thoại.
+
+Điểm nhấn:
+
+- Intent `order_status` đi vào Action Agent.
+- Query DB realtime qua `orders_repo.lookup_orders()`.
 
 ---
 
-## Kịch bản 10: Retry + Query Rewrite
+## Kịch bản 10: Đặt bánh COD qua chat
 
-**Mục đích:** Cho thấy retry mechanism khi retrieval confidence thấp.
+Điều kiện: khách đã đăng nhập. Nếu chưa đăng nhập, bot trả link đăng nhập.
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Gõ câu mơ hồ: **"cái này có được ko"** | Retrieval confidence < 0.5 → rewrite → retry |
-| 2 | Quan sát log | Thấy: retrieval → rewrite → retrieval → aggregate (hoặc handoff nếu 2 retry fail) |
+|---|---|---|
+| 1 | Gõ: **"đặt 2 bánh Croissant"** | Bot tìm sản phẩm và hỏi tên người nhận. |
+| 2 | Trả lời: **"Nguyễn Văn A"** | Bot hỏi số điện thoại. |
+| 3 | Trả lời: **"0901234567"** | Bot hỏi địa chỉ giao. |
+| 4 | Trả lời địa chỉ. | Bot tóm tắt đơn và yêu cầu xác nhận. |
+| 5 | Gõ: **"đồng ý"** | Bot gọi PHP internal order API và tạo đơn COD. |
 
-**Điểm nhấn:**
-- `after_retrieval()`: `needs_retry AND retry_count < 2` → rewrite node
-- Rewrite node dùng LLM viết lại query rõ nghĩa hơn
-- Max 2 retries → handoff (tránh infinite loop)
+Điểm nhấn:
+
+- `order_draft` được lưu trong `chat_sessions.metadata`.
+- PHP internal order API dùng HMAC, validate payload, transaction và trừ tồn kho.
 
 ---
 
-## Kịch bản 11: Demo Engine Fallback
+## Kịch bản 11: Báo giá bánh thiết kế riêng
 
-**Mục đích:** Cho thấy fault-tolerance khi API lỗi.
+Kịch bản này cho phép khách vãng lai.
 
 | Bước | Hành động | Kỳ vọng |
-|------|-----------|---------|
-| 1 | Đặt `ENGINE=demo`, tắt Gemini API key | |
-| 2 | Gõ: **"có bánh gì ngon"** | Bot trả lời bằng pre-scripted response (không crash) |
+|---|---|---|
+| 1 | Gõ: **"đặt bánh sinh nhật thiết kế riêng"** | Bot bắt đầu luồng báo giá và hỏi số người dùng bánh. |
+| 2 | Trả lời lần lượt: số người, vị, ngày cần, ghi chú, tên, SĐT. | Bot tóm tắt yêu cầu. |
+| 3 | Gõ: **"đồng ý"** | Bot tạo lead trong `contact_requests`. |
 
-**Điểm nhấn:**
-- `DemoEngine` wraps `MultiAgentEngine`, catches all exceptions
-- Fallback: `keyword_fallback()` → pre-scripted Vietnamese response
-- 11 canned responses covering all intents
-- Widget chat không bao giờ hiện lỗi 500
+Điểm nhấn:
+
+- Khác `order_create`: không tạo đơn ngay, mà tạo yêu cầu báo giá cho nhân viên.
+- Luồng này không bắt buộc đăng nhập.
 
 ---
 
-## Thứ tự demo đề xuất
+## Kịch bản 12: Chitchat
 
-Trình bày 25-30 phút:
+| Bước | Hành động | Kỳ vọng |
+|---|---|---|
+| 1 | Gõ: **"chào shop"** | Bot chào lại ngắn gọn. |
+| 2 | Gõ: **"cảm ơn nha"** | Bot đáp lịch sự, không gọi retrieval. |
 
-1. **Mở đầu** (2 phút): Giới thiệu website Gấu Bakery, mở widget chat
-2. **Kịch bản 7** — Chitchat: warm-up, cho thấy bot hoạt động
-3. **Kịch bản 1** — FAQ: retrieval cơ bản
-4. **Kịch bản 2** — Catalog Search: hybrid search + history context
-5. **Kịch bản 3** — Product Recommend: promotion reranking
-6. **Kịch bản 4** — Policy: normalizer + citation
-7. **Kịch bản 5** — Order Status: action agent + MySQL
-8. **Kịch bản 8** — Handoff: escalation + Telegram (cao trào)
-9. **Kịch bản 11** — Demo Fallback: fault-tolerance (kết thúc ấn tượng)
+Điểm nhấn:
 
-Bỏ qua kịch bản 6 (order create) và 10 (retry) nếu hết thời gian — giải thích bằng slide.
+- Keyword-first router nhận `chitchat`.
+- Chitchat node dùng LLM generate trực tiếp với lịch sử gần nhất.
+
+---
+
+## Kịch bản 13: Khiếu nại và handoff cho người thật
+
+| Bước | Hành động | Kỳ vọng |
+|---|---|---|
+| 1 | Gõ: **"bánh giao bị móp, bực quá, hoàn tiền cho tôi"** | Bot nhận khiếu nại và chuyển nhân viên. |
+| 2 | Mở admin tab Hội thoại. | Phiên chat xuất hiện trong hàng chờ/open/handoff. |
+| 3 | Admin bấm nhận phiên và trả lời. | Tin nhắn agent được lưu trong `chat_messages`. |
+| 4 | Nếu có Telegram config. | Telegram group nhận alert handoff. |
+
+Điểm nhấn:
+
+- Direct `complaint`/`handoff_request` tạo support ticket.
+- Admin workflow có `claim`, `close`, `reopen`.
+
+---
+
+## Kịch bản 14: Yêu cầu gặp nhân viên
+
+| Bước | Hành động | Kỳ vọng |
+|---|---|---|
+| 1 | Gõ: **"cho tôi gặp nhân viên"** | Bot chuyển thẳng người thật. |
+
+Điểm nhấn:
+
+- Intent `handoff_request`.
+- `handoff_node()` bỏ qua draft LLM vì khách đã yêu cầu rõ.
+
+---
+
+## Kịch bản 15: DemoEngine fallback
+
+Mục đích: cho thấy hệ thống không crash khi LLM/API lỗi trong buổi demo.
+
+| Bước | Hành động | Kỳ vọng |
+|---|---|---|
+| 1 | Chạy AI service với `ENGINE=demo` và cấu hình LLM key lỗi/thiếu. | MultiAgent lỗi sẽ bị DemoEngine bắt. |
+| 2 | Gõ: **"có bánh gì ngon"** hoặc **"cho gặp nhân viên"** | Bot trả canned response theo keyword fallback. |
+
+Điểm nhấn:
+
+- DemoEngine là cơ chế an toàn cho demo, không phải engine đầy đủ.
+- Canned response hiện cover các intent demo chính; intent mới có thể rơi về fallback FAQ.
+
+---
+
+## Kịch bản 16: Mail driver, Resend và hóa đơn PDF
+
+Mục đích: chứng minh hệ thống đã có lớp gửi email đa driver và có thể chuyển sang Resend bằng cấu hình.
+
+| Bước | Hành động | Kỳ vọng |
+|---|---|---|
+| 1 | Mở file cấu hình môi trường hoặc dashboard deploy. | Thấy `MAIL_DRIVER` quyết định driver mail đang dùng. |
+| 2 | Giải thích nếu dùng Resend cần `MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM_ADDRESS`. | Hội đồng thấy Resend là chức năng đã có trong code, không phải chỉ là ý tưởng. |
+| 3 | Chạy `php tools/diagnose_mail.php email@example.com` trong môi trường có key thật. | Tool in driver hiện tại, kiểm tra cấu hình và thử gửi mail. |
+| 4 | Với đơn đã xác nhận/thanh toán, mở code hoặc demo nghiệp vụ gửi hóa đơn. | Hệ thống gọi `send_custom_mail_with_attachments()` và đính kèm hóa đơn PDF. |
+| 5 | Kiểm tra đơn đã gửi hóa đơn. | `orders.invoice_email_sent_at` được cập nhật để hạn chế gửi trùng. |
+
+Điểm nhấn:
+
+- Resend dùng chung abstraction mail với SMTP và Gmail API.
+- Hóa đơn PDF dùng attachment; không chỉ gửi text email.
+- Nếu môi trường hiện đang để `MAIL_DRIVER=gmail_api`, cần nói rõ demo đang chạy Gmail API, còn Resend được bật bằng cấu hình.
+- Không nên gửi email thật trong buổi bảo vệ nếu chưa chuẩn bị domain/from address đã verify.
+
+---
+
+## Thứ tự demo đề xuất trong 25-30 phút
+
+1. Chitchat.
+2. FAQ/chính sách giao hàng.
+3. Catalog search.
+4. Gợi ý sản phẩm.
+5. Chính sách thanh toán/đổi trả.
+6. Khuyến mãi/coupon.
+7. Dị ứng/thành phần.
+8. Tra cứu đơn hàng.
+9. Báo giá bánh thiết kế riêng.
+10. Handoff + admin reply.
+11. Mail/Resend/hóa đơn PDF nếu có môi trường email thật.
+12. DemoEngine fallback nếu còn thời gian.
+
+Nếu thời gian ngắn, bỏ qua order create hoặc mail thật vì cần đăng nhập, tồn kho, internal order API và cấu hình email ổn định.
 
 ---
 
 ## Xử lý sự cố trong demo
 
-| Sự cố | Xử lý |
-|-------|-------|
-| Gemini quota hết | Chuyển `ENGINE=demo`, giải thích fallback mechanism |
-| Website Render cold start | Chờ 30s, giải thích free tier spin-down |
-| Bot trả lời sai intent | Giải thích đây là LLM, có confidence score, nếu thấp sẽ handoff |
-| MySQL connection lỗi | Demo kịch bản không cần DB (FAQ, catalog, chitchat) |
-| Telegram không nhận notify | Check bot token/chat ID, demo ticket trong DB thay thế |
+| Sự cố | Cách xử lý |
+|---|---|
+| LLM/API quota hoặc key lỗi | Chuyển `ENGINE=demo`, giải thích fallback. |
+| `products_indexed` thấp hoặc Chroma trống | Gọi `POST /knowledge/index?source=all` bằng admin bypass hoặc restart nếu auto-reindex cấu hình đúng. |
+| Website Render cold start | Chờ 30-60 giây, mở `/health` trước khi demo. |
+| Bot yêu cầu đăng nhập | Chuyển sang tài khoản test hoặc dùng kịch bản không cần login. |
+| Tạo đơn thất bại | Demo flow đến bước summary, giải thích internal API/HMAC/stock transaction. |
+| Telegram không nhận notify | Demo ticket/hội thoại trong admin thay thế. |
+| MySQL lỗi | Demo các kịch bản ít phụ thuộc DB: chitchat, FAQ/policy nếu Chroma đã index. |
+| Mail gửi thất bại | Chạy `php tools/diagnose_mail.php`, kiểm tra `MAIL_DRIVER`, key Resend/Gmail, from address đã xác minh và log HTTP lỗi. |

@@ -1,272 +1,292 @@
-# Chuẩn bị Q&A Bảo vệ Khóa luận
+# Chuẩn bị Q&A bảo vệ khóa luận
 
-> Câu hỏi dự kiến từ hội đồng + câu trả lời có dẫn chứng từ code/kiến trúc.
-> Chia theo nhóm: Research Questions, Kiến trúc, Kỹ thuật, Đánh giá, Thực tiễn.
-
----
-
-## A. Trả lời 5 Research Questions
-
-### RQ1: Multi-agent có cải thiện độ chính xác so với RAG đơn giản không?
-
-**Trả lời:** Có, nhờ 3 cơ chế:
-
-1. **Router chuyên biệt** — Baseline dùng 1 prompt cho tất cả intent → dễ lẫn policy vào catalog answer. Multi-agent router phân luồng chính xác vào collection riêng (products, policies, faq).
-
-2. **Per-collection retrieval** — Baseline search toàn bộ knowledge base. Multi-agent chỉ search collection phù hợp intent → ít noise, citation chính xác hơn.
-
-3. **Retry mechanism** — Baseline không retry. Multi-agent rewrite query khi confidence < 0.5, tối đa 2 lần → tăng cơ hội trả lời đúng.
-
-**Dẫn chứng code:**
-- Router: `router.py:56-69` — keyword-first + LLM fallback
-- Collection mapping: `retrieval.py:3-5` — intent → collection
-- Retry: `graph.py:76-79` — `after_retrieval()` conditional edge
+> Câu hỏi dự kiến từ hội đồng, đồng bộ với codebase hiện tại.
+> Khi trình bày kết quả định lượng, chỉ nêu số liệu sau khi đã chạy `ai-service/eval/run_eval.py` và `ai-service/eval/analyze.py`.
 
 ---
 
-### RQ2: Multi-agent có tăng tỷ lệ câu trả lời grounded không?
+## A. Research Questions
 
-**Trả lời:** Có. Retrieval agent trả JSON có `sources[]` trỏ về document ID cụ thể. Baseline trả text tự do, citation thường thiếu hoặc sai nguồn.
+### RQ1: Multi-agent khác gì so với RAG đơn giản?
 
-**Cơ chế:**
-- Retrieval prompt yêu cầu `{"answer": "...", "sources": ["doc-id"]}` (`retrieval.py:7-8`)
-- Citation được cross-reference với retrieved docs: `cits = [{"source": s, "excerpt": by_id[s].text[:120]} for s in parsed["sources"] if s in by_id]` (`retrieval.py:52`)
-- Chỉ citation khớp với document thực tế mới được giữ lại
+BaselineEngine dùng một pipeline RAG chung: truy xuất đồng thời `faq`, `policies`, `products`, sau đó đưa toàn bộ tài liệu vào một prompt sinh câu trả lời.
 
----
+MultiAgentEngine tách bài toán thành các node trong LangGraph: normalizer, router, retrieval, action, chitchat, handoff và aggregate. Router phân loại intent trước, nhờ đó retrieval chỉ truy xuất collection phù hợp hoặc action node gọi trực tiếp CSDL/API nghiệp vụ.
 
-### RQ3: Handoff policy multi-agent có chính xác hơn không?
+Dẫn chứng code:
 
-**Trả lời:** Có. Baseline dùng 1 signal duy nhất (confidence < 0.6). Multi-agent dùng 4 factors:
+- `ai-service/app/engines/baseline.py` - `BaselineEngine._retrieve()`
+- `ai-service/app/engines/multiagent/graph.py` - `build_graph()`
+- `ai-service/app/engines/multiagent/router.py` - `INTENTS`, `classify_intent()`
 
-| Factor | Code | Mô tả |
-|--------|------|--------|
-| Intent-based | `handoff.py:8-9` | complaint/handoff_request → luôn handoff |
-| Confidence | `handoff.py:10-11` | Dưới threshold → handoff |
-| Keyword | `handoff.py:12-13` | "khiếu nại", "hoàn tiền gấp", "gặp quản lý" |
-| Retry exhaustion | `handoff.py:14-15` | retry_count ≥ 2 → không retry thêm |
+### RQ2: Multi-agent có làm câu trả lời grounded hơn không?
 
-**Lợi ích:**
-- Giảm false positive: câu đơn giản confidence thấp không bị handoff nếu không có keyword/intent match
-- Giảm false negative: complaint có keyword nhưng confidence cao vẫn được handoff nhờ intent/keyword factor
+Về thiết kế, có. Cả Baseline và Multi-agent đều yêu cầu LLM trả `sources[]` và chỉ giữ citation nếu source nằm trong tài liệu đã truy xuất. Điểm khác là Baseline search cả ba collection cùng lúc, còn Multi-agent search theo intent: sản phẩm, chính sách hoặc FAQ. Điều này giảm nhiễu nguồn và giúp câu trả lời bám đúng domain nhỏ hơn.
 
----
+Dẫn chứng code:
 
-### RQ4: Multi-agent có làm tăng độ trễ đáng kể không?
+- `baseline.py` - kiểm tra `sources` khớp retrieved docs.
+- `retrieval.py` - map intent sang collection bằng `_COLLECTION`.
+- `vector_store.py` - ChromaDB + BM25 + RRF.
 
-**Trả lời:** Tăng khoảng 1-1.5s, chấp nhận được.
+### RQ3: Handoff hoạt động như thế nào?
 
-| Bước | Baseline | Multi-agent |
-|------|----------|-------------|
-| Normalizer | ~10ms | ~10ms |
-| Router | — | ~500ms (keyword) hoặc ~1.5s (LLM) |
-| Retrieval | ~300ms | ~300ms |
-| LLM Generate | ~1.5s | ~1.5s |
-| **Tổng** | **~2s** | **~2.5-3.5s** |
+Hệ thống có hai lớp chuyển người thật:
 
-**Tối ưu đã áp dụng:**
-- Keyword-first router: 9 nhóm keyword, confidence ≥ 0.55 → skip LLM call (`router.py:56-58`). Tiết kiệm ~1s cho phần lớn queries.
-- Chitchat path: 1 LLM call duy nhất (không retrieval)
-- Telegram notify: async daemon thread, không block response (`notify.py`)
+- Direct handoff: intent `complaint` hoặc `handoff_request` đi vào `handoff_node()`, tạo `support_tickets`, sinh draft trả lời cho nhân viên nếu cần và gửi Telegram nếu có cấu hình.
+- Low-confidence/retry handoff: retrieval thất bại sau số lần retry tối đa thì đặt `should_handoff=true`; API cập nhật trạng thái phiên để admin tiếp nhận.
 
----
+Dẫn chứng code:
 
-### RQ5: Tiền xử lý tiếng Việt có cải thiện chất lượng không?
+- `multiagent/handoff.py` - `decide_handoff()`, `handoff_node()`.
+- `multiagent/retrieval.py` - max retry tạo tín hiệu `should_handoff`.
+- `api/chat.py` - nếu `reply.handoff` thì cập nhật trạng thái session.
+- `db/ticket_repo.py` - tạo ticket hỗ trợ.
 
-**Trả lời:** Có, đặc biệt cho queries không dấu và teencode.
+### RQ4: Multi-agent có tăng độ trễ không?
 
-**Ví dụ:**
-- "ko" → "không" (teencode dict: `normalizer.py:8-9`, `teencode.json`)
-- "ship bao lau" → nhận diện intent `policy_shipping` nhờ keyword "ship"
+Có thể tăng, vì có thêm bước router và đôi khi có bước rewrite/retry. Tuy nhiên code đã có keyword-first router: nếu query khớp từ khóa, hệ thống bỏ qua LLM router và trả intent ngay với confidence 0.55.
 
-**Ablation design:**
-- `settings.enable_normalizer` flag (`graph.py:43-47`)
-- `enable_normalizer=False` → skip normalize, pass raw query
-- So sánh accuracy với/không normalizer trên cùng dataset
+Độ trễ không nên trả lời bằng số ước đoán nếu chưa chạy eval. Repo hiện có sẵn công cụ đo:
+
+- `eval/run_eval.py` ghi `latency_ms` từng turn.
+- `eval/analyze.py` tính latency trung bình, p95 và Wilcoxon signed-rank cho latency theo cặp baseline/multiagent.
+
+### RQ5: Tiền xử lý tiếng Việt đang làm gì?
+
+Normalizer hiện là rule-based dictionary, tập trung vào teencode và từ viết tắt thường gặp, ví dụ `ko -> không`, `sn -> sinh nhật`, `ship -> giao hàng`, `sdt -> số điện thoại`. Hệ thống chưa có phục hồi dấu tổng quát bằng mô hình NLP riêng.
+
+Dẫn chứng code:
+
+- `ai-service/app/nlp/normalizer.py`
+- `ai-service/app/nlp/teencode.json`
+- `Settings.enable_normalizer`
 
 ---
 
-## B. Câu hỏi về Kiến trúc
+## B. Kiến trúc và công nghệ
 
-### "Tại sao chọn LangGraph mà không dùng CrewAI hay AutoGen?"
+### Tại sao chọn LangGraph?
 
-LangGraph phù hợp nhất vì:
+Bài toán CSKH có nhiều nhánh xử lý: hỏi FAQ, tìm sản phẩm, tra cứu đơn, tạo đơn, khiếu nại và trò chuyện thường. LangGraph phù hợp vì có state graph, conditional edges và retry cycle. Trong code, mọi nhánh đều hội tụ về `aggregate` để trả một `EngineReply` thống nhất cho API.
 
-| Tiêu chí | LangGraph | CrewAI | AutoGen |
-|----------|-----------|--------|---------|
-| State management | StateGraph built-in | Không có | Multi-turn conversation |
-| Conditional routing | `add_conditional_edges()` | Không linh hoạt | Nặng |
-| Retry mechanism | Đồ thị có cycle (rewrite → retrieval) | Không hỗ trợ | Phức tạp |
-| Lightweight | Ít dependency | Trung bình | Nhiều dependency |
+### LLM provider hiện tại là gì?
 
-Bài toán CSKH cần: routing có trạng thái, retry khi retrieval thất bại, conditional handoff. LangGraph match trực tiếp.
+Code hiện hỗ trợ hai provider qua `LLM_PROVIDER`: `deepseek` và `gemini`.
+
+Trạng thái hiện tại:
+
+- `app/config.py` default: `llm_provider=deepseek`, `llm_model=deepseek-v4-flash`.
+- `render.yaml`: production AI service cũng cấu hình `LLM_PROVIDER=deepseek`.
+- Embedding vẫn dùng Gemini qua `embedding_model=gemini-embedding-001`.
+
+Vì vậy khi bảo vệ nên nói: hệ thống tách `LLMClient` để thay provider theo cấu hình; triển khai hiện tại dùng DeepSeek cho chat model và Gemini cho embedding.
+
+### Tại sao dùng ChromaDB + BM25?
+
+ChromaDB xử lý tìm kiếm ngữ nghĩa, hữu ích khi khách hỏi theo nhu cầu. BM25 bắt từ khóa chính xác như tên bánh, VNPAY, COD, gluten. Kết quả hai phía được hợp nhất bằng Reciprocal Rank Fusion, không cần chuẩn hóa score giữa cosine distance và BM25 score.
+
+Dẫn chứng code: `ai-service/app/knowledge/vector_store.py`.
+
+### Hệ thống dùng những API chính nào?
+
+FastAPI:
+
+- `POST /chat/send`
+- `GET /chat/history`
+- `POST /chat/handoff`
+- `GET /admin/sessions`
+- `POST /admin/session-action`
+- `POST /admin/reply`
+- `POST /knowledge/index`
+- `GET /health`
+- `GET|POST /channels/messenger/webhook`
+
+PHP proxy:
+
+- `/cakev0/api/chat/send`
+- `/cakev0/api/chat/history`
+- `/cakev0/api/chat/sessions`
+- `/cakev0/api/chat/session_action`
+- `/cakev0/api/chat/agent_reply`
+
+Internal order API:
+
+- `/cakev0/api/internal/orders/create.php`, xác thực bằng HMAC.
 
 ---
 
-### "Tại sao dùng Gemini 2.0 Flash thay vì GPT-4?"
+## C. Kỹ thuật deep-dive
 
-| Tiêu chí | Gemini 2.0 Flash | GPT-4o-mini |
-|----------|-------------------|-------------|
-| Chi phí | Free tier 1500 req/ngày | Trả phí |
-| Tiếng Việt | Đủ tốt cho CSKH | Tốt hơn |
-| Latency | ~1-1.5s | ~1-2s |
-| Embedding | text-embedding-004 miễn phí | text-embedding-3-small trả phí |
+### Router có bao nhiêu intent?
 
-Lý do: đề tài khóa luận, ngân sách hạn chế. Gemini free tier đủ cho development + thực nghiệm 150 mẫu. Kiến trúc LLM-agnostic — chỉ cần đổi `LLMClient` config để chuyển provider.
+Router hiện có 20 intent:
+
+`faq`, `catalog_search`, `product_recommend`, `promotion`, `bestseller`, `order_status`, `order_create`, `policy_shipping`, `policy_payment`, `policy_return`, `complaint`, `chitchat`, `handoff_request`, `coupon_inquiry`, `review_lookup`, `product_compare`, `favorite_add`, `favorite_view`, `dietary_inquiry`, `custom_cake_quote`.
+
+### Action Agent xử lý những tác vụ nào?
+
+Action Agent không chỉ tra cứu đơn. Code hiện xử lý:
+
+- Tra cứu đơn hàng.
+- Tạo đơn COD qua chat.
+- Xem khuyến mãi và sản phẩm bán chạy.
+- Hỏi mã giảm giá công khai.
+- Xem đánh giá sản phẩm.
+- So sánh sản phẩm.
+- Thêm/xem yêu thích.
+- Tư vấn theo thành phần cần tránh: trứng, sữa, gluten, hạt.
+- Nhận yêu cầu báo giá bánh thiết kế riêng.
+
+### Tạo đơn qua chat có an toàn không?
+
+Luồng tạo đơn qua chat không ghi trực tiếp vào DB từ LLM. AI Service thu thập thông tin, sau đó gọi PHP internal API. PHP kiểm tra HMAC, validate payload, kiểm tra user, khóa dòng sản phẩm bằng `FOR UPDATE`, tạo `orders`, `order_items` và trừ tồn kho trong transaction.
+
+Dẫn chứng:
+
+- `ai-service/app/services/order_create_service.py`
+- `includes/internal_order_api.php`
+- `api/internal/orders/create.php`
+
+### DemoEngine có hỗ trợ đầy đủ mọi intent không?
+
+Không nên nói vậy. `DemoEngine` dùng `keyword_fallback()` để phân loại nhanh, nhưng bảng canned response hiện chỉ có một nhóm fallback cho các intent demo chính. Nếu intent mới chưa có canned response riêng, code rơi về câu FAQ mặc định. Điểm đúng để trình bày là: DemoEngine giúp widget không crash khi LLM lỗi, không phải thay thế đầy đủ MultiAgentEngine.
+
+### Telegram notification có block response không?
+
+Không. `notify_handoff()` gửi Telegram bằng background daemon thread. Nếu thiếu token/chat ID thì bỏ qua, không làm hỏng luồng chat chính.
 
 ---
 
-### "Tại sao ChromaDB mà không dùng Pinecone, Weaviate?"
+## D. Đánh giá thực nghiệm
 
-- **Open-source, local:** không phụ thuộc cloud service, phù hợp ngân sách
-- **Python-native:** tích hợp trực tiếp, không cần Docker cluster
-- **Đủ cho scale:** ~50 products + 20 FAQ + 4 policies → ChromaDB thừa sức
-- **Persistent:** `PersistentClient` lưu trên disk, restart không mất data
+### Dataset hiện có gì?
 
----
+`ai-service/eval/dataset/samples.jsonl` hiện có 150 mẫu hội thoại. Mỗi mẫu có:
 
-### "Giải thích cơ chế hybrid search (BM25 + dense)?"
+- `messages`
+- `expected_intent`
+- `expected_handoff`
+- `ground_truth_answer`
+- `tags`
 
-**Phase 2 improvement:** kết hợp 2 loại search:
+### Metrics trong code là gì?
 
-1. **Dense (ChromaDB):** Semantic similarity — hiểu nghĩa ("bánh cho bé" ≈ "cake for children")
-2. **BM25 (keyword):** Exact term matching — bắt tên sản phẩm chính xác ("croissant", "tiramisu")
+`eval/metrics.py` tính:
 
-**Fusion:** Reciprocal Rank Fusion (RRF)
+- `intent_accuracy`
+- `grounded_rate`
+- `handoff_precision`
+- `handoff_recall`
+- `handoff_f1`
+- `avg_first_response_ms`
+- `p95_first_response_ms`
+- `task_completion_rate`
+
+`eval/analyze.py` xuất bảng so sánh baseline vs multiagent và tính Wilcoxon signed-rank cho latency lượt đầu theo sample_id.
+
+### Có kết quả thực nghiệm trong repo chưa?
+
+Chưa có kết quả JSONL/Markdown được commit trong `ai-service/eval/results`, ngoài README và `.gitkeep`. Vì vậy khi bảo vệ không nên nêu phần trăm cải thiện cụ thể nếu chưa chạy:
+
+```powershell
+cd ai-service
+venv\Scripts\python -m eval.run_eval --engine baseline --out eval/results/baseline.jsonl
+venv\Scripts\python -m eval.run_eval --engine multiagent --out eval/results/multiagent.jsonl
+venv\Scripts\python -m eval.analyze --baseline eval/results/baseline.jsonl --multiagent eval/results/multiagent.jsonl --dataset eval/dataset/samples.jsonl --out eval/results/comparison.md
 ```
-score(d) = Σ 1/(k + rank_i + 1),  k = 60
-```
 
-RRF ưu điểm: không cần normalize score giữa 2 hệ thống (BM25 score range khác cosine distance range). Chỉ dùng rank position.
+### Cohen's Kappa đã có chưa?
 
-**Dẫn chứng:** `vector_store.py:50-63` — `_rrf_fuse()`
+Code có hàm tính Cohen's Kappa trong `eval/metrics.py`, nhưng repo chưa có file CSV của hai annotator. Vì vậy nên trình bày Kappa là phương pháp/mục tiêu đánh giá nhãn thủ công, không phải kết quả đã hoàn thành.
 
 ---
 
-## C. Câu hỏi Kỹ thuật Deep-dive
+## E. Thực tiễn triển khai
 
-### "Keyword-first router có bỏ sót intent không?"
+### Hệ thống đã deploy thế nào?
 
-Không, vì keyword chỉ là fast path (confidence 0.55). Nếu không match keyword → fallback sang LLM router. Keyword coverage:
+`render.yaml` hiện định nghĩa AI service `gau-bakery-ai` bằng Docker, health check `/health`, region Singapore. PHP web service được ghi chú là quản lý riêng, không nằm trong blueprint này.
 
-- 9 nhóm keyword, ~30 từ khóa tiếng Việt (`router.py:29-39`)
-- Mỗi nhóm ưu tiên theo thứ tự (handoff_request trước complaint)
-- Default: `faq` @ 0.4 nếu không match gì
+Các biến production quan trọng trong `render.yaml`:
 
-Trade-off: tiết kiệm ~500-1500ms LLM call cho ~60-70% queries phổ biến.
+- `ENGINE=multiagent`
+- `LLM_PROVIDER=deepseek`
+- `LLM_MODEL=deepseek-v4-flash`
+- `EMBEDDING_MODEL=gemini-embedding-001`
+- `MYSQL_SSL=true`
+- `INTERNAL_ORDER_API_URL=https://cake-i8l0.onrender.com/cakev0/api/internal/orders/create.php`
+- `CORS_ORIGINS=https://cake-i8l0.onrender.com`
 
----
+### Có production-ready hoàn toàn chưa?
 
-### "State machine có deadlock hoặc infinite loop không?"
+Nên trả lời thận trọng: hệ thống đã có kiến trúc deploy được và các cơ chế bảo vệ cơ bản, nhưng vẫn cần hardening nếu vận hành thật.
 
-Không, nhờ 2 safeguards:
+Đã có:
 
-1. **Max retry:** `after_retrieval()` check `retry_count < 2` → tối đa 2 rewrite cycles (`graph.py:77`)
-2. **All paths converge:** mọi agent node (retrieval, action, chitchat, handoff) đều edge đến `aggregate` → `END`
-3. **Rewrite exhaustion:** nếu 2 retry fail → `should_handoff = True`, `needs_retry = False` → aggregate thay vì rewrite (`retrieval.py:71-74`)
+- Rate limit `/chat/send`.
+- CORS cấu hình theo origin.
+- HMAC cho internal order API.
+- Admin bypass header có HMAC timestamp.
+- Handoff người thật.
+- Health check và auto reindex best-effort khi Chroma trống.
 
----
+Cần cải thiện:
 
-### "Telegram notification có block response không?"
+- Lưu trữ Chroma bền vững trên production nếu dùng free-tier mất disk.
+- Giám sát log/metrics.
+- Streaming response hoặc WebSocket nếu cần UX realtime hơn.
+- Bộ policy an toàn AI rõ hơn cho dữ liệu cá nhân và khiếu nại.
+- Kết quả eval định lượng sau khi chạy đủ baseline/multiagent.
 
-Không. `notify_handoff()` dùng `threading.Thread(daemon=True)` — fire-and-forget (`notify.py`). Response trả về client ngay, Telegram gửi async. Nếu Telegram API fail → silent skip, không ảnh hưởng UX.
+### Chi phí vận hành nên trình bày thế nào?
 
----
+Không nên cam kết `$0/tháng` nếu đang dùng DeepSeek/Gemini/Render/Aiven theo quota thay đổi. Nên nói: chi phí phụ thuộc tier API và hạ tầng; đề tài thiết kế theo hướng cấu hình provider để dễ thay đổi giữa free tier, paid tier hoặc self-hosted.
 
-### "DemoEngine fallback có phân biệt được intent không?"
+### SME khác có tái sử dụng được không?
 
-Có, dùng `keyword_fallback()` từ router module — cùng logic keyword-first. 11 pre-scripted responses cover tất cả intents. Không dùng LLM (vì LLM đang lỗi), nhưng keyword đủ chính xác cho demo scenarios có script sẵn.
+Có thể tái sử dụng kiến trúc, nhưng cần thay:
 
----
+- Knowledge base: sản phẩm, chính sách, FAQ.
+- Schema/order API nếu domain khác không dùng bảng `banh`, `orders`, `order_items`.
+- Router prompt và teencode dictionary theo domain.
+- Handoff workflow theo đội CSKH thực tế.
 
-## D. Câu hỏi về Đánh giá
+### Hệ thống đã có gửi mail qua Resend chưa?
 
-### "Dataset 150 mẫu có đủ tin cậy thống kê không?"
+Có. Code hiện hỗ trợ ba driver mail: `smtp`, `gmail_api`, `resend`. Driver được chọn bằng `MAIL_DRIVER`. Nếu đặt `MAIL_DRIVER=resend`, hệ thống dùng `RESEND_API_KEY` và `MAIL_FROM_ADDRESS` để gọi Resend API.
 
-- 150 mẫu đủ cho paired comparison (Wilcoxon signed-rank test, không yêu cầu normality)
-- Cohen's Kappa > 0.8 cho inter-annotator agreement → đảm bảo label quality
-- Hạn chế thừa nhận: kết quả có thể không generalize sang domain khác
+Các luồng đang dùng mail chung:
 
----
+- Gửi email xác thực khi đăng ký.
+- Gửi phản hồi yêu cầu liên hệ từ admin.
+- Gửi thông báo liên quan đến yêu cầu đặt lại mật khẩu.
+- Gửi hóa đơn PDF sau khi đơn được xác nhận hoặc thanh toán thành công.
 
-### "Tại sao dùng Wilcoxon test mà không dùng t-test?"
+Điểm cần nói rõ khi bảo vệ: Resend đã có ở code, nhưng môi trường chạy thực tế phải cấu hình đúng biến môi trường. Nếu `.env` vẫn để `MAIL_DRIVER=gmail_api`, hệ thống sẽ chạy theo Gmail API chứ không dùng Resend.
 
-- Wilcoxon: non-parametric, không yêu cầu dữ liệu phân phối chuẩn
-- Phù hợp cho accuracy scores (0/1 binary) và confidence scores (bounded 0-1)
-- Paired test: so sánh cùng query trên 2 hệ thống → paired design
+### Vì sao cần `invoice_email_sent_at`?
 
----
+Đây là cờ chống gửi trùng hóa đơn. Khi `send_order_invoice_email()` gửi email thành công, hệ thống cập nhật `orders.invoice_email_sent_at`. Những lần cập nhật trạng thái hoặc callback thanh toán sau đó sẽ kiểm tra cờ này để tránh gửi lại cùng một hóa đơn nhiều lần.
 
-### "Ablation study thiết kế thế nào?"
+### Resend còn hạn chế gì?
 
-So sánh 4 configurations trên cùng dataset:
+Nên nêu thận trọng:
 
-| Config | Normalizer | Engine | Hybrid Search |
-|--------|-----------|--------|---------------|
-| A (Baseline) | On | BaselineEngine | Dense only |
-| B (Multi-agent) | On | MultiAgentEngine | Hybrid (dense + BM25) |
-| B' (No normalizer) | **Off** | MultiAgentEngine | Hybrid |
-| B'' (Dense only) | On | MultiAgentEngine | **Dense only** |
-
-Cho phép isolate đóng góp của: (a) multi-agent routing, (b) Vietnamese normalizer, (c) hybrid search.
-
-**Implementation:**
-- Normalizer toggle: `settings.enable_normalizer` (`graph.py:43-47`)
-- Engine toggle: `settings.engine` = baseline | multiagent (`deps.py`)
-- Hybrid toggle: BM25 index chỉ build khi `add()` được gọi; không build = dense only (`vector_store.py:88-91`)
-
----
-
-## E. Câu hỏi Thực tiễn
-
-### "Hệ thống có thể deploy production không?"
-
-Đã deploy: https://cake-i8l0.onrender.com/cakev0/
-
-| Component | Production-ready? | Cần cải thiện |
-|-----------|-------------------|---------------|
-| Chat widget | Có | WebSocket thay polling |
-| Multiagent engine | Có | Streaming responses |
-| Vector store | Có (persistent) | Auto-reindex on data change |
-| Handoff + ticket | Có | Admin dashboard UI |
-| Telegram notify | Có | Email + SMS channels |
+- README cần bổ sung hướng dẫn cấu hình Resend.
+- Chưa có test mock riêng cho payload và response của Resend API.
+- Chưa có webhook để theo dõi delivered/bounced/complained.
+- Nếu muốn demo thật, cần domain/from address đã được xác minh trong Resend dashboard.
 
 ---
 
-### "Chi phí vận hành thực tế?"
+## F. Hạn chế nên chủ động nêu
 
-| Resource | Chi phí | Giới hạn |
-|----------|---------|----------|
-| Gemini API | Miễn phí | 1500 req/ngày |
-| Render (FastAPI) | Miễn phí | Cold start 30s |
-| Aiven MySQL | Miễn phí | 1GB storage |
-| ChromaDB | Miễn phí (local) | Disk space |
-| Telegram Bot | Miễn phí | Unlimited |
-| **Tổng** | **$0/tháng** | Đủ cho SME nhỏ |
-
-Scale lên: Render paid ($7/tháng no cold start), Gemini paid ($0.15/1M tokens) → ~$10/tháng cho 1000 conversations/ngày.
-
----
-
-### "SME khác có thể tái sử dụng không?"
-
-Có, kiến trúc domain-agnostic:
-
-1. Thay knowledge base: index products/policies/FAQ của domain mới vào ChromaDB
-2. Thay teencode dict: cập nhật `teencode.json` cho domain
-3. Giữ nguyên: router, retrieval, handoff, action agents
-4. Config: đổi system prompts trong `ROUTER_SYSTEM`, `RETRIEVAL_SYSTEM`
-
-Cần customize: order schema (MySQL tables), PHP API endpoints.
-
----
-
-### "Hạn chế chính của đề tài?"
-
-| Hạn chế | Mức độ | Giải pháp tương lai |
-|---------|--------|---------------------|
-| Dataset synthetic (không có user thật) | Cao | User study sau deploy |
-| 1 case study (bánh online) | Trung bình | Test trên domain khác |
-| Không fine-tune model | Thấp | Fine-tune SLM (Qwen/Llama) |
-| Polling thay WebSocket | Thấp | Upgrade client |
-| Free tier LLM | Trung bình | Paid tier cho production |
+| Hạn chế | Cách nói khi bảo vệ |
+|---|---|
+| Chưa có kết quả eval commit | Repo đã có dataset 150 mẫu và script đo, cần chạy thực nghiệm trước ngày bảo vệ để lấy số liệu. |
+| Normalizer còn rule-based | Đủ cho teencode phổ biến, chưa phải mô hình phục hồi dấu tổng quát. |
+| DemoEngine chỉ fallback nhóm intent chính | Dùng để chống crash demo, không thay thế engine thật. |
+| Handoff retry không luôn tạo ticket | Direct complaint/handoff tạo ticket; low-confidence/retry đánh dấu phiên để admin tiếp nhận. |
+| Phụ thuộc provider LLM/embedding | Có thể đổi provider qua config, nhưng production vẫn cần quản lý quota và key. |
+| Resend chưa có webhook trạng thái | Code gửi mail đã có, nhưng chưa theo dõi delivered/bounced bằng webhook nên phần vận hành email vẫn cần hoàn thiện. |

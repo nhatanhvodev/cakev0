@@ -39,6 +39,12 @@ if ($beforeId !== null && $afterId !== null) {
     exit;
 }
 
+if (!empty($_SESSION['admin_logged_in'])) {
+    require_once __DIR__ . '/../../config/connect.php';
+    require_once __DIR__ . '/../../includes/admin_chat_repository.php';
+    admin_chat_json(admin_chat_history_response($conn, $sessionId, $limit, $beforeId, $afterId));
+}
+
 $query = [
     'session_id' => $sessionId,
     'limit' => $limit,

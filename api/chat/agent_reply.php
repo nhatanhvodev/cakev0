@@ -42,36 +42,7 @@ $content = function_exists('mb_substr')
     ? mb_substr($content, 0, 5000, 'UTF-8')
     : substr($content, 0, 5000);
 
-// admin_id is always injected from the authenticated server-side session.
-$payload = [
-    'session_id' => $sessionId,
-    'admin_id' => (int) $_SESSION['admin_id'],
-    'content' => $content,
-];
+require_once __DIR__ . '/../../config/connect.php';
+require_once __DIR__ . '/../../includes/admin_chat_repository.php';
 
-$headers = ['Content-Type: application/json'];
-$bypass = chat_admin_bypass_header();
-if ($bypass !== null) {
-    $headers[] = $bypass;
-}
-
-$ch = curl_init(chat_ai_service_url() . '/admin/reply');
-curl_setopt_array($ch, [
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => $headers,
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 30,
-]);
-$body = curl_exec($ch);
-$code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-curl_close($ch);
-
-if ($body === false) {
-    http_response_code(502);
-    echo json_encode(['error' => 'ai_service_unavailable']);
-    exit;
-}
-
-http_response_code($code ?: 200);
-echo $body;
+admin_chat_json(admin_chat_reply_response($conn, $sessionId, (int) $_SESSION['admin_id'], $content));

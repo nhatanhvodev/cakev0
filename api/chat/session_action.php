@@ -37,35 +37,7 @@ if ($sessionId <= 0 || !in_array($action, ['claim', 'close', 'reopen'], true)) {
     exit;
 }
 
-$payload = [
-    'session_id' => $sessionId,
-    'admin_id' => (int) $_SESSION['admin_id'],
-    'action' => $action,
-];
+require_once __DIR__ . '/../../config/connect.php';
+require_once __DIR__ . '/../../includes/admin_chat_repository.php';
 
-$headers = ['Content-Type: application/json'];
-$bypass = chat_admin_bypass_header();
-if ($bypass !== null) {
-    $headers[] = $bypass;
-}
-
-$ch = curl_init(chat_ai_service_url() . '/admin/session-action');
-curl_setopt_array($ch, [
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => $headers,
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 30,
-]);
-$body = curl_exec($ch);
-$code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-curl_close($ch);
-
-if ($body === false) {
-    http_response_code(502);
-    echo json_encode(['error' => 'ai_service_unavailable']);
-    exit;
-}
-
-http_response_code($code ?: 200);
-echo $body;
+admin_chat_json(admin_chat_action_response($conn, $sessionId, (int) $_SESSION['admin_id'], $action));

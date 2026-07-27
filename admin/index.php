@@ -121,4 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $tab = $_GET['tab'] ?? 'dashboard';
 if (!in_array($tab, $allowed, true)) { $tab = 'dashboard'; }
 
+if ($tab === 'dashboard' && isset($_GET['export_revenue'])) {
+    require_once __DIR__ . '/lib/revenue_report.php';
+    admin_revenue_export($conn);
+}
+
 require __DIR__ . '/views/layout.php';

@@ -2,14 +2,24 @@ import re
 
 from app.db.orders_repo import lookup_orders
 
+# Keep in sync with the web status labels in pages/order-detail.php.
 STATUS_VI = {
     "pending": "Chờ xác nhận",
+    "cho xac nhan": "Chờ xác nhận",
     "confirmed": "Đã xác nhận",
-    "shipping": "Đang giao",
-    "delivered": "Đã giao",
-    "cancelled": "Đã hủy",
-    "cod_not_deposited": "COD chờ cọc",
+    "approved": "Đã xác nhận",
     "paid": "Đã thanh toán",
+    "cod_not_deposited": "Chưa đặt cọc",
+    "cod_deposited": "Đã đặt cọc",
+    "delivering": "Đang giao hàng",
+    "shipping": "Đang giao hàng",
+    "delivered": "Đã giao hàng",
+    "da giao": "Đã giao hàng",
+    "completed": "Hoàn tất",
+    "thanh cong": "Hoàn tất",
+    "failed": "Thất bại",
+    "cancelled": "Đã hủy",
+    "huy": "Đã hủy",
 }
 
 _PHONE_RE = re.compile(r"(?:\+84|0)\d{8,10}")

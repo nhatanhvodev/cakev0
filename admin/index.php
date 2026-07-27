@@ -76,6 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/handlers/best_selling.php';
         handle_update_best_selling($conn);
     }
+    if (isset($_POST['update_review_status'])) {
+        require_once __DIR__ . '/handlers/reviews.php';
+        handle_update_review_status($conn);
+    }
 }
 
 $tab = $_GET['tab'] ?? 'dashboard';

@@ -25,5 +25,6 @@
 </div>
 <script src="../assets/js/admin/theme.js"></script>
 <script src="../assets/js/admin/nav.js"></script>
+<script src="../assets/js/admin/modals.js"></script>
 <script src="../assets/js/admin/dashboard.js"></script>
 </body></html>

@@ -38,6 +38,10 @@ if (isset($_GET['delete_user_id'])) {
     require_once __DIR__ . '/handlers/users.php';
     handle_delete_user($conn);
 }
+if (isset($_GET['delete_promotion_id'])) {
+    require_once __DIR__ . '/handlers/promotions.php';
+    handle_delete_promotion($conn);
+}
 
 // POST dispatch — CSRF-checked, then routed to handlers/<domain>.php per action.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -83,6 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_password_request_status'])) {
         require_once __DIR__ . '/handlers/password_requests.php';
         handle_update_password_request_status($conn);
+    }
+    if (isset($_POST['add_promotion'])) {
+        require_once __DIR__ . '/handlers/promotions.php';
+        handle_add_promotion($conn);
+    }
+    if (isset($_POST['update_promotion'])) {
+        require_once __DIR__ . '/handlers/promotions.php';
+        handle_update_promotion($conn);
     }
 }
 

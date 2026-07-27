@@ -102,3 +102,29 @@ tbody tr:hover { background: var(--surface-2); }
   display: flex; align-items: center; justify-content: flex-end; gap: 10px;
   padding: 14px 20px; border-top: 1px solid var(--border);
 }
+
+/* User-orders modal (admin/views/tabs/users.php) — wide two-pane layout,
+ * ported from legacy admin.php .user-orders-* rules (L1320-1452), rebuilt
+ * on design tokens instead of the legacy hardcoded hex colors. */
+#userOrdersModal .confirm-modal__panel { max-width: 920px; }
+.user-orders-layout {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px;
+  max-height: 60vh;
+}
+#userOrdersBody { min-width: 0; overflow-y: auto; }
+.user-orders-detail {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; overflow-y: auto; min-width: 0;
+}
+.user-orders-detail h6 { margin: 0 0 10px; font-size: 13.5px; font-weight: 700; }
+.user-orders-meta { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.user-orders-items { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
+.user-orders-items div { display: flex; justify-content: space-between; font-size: 13px; color: var(--text); padding: 3px 0; }
+.user-orders-table { width: 100%; border-collapse: collapse; min-width: 0; }
+.user-orders-table th, .user-orders-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12.5px; text-align: left; }
+.user-orders-table .user-order-detail-btn { padding: 4px 10px; font-size: 12px; }
+.user-orders-empty { color: var(--muted); margin: 8px 0 0; }
+@media (max-width: 720px) {
+  .user-orders-layout { grid-template-columns: 1fr; max-height: none; }
+  #userOrdersBody, .user-orders-detail { max-height: 32vh; }
+}

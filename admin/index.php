@@ -34,6 +34,10 @@ if (isset($_GET['delete_product_id'])) {
     require_once __DIR__ . '/handlers/products.php';
     handle_delete_product($conn);
 }
+if (isset($_GET['delete_user_id'])) {
+    require_once __DIR__ . '/handlers/users.php';
+    handle_delete_user($conn);
+}
 
 // POST dispatch — CSRF-checked, then routed to handlers/<domain>.php per action.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

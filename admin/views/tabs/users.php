@@ -123,6 +123,18 @@ render_modal('userOrdersModal', 'Đơn hàng của khách', $userOrdersBodyHtml,
     return map[key] || status;
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char];
+    });
+  }
+
   function renderOrderDetail(orderId) {
     var detailEl = document.getElementById('userOrdersDetail');
     var detail = ordersById[orderId];
@@ -137,19 +149,19 @@ render_modal('userOrdersModal', 'Đơn hàng của khách', $userOrdersBodyHtml,
     } else {
       itemsHtml = items.map(function (item) {
         var total = Number(item.price) * Number(item.quantity);
-        return '<div><span>' + item.ten_banh + ' x' + item.quantity + '</span><strong>' + total.toLocaleString('vi-VN') + 'đ</strong></div>';
+        return '<div><span>' + escapeHtml(item.ten_banh) + ' x' + escapeHtml(item.quantity) + '</span><strong>' + total.toLocaleString('vi-VN') + 'đ</strong></div>';
       }).join('');
     }
     detailEl.innerHTML =
-      '<h6>Chi tiết đơn #' + detail.id + '</h6>' +
+      '<h6>Chi tiết đơn #' + escapeHtml(detail.id) + '</h6>' +
       '<div class="user-orders-meta">' +
-      '<div><strong>Người nhận:</strong> ' + detail.recipient_name + '</div>' +
-      '<div><strong>SĐT:</strong> ' + detail.phone + '</div>' +
-      '<div><strong>Địa chỉ:</strong> ' + detail.address + '</div>' +
-      (detail.note ? '<div><strong>Ghi chú:</strong> ' + detail.note + '</div>' : '') +
-      '<div><strong>Phương thức:</strong> ' + detail.payment_method + '</div>' +
-      '<div><strong>Trạng thái:</strong> ' + formatStatus(detail.status) + '</div>' +
-      '<div><strong>Ngày đặt:</strong> ' + new Date(detail.created_at).toLocaleString('vi-VN') + '</div>' +
+      '<div><strong>Người nhận:</strong> ' + escapeHtml(detail.recipient_name) + '</div>' +
+      '<div><strong>SĐT:</strong> ' + escapeHtml(detail.phone) + '</div>' +
+      '<div><strong>Địa chỉ:</strong> ' + escapeHtml(detail.address) + '</div>' +
+      (detail.note ? '<div><strong>Ghi chú:</strong> ' + escapeHtml(detail.note) + '</div>' : '') +
+      '<div><strong>Phương thức:</strong> ' + escapeHtml(detail.payment_method) + '</div>' +
+      '<div><strong>Trạng thái:</strong> ' + escapeHtml(formatStatus(detail.status)) + '</div>' +
+      '<div><strong>Ngày đặt:</strong> ' + escapeHtml(new Date(detail.created_at).toLocaleString('vi-VN')) + '</div>' +
       '<div><strong>Tổng tiền:</strong> ' + Number(detail.total_amount).toLocaleString('vi-VN') + 'đ</div>' +
       '</div>' +
       '<div class="user-orders-items">' + itemsHtml + '</div>';
@@ -168,11 +180,11 @@ render_modal('userOrdersModal', 'Đơn hàng của khách', $userOrdersBodyHtml,
     orders.forEach(function (order) {
       var dateText = new Date(order.created_at).toLocaleString('vi-VN');
       html += '<tr>'
-        + '<td>#' + order.id + '</td>'
-        + '<td>' + dateText + '</td>'
+        + '<td>#' + escapeHtml(order.id) + '</td>'
+        + '<td>' + escapeHtml(dateText) + '</td>'
         + '<td>' + Number(order.total_amount).toLocaleString('vi-VN') + 'đ</td>'
-        + '<td>' + formatStatus(order.status) + '</td>'
-        + '<td><button type="button" class="btn btn-ghost user-order-detail-btn" data-order-id="' + order.id + '">Chi tiết</button></td>'
+        + '<td>' + escapeHtml(formatStatus(order.status)) + '</td>'
+        + '<td><button type="button" class="btn btn-ghost user-order-detail-btn" data-order-id="' + escapeHtml(order.id) + '">Chi tiết</button></td>'
         + '</tr>';
     });
     html += '</tbody></table>';

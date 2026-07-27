@@ -107,14 +107,17 @@ tbody tr:hover { background: var(--surface-2); }
  * ported from legacy admin.php .user-orders-* rules (L1320-1452), rebuilt
  * on design tokens instead of the legacy hardcoded hex colors. */
 #userOrdersModal .confirm-modal__panel { max-width: 920px; }
+#userOrdersModal .confirm-modal__body {
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+}
 .user-orders-layout {
   display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px;
-  max-height: 60vh;
+  height: min(62vh, 560px); min-height: 280px; min-width: 0; overflow: hidden;
 }
-#userOrdersBody { min-width: 0; overflow-y: auto; }
+#userOrdersBody { min-width: 0; min-height: 0; overflow-y: auto; }
 .user-orders-detail {
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 14px; overflow-y: auto; min-width: 0;
+  padding: 14px; overflow-y: auto; min-width: 0; min-height: 0;
 }
 .user-orders-detail h6 { margin: 0 0 10px; font-size: 13.5px; font-weight: 700; }
 .user-orders-meta { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
@@ -125,6 +128,9 @@ tbody tr:hover { background: var(--surface-2); }
 .user-orders-table .user-order-detail-btn { padding: 4px 10px; font-size: 12px; }
 .user-orders-empty { color: var(--muted); margin: 8px 0 0; }
 @media (max-width: 720px) {
-  .user-orders-layout { grid-template-columns: 1fr; max-height: none; }
+  #userOrdersModal .confirm-modal__body { overflow-y: auto; }
+  .user-orders-layout {
+    grid-template-columns: 1fr; height: auto; min-height: 0; max-height: none; overflow: visible;
+  }
   #userOrdersBody, .user-orders-detail { max-height: 32vh; }
 }

@@ -302,7 +302,14 @@ $productCode = '#' . (int) $selected['id'];
 $safeDescriptionHtml = '';
 $descriptionExcerpt = 'Thông tin chi tiết sẽ được cập nhật sớm.';
 if (!empty($selected['mo_ta'])) {
-    $decodedDescription = html_entity_decode($selected['mo_ta'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $decodedDescription = (string) $selected['mo_ta'];
+    for ($i = 0; $i < 3; $i++) {
+        $nextDescription = html_entity_decode($decodedDescription, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        if ($nextDescription === $decodedDescription) {
+            break;
+        }
+        $decodedDescription = $nextDescription;
+    }
     $safeDescriptionHtml = strip_tags(
         $decodedDescription,
         '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>'

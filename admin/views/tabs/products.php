@@ -28,10 +28,35 @@ foreach ($productImages as $imgRow) {
     $productImageMap[(int) $imgRow['product_id']][] = $imgRow;
 }
 
+if (!function_exists('admin_product_description_text')) {
+    function admin_product_description_text($value): string
+    {
+        $text = (string) ($value ?? '');
+        for ($i = 0; $i < 3; $i++) {
+            $decoded = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($decoded === $text) {
+                break;
+            }
+            $text = $decoded;
+        }
+
+        $text = (string) preg_replace('/<\s*br\s*\/?\s*>/i', "\n", $text);
+        $text = (string) preg_replace('/<\s*\/p\s*>/i', "\n\n", $text);
+        $text = (string) preg_replace('/<\s*li\b[^>]*>/i', "- ", $text);
+        $text = (string) preg_replace('/<\s*\/li\s*>/i', "\n", $text);
+        $text = strip_tags($text);
+        $text = (string) preg_replace('/[ \t]+\r?\n/u', "\n", $text);
+        $text = (string) preg_replace('/(?:\r?\n){3,}/u', "\n\n", $text);
+
+        return trim($text);
+    }
+}
+
 $rowsHtml = '';
 foreach ($products as $p) {
     $productId = (int) $p['id'];
     $img = buildImageUrl((string) $p['hinh_anh']);
+    $descriptionText = admin_product_description_text($p['mo_ta'] ?? '');
 
     $galleryHtml = '';
     if (!empty($productImageMap[$productId])) {
@@ -57,7 +82,7 @@ foreach ($products as $p) {
         . '<td>' . htmlspecialchars((string) $p['ten_banh']) . '</td>'
         . '<td>' . htmlspecialchars((string) $p['loai']) . '</td>'
         . '<td style="font-weight:700;">' . number_format((float) $p['gia'], 0, ',', '.') . ' VNĐ</td>'
-        . '<td>' . (!empty($p['mo_ta']) ? 'Có mô tả' : 'Chưa có') . '</td>'
+        . '<td>' . ($descriptionText !== '' ? 'Có mô tả' : 'Chưa có') . '</td>'
         . '<td>' . $galleryHtml . '</td>'
         . '<td>'
         . '<button type="button" class="btn btn-ghost product-edit-btn"'
@@ -65,7 +90,7 @@ foreach ($products as $p) {
         . ' data-name="' . htmlspecialchars((string) $p['ten_banh'], ENT_QUOTES) . '"'
         . ' data-type="' . htmlspecialchars((string) $p['loai'], ENT_QUOTES) . '"'
         . ' data-price="' . (int) $p['gia'] . '"'
-        . ' data-desc="' . htmlspecialchars((string) ($p['mo_ta'] ?? ''), ENT_QUOTES) . '"'
+        . ' data-desc="' . htmlspecialchars($descriptionText, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"'
         . ' data-image="' . htmlspecialchars((string) $p['hinh_anh'], ENT_QUOTES) . '"'
         . ' title="Sửa sản phẩm"><i class="bi bi-pencil"></i></button> '
         . '<button type="button" class="btn btn-danger" data-delete-url="' . htmlspecialchars($deleteUrl) . '" data-confirm-text="Sản phẩm sẽ bị xóa vĩnh viễn và không thể khôi phục." title="Xóa sản phẩm"><i class="bi bi-trash"></i></button>'

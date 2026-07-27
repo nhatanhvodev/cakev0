@@ -80,6 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/handlers/reviews.php';
         handle_update_review_status($conn);
     }
+    if (isset($_POST['update_password_request_status'])) {
+        require_once __DIR__ . '/handlers/password_requests.php';
+        handle_update_password_request_status($conn);
+    }
 }
 
 $tab = $_GET['tab'] ?? 'dashboard';

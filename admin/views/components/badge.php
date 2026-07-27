@@ -6,6 +6,7 @@ function render_badge(string $status): string {
     'processing' => ['info','Đang xử lý'], 'pending' => ['warn','Chờ duyệt'],
     'cancelled' => ['danger','Đã huỷ'], 'canceled' => ['danger','Đã huỷ'],
     'review-approved' => ['success','Đã duyệt'], 'rejected' => ['danger','Đã từ chối'],
+    'request-approved' => ['success','Đã duyệt'],
   ];
   $key = strtolower(trim($status));
   [$cls,$label] = $map[$key] ?? ['info', $status];

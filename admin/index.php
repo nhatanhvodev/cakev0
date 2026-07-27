@@ -30,6 +30,10 @@ if (isset($_GET['delete_order_id'])) {
     require_once __DIR__ . '/handlers/orders.php';
     handle_delete_order($conn);
 }
+if (isset($_GET['delete_product_id'])) {
+    require_once __DIR__ . '/handlers/products.php';
+    handle_delete_product($conn);
+}
 
 // POST dispatch — CSRF-checked, then routed to handlers/<domain>.php per action.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -51,6 +55,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_order_statuses'])) {
         require_once __DIR__ . '/handlers/orders.php';
         handle_update_order_statuses($conn);
+    }
+    if (isset($_POST['add_product'])) {
+        require_once __DIR__ . '/handlers/products.php';
+        handle_add_product($conn);
+    }
+    if (isset($_POST['update_product'])) {
+        require_once __DIR__ . '/handlers/products.php';
+        handle_update_product($conn);
+    }
+    if (isset($_POST['delete_product_image'])) {
+        require_once __DIR__ . '/handlers/products.php';
+        handle_delete_product_image($conn);
     }
 }
 

@@ -14,7 +14,6 @@ $orders = $conn->query(
 )->fetch_all(MYSQLI_ASSOC);
 
 $total_revenue = 0;
-$pending_count = 0;
 $js_dates = '[]';
 $js_revenues = '[]';
 $chart_view = $_GET['chart_view'] ?? '7days';
@@ -74,9 +73,6 @@ foreach ($orders as $o) {
             }
         }
     }
-    if (in_array($status, ['pending', 'cod_not_deposited'], true)) {
-        $pending_count++;
-    }
 }
 
 // Chuyển dữ liệu sang JSON để JS sử dụng
@@ -122,19 +118,15 @@ $pendingCount = (int) ($conn->query("SELECT COUNT(*) c FROM orders WHERE LOWER(s
 $newUsers = (int) ($conn->query("SELECT COUNT(*) c FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)")->fetch_assoc()['c'] ?? 0);
 
 // =====================================================================
-// Recent orders — columns confirmed against admin.php L959 (orders o LEFT
-// JOIN users u ON o.user_id = u.id) and L971-978/2094-2096 (o.id,
-// o.recipient_name, o.total_amount, o.status, o.created_at; u.username as
-// display name, falling back to recipient_name when there is no account —
-// mirrors legacy's `$o['username'] ?? 'Khách lẻ'` at admin.php L2095).
+// Recent orders — reuses $orders (already selected as o.*, u.username,
+// u.email, ordered o.created_at DESC further up) instead of a second query.
+// Columns confirmed against admin.php L959 (orders o LEFT JOIN users u ON
+// o.user_id = u.id) and L971-978/2094-2096 (o.id, o.recipient_name,
+// o.total_amount, o.status, o.created_at; u.username as display name,
+// falling back to recipient_name when there is no account — mirrors
+// legacy's `$o['username'] ?? 'Khách lẻ'` at admin.php L2095).
 // =====================================================================
-$recentOrders = $conn->query(
-    "SELECT o.id, o.recipient_name, u.username, o.total_amount, o.status, o.created_at
-     FROM orders o
-     LEFT JOIN users u ON o.user_id = u.id
-     ORDER BY o.created_at DESC
-     LIMIT 8"
-)->fetch_all(MYSQLI_ASSOC);
+$recentOrders = array_slice($orders, 0, 8);
 
 $rowsHtml = '';
 foreach ($recentOrders as $o) {
@@ -150,7 +142,7 @@ foreach ($recentOrders as $o) {
 ?>
 <div class="kpi-row">
   <?php
-    render_stat_card('Doanh thu tháng', number_format($total_revenue, 0, ',', '.') . ' VNĐ', 'so với kỳ trước', 'up', 'bi-cash-coin');
+    render_stat_card('Tổng doanh thu', number_format($total_revenue, 0, ',', '.') . ' VNĐ', 'so với kỳ trước', 'up', 'bi-cash-coin');
     render_stat_card('Đơn hàng', number_format($orderCount, 0, ',', '.'), 'tổng đơn', 'up', 'bi-cart-check');
     render_stat_card('Người dùng mới', number_format($newUsers, 0, ',', '.'), '30 ngày qua', 'up', 'bi-people');
     render_stat_card('Đơn chờ xử lý', number_format($pendingCount, 0, ',', '.'), 'cần duyệt', $pendingCount > 0 ? 'down' : 'up', 'bi-hourglass-split');

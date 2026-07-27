@@ -3,6 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bảng điều khiển | Gấu Bakery</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<script>(function(){var t=localStorage.getItem('admin-theme');if(t){document.documentElement.setAttribute('data-theme',t);}})();</script>
 <link rel="stylesheet" href="../assets/css/admin/tokens.css">
 <link rel="stylesheet" href="../assets/css/admin/layout.css">
 <link rel="stylesheet" href="../assets/css/admin/components.css">

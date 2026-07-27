@@ -183,6 +183,13 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
+$legacyTab = preg_replace('/[^a-z0-9-]/i', '', (string) ($_GET['tab'] ?? 'dashboard'));
+if ($legacyTab === '') {
+    $legacyTab = 'dashboard';
+}
+header('Location: index.php?tab=' . rawurlencode($legacyTab) . '#' . rawurlencode($legacyTab));
+exit;
+
 // 3. XỬ LÝ LOGIC (POST REQUESTS)
 
 

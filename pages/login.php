@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 // 3. Kiểm tra nếu đã đăng nhập thì chuyển hướng ngay
 if (isset($_SESSION['user_id'])) {
     if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-        header("Location: " . base_url('admin/admin.php'));
+        header("Location: " . base_url('admin/index.php'));
     } else {
         header("Location: " . base_url('index.php'));
     }
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['role'] = 'admin';
                     $_SESSION['admin_toast'] = ['msg' => 'Đăng nhập admin thành công!', 'type' => 'success'];
                     unset($_SESSION['csrf_token']);
-                    header("Location: /cakev0/admin/admin.php");
+                    header("Location: " . base_url('admin/index.php'));
                     exit;
                 }
             }
@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Chuyển hướng theo quyền hạn
             if ($user['role'] === 'admin') {
-                header("Location: /cakev0/admin/admin.php");
+                header("Location: " . base_url('admin/index.php'));
             } else {
                 header("Location: /cakev0/index.php");
             }

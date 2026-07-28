@@ -11,6 +11,7 @@ require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
 require_once '../includes/order_helpers.php';
 require_once '../includes/auth_helpers.php';
+require_once '../includes/notifications.php';
 //
 $conn->set_charset("utf8mb4"); //
 
@@ -510,6 +511,7 @@ if (isset($_POST['cancel_order'])) {
             $stmt->bind_param('iis', $orderId, $user_id, $paymentMethod);
             $stmt->execute();
             if ($stmt->affected_rows > 0) {
+                notifyOrderStatusChanged($conn, $user_id, $orderId, (string) ($cancelOrder['status'] ?? ''), 'cancelled');
                 $_SESSION['success'] = 'Đã hủy đơn hàng thành công.';
             } else {
                 $_SESSION['error'] = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';

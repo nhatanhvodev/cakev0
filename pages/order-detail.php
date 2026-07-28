@@ -2,6 +2,7 @@
 session_start();
 require_once '../config/connect.php';
 require_once '../includes/order_helpers.php';
+require_once '../includes/notifications.php';
 if ($conn->connect_error) die("Lỗi DB");
 
 if (!isset($_SESSION['user_id'])) {
@@ -160,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order'])) {
         $stmt->bind_param('iis', $order_id, $user_id, $paymentMethod);
         $stmt->execute();
         if ($stmt->affected_rows > 0) {
+            notifyOrderStatusChanged($conn, $user_id, $order_id, (string) ($order['status'] ?? ''), 'cancelled');
             $_SESSION['review_flash'] = 'Đã hủy đơn hàng thành công.';
         } else {
             $_SESSION['review_flash'] = 'Không thể hủy đơn. Đơn có thể đã được xử lý.';

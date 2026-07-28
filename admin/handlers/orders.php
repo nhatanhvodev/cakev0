@@ -9,6 +9,7 @@
  * intentionally omitted here (kept the CSRF-check + toast + redirect contract only).
  */
 require_once __DIR__ . '/../../includes/order_helpers.php';
+require_once __DIR__ . '/../../includes/notifications.php';
 
 function handle_update_order_statuses(mysqli $conn): void {
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
@@ -28,7 +29,7 @@ function handle_update_order_statuses(mysqli $conn): void {
     }
 
     $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-    $paymentStmt = $conn->prepare("SELECT payment_method, status FROM orders WHERE id = ? LIMIT 1");
+    $paymentStmt = $conn->prepare("SELECT user_id, payment_method, status FROM orders WHERE id = ? LIMIT 1");
     $updated = 0;
 
     foreach ($selected as $id) {
@@ -59,6 +60,14 @@ function handle_update_order_statuses(mysqli $conn): void {
         if ($shouldSendInvoice) {
             send_order_invoice_email($conn, $id);
         }
+
+        notifyOrderStatusChanged(
+            $conn,
+            (int) ($orderMeta['user_id'] ?? 0),
+            $id,
+            (string) ($orderMeta['status'] ?? ''),
+            $status
+        );
 
         $updated++;
     }
@@ -92,6 +101,8 @@ function handle_delete_order(mysqli $conn): void {
         $stmt->bind_param("i", $orderId);
         $stmt->execute();
         $stmt->close();
+
+        deleteOrderNotifications($conn, $orderId);
 
         $stmt = $conn->prepare("DELETE FROM orders WHERE id = ?");
         $stmt->bind_param("i", $orderId);

@@ -7,6 +7,7 @@ session_start();
 require_once '../config/connect.php';
 require_once '../config/coupons.php';
 require_once '../includes/checkout_helpers.php';
+require_once '../includes/notifications.php';
 $pageTitle = 'Thanh toán';
 $extraLinks = '<link rel="stylesheet" href="/cakev0/assets/css/style.css">';
 
@@ -142,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $conn->commit(); // Xác nhận giao dịch
+            notifyOrderCreated($conn, (int) $user_id, (int) $order_id, (string) $orderStatus, (float) $total);
             
             // Xóa session CSRF cũ
             unset($_SESSION['csrf_token']);

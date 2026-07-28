@@ -3,6 +3,7 @@ require_once("config.php");
 require_once("../config/connect.php");
 require_once("../config/coupons.php");
 require_once("../includes/invoice_mailer.php");
+require_once("../includes/notifications.php");
 
 ensureCartCouponInfrastructure($conn);
 
@@ -149,6 +150,13 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                     }
 
                     $conn->commit();
+                    notifyOrderStatusChanged(
+                        $conn,
+                        (int) ($orderMeta['user_id'] ?? 0),
+                        (int) $order_id,
+                        $previousStatus,
+                        'paid'
+                    );
 
                     if ($order_id > 0 && !send_order_invoice_email($conn, (int) $order_id)) {
                         error_log('Invoice Mail Error: Failed to send VNPAY invoice for order #' . $order_id);
@@ -165,9 +173,24 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
                 $toast = ['msg' => 'Thanh toán VNPAY thành công!', 'type' => 'success'];
             } else {
                 // Thất bại
+                $stmt_order = $conn->prepare("SELECT user_id, status FROM orders WHERE id = ? LIMIT 1");
+                $stmt_order->bind_param("i", $order_id);
+                $stmt_order->execute();
+                $orderMeta = $stmt_order->get_result()->fetch_assoc();
+                $stmt_order->close();
+                $previousStatus = (string) ($orderMeta['status'] ?? '');
+
                 $stmt = $conn->prepare("UPDATE orders SET status = 'failed' WHERE id = ?");
                 $stmt->bind_param("i", $order_id);
                 $stmt->execute();
+                $stmt->close();
+                notifyOrderStatusChanged(
+                    $conn,
+                    (int) ($orderMeta['user_id'] ?? 0),
+                    (int) $order_id,
+                    $previousStatus,
+                    'failed'
+                );
 
                 echo "<div class='error'>❌</div>";
                 echo "<h2>Thanh toán thất bại!</h2>";

@@ -6,7 +6,18 @@ $baseConfigPath = dirname(__DIR__) . '/config/config.php';
 if (!defined('BASE_URL') && file_exists($baseConfigPath)) {
   require_once $baseConfigPath;
 }
+require_once __DIR__ . '/notifications.php';
 $role = $_SESSION['role'] ?? 'guest';
+$isNotificationUser = isset($_SESSION['user_id']) && (int) $_SESSION['user_id'] > 0;
+$headerNotificationItems = [];
+$headerUnreadNotificationCount = 0;
+$notificationCsrf = '';
+if ($isNotificationUser) {
+  if (empty($_SESSION['notification_csrf'])) {
+    $_SESSION['notification_csrf'] = bin2hex(random_bytes(32));
+  }
+  $notificationCsrf = (string) $_SESSION['notification_csrf'];
+}
 
 // Lấy số loại sản phẩm (số dòng) trong giỏ hàng
 $cartItemCount = 0;
@@ -55,6 +66,9 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
       $stmtFavoriteCount->close();
     }
   }
+
+  $headerNotificationItems = fetchUserNotifications($conn, $uid, 8);
+  $headerUnreadNotificationCount = countUnreadUserNotifications($conn, $uid);
 
   if ($passwordResetTableReady) {
     $stmtApprovedReset = $conn->prepare(
@@ -860,12 +874,13 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     #user-actions a,
-    .notify-box > i {
+    .notify-trigger {
       font-size: 17px;
     }
 
     .cart-badge,
-    .favorite-badge {
+    .favorite-badge,
+    .notify-badge {
       top: -6px;
       right: -8px;
       min-width: 16px;
@@ -948,8 +963,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     .notify-list {
-      right: -6px;
-      min-width: min(230px, calc(100vw - 24px));
+      right: -8px;
+      width: min(320px, calc(100vw - 20px));
     }
   }
 
@@ -973,7 +988,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     #user-actions a,
-    .notify-box > i {
+    .notify-trigger {
       font-size: 16px;
     }
 
@@ -991,47 +1006,220 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     transform: scale(1.3);
   }
 
+  .notify-badge.pop {
+    transform: scale(1.3);
+  }
+
   .notify-box {
     position: relative;
     display: inline-flex;
     align-items: center;
   }
 
-  .notify-box > i {
+  .notify-trigger {
+    position: relative;
+    width: 24px;
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    padding: 0;
+    border-radius: 999px;
+    background: transparent;
     color: var(--header-text);
     font-size: 20px;
     cursor: pointer;
-    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, background 0.2s ease, transform 0.12s ease;
   }
 
-  .notify-box > i:hover {
+  .notify-trigger:hover,
+  .notify-trigger[aria-expanded="true"] {
     color: var(--header-accent);
+    background: rgba(74, 29, 31, 0.06);
+  }
+
+  .notify-trigger:active {
+    transform: scale(0.96);
+  }
+
+  .notify-trigger:focus-visible,
+  .notify-action:focus-visible,
+  .notify-item:focus-visible {
+    outline: 2px solid rgba(106, 45, 34, 0.35);
+    outline-offset: 3px;
+  }
+
+  .notify-badge {
+    position: absolute;
+    top: 3px;
+    right: 1px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #d45445;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 0 0 2px #fff;
+    transition: transform 0.2s ease;
   }
 
   .notify-list {
-    display: none;
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    min-width: 230px;
+    width: 320px;
+    max-width: calc(100vw - 24px);
     background: #fff;
     border: 1px solid rgba(74, 29, 31, 0.15);
-    border-radius: 12px;
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+    border-radius: 16px;
+    box-shadow: 0 18px 42px rgba(47, 20, 21, 0.18);
     padding: 8px;
     z-index: 1200;
+    transform-origin: top right;
+    animation: notifyPanelIn 160ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .notify-list div {
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 13px;
+  .notify-list[hidden] {
+    display: none;
+  }
+
+  @keyframes notifyPanelIn {
+    from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .notify-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px 10px;
     color: #4a1d1f;
+    border-bottom: 1px solid rgba(74, 29, 31, 0.1);
+  }
+
+  .notify-head strong {
+    font-size: 13px;
+  }
+
+  .notify-head small {
+    display: block;
+    margin-top: 2px;
+    color: #8d7e73;
+    font-size: 11px;
+  }
+
+  .notify-action {
+    min-height: 34px;
+    border: 0;
+    border-radius: 999px;
+    padding: 0 10px;
+    background: #fff3e7;
+    color: #6a2d22;
+    font: 700 11px/1 'Poppins', sans-serif;
+    cursor: pointer;
+  }
+
+  .notify-action[hidden] {
+    display: none;
+  }
+
+  .notify-items {
+    display: grid;
+    gap: 4px;
+    max-height: min(420px, calc(100vh - 160px));
+    overflow-y: auto;
+    padding: 6px 0 0;
+  }
+
+  .notify-item,
+  .notify-empty {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    color: #4a1d1f;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .notify-item {
+    position: relative;
+    background: transparent;
+    transition: background 0.15s ease;
+  }
+
+  .notify-item:hover {
+    background: #fff6ed;
+  }
+
+  .notify-item.is-unread {
+    background: #fff1e4;
+  }
+
+  .notify-item.is-unread::after {
+    content: "";
+    position: absolute;
+    top: 14px;
+    right: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d45445;
+  }
+
+  .notify-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: #f6eadf;
+    color: #8b4513;
+  }
+
+  .notify-copy {
+    min-width: 0;
+    padding-right: 8px;
+  }
+
+  .notify-copy strong {
+    display: block;
+    overflow: hidden;
+    color: #2b2020;
+    font-size: 13px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .notify-list div + div {
+  .notify-copy span {
+    display: block;
+    margin-top: 2px;
+    color: #756860;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .notify-copy time {
+    display: block;
     margin-top: 4px;
+    color: #9a8b80;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .notify-empty {
+    color: #756860;
+    align-items: center;
   }
 
 </style>
@@ -1063,16 +1251,71 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
             <span id="header-cart-badge" class="cart-badge"
               style="<?= $cartItemCount > 0 ? '' : 'display:none;' ?>"><?= $cartItemCount ?></span>
           </a>
-          <div class="notify-box">
-            <i class="fa-solid fa-bell" onclick="toggleNotify()"></i>
-            <div class="notify-list" id="notifyList">
-              <?php if ($role === 'admin'): ?>
-                <div><i class="fa-solid fa-box-open" style="color: #8b4513;"></i> Có đơn hàng mới</div>
-              <?php elseif ($role === 'user'): ?>
-                <div><i class="fa-solid fa-truck-fast" style="color: #8b4513;"></i> Đơn hàng đang giao</div>
-              <?php else: ?>
-                <div><i class="fa-solid fa-circle-info" style="color: #8b4513;"></i> Cập nhật mới từ Gấu Bakery</div>
-              <?php endif; ?>
+          <div class="notify-box" id="headerNotifyBox">
+            <button type="button"
+                    class="notify-trigger"
+                    id="headerNotifyBtn"
+                    aria-label="Thông báo"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="notifyList"
+                    data-csrf="<?= htmlspecialchars($notificationCsrf, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+              <i class="fa-solid fa-bell" aria-hidden="true"></i>
+              <span id="header-notify-badge"
+                    class="notify-badge"
+                    <?= $headerUnreadNotificationCount > 0 ? '' : 'hidden' ?>>
+                <?= $headerUnreadNotificationCount > 9 ? '9+' : $headerUnreadNotificationCount ?>
+              </span>
+            </button>
+            <div class="notify-list" id="notifyList" hidden>
+              <div class="notify-head">
+                <span>
+                  <strong>Thông báo</strong>
+                  <small id="headerNotifySummary">
+                    <?= $isNotificationUser
+                      ? ($headerUnreadNotificationCount > 0 ? $headerUnreadNotificationCount . ' thông báo chưa đọc' : 'Không có thông báo chưa đọc')
+                      : ($role === 'admin' ? 'Xem thông báo vận hành trong admin' : 'Đăng nhập để theo dõi đơn hàng') ?>
+                  </small>
+                </span>
+                <button type="button"
+                        class="notify-action"
+                        id="headerNotifyMarkAll"
+                        <?= $headerUnreadNotificationCount > 0 ? '' : 'hidden' ?>>
+                  Đã đọc
+                </button>
+              </div>
+              <div class="notify-items" id="headerNotifyItems">
+                <?php if (!$isNotificationUser): ?>
+                  <a class="notify-empty" href="<?= $role === 'admin' ? BASE_URL . 'admin/index.php' : BASE_URL . 'pages/login.php' ?>">
+                    <span class="notify-icon"><i class="fa-solid <?= $role === 'admin' ? 'fa-gauge-high' : 'fa-user-lock' ?>" aria-hidden="true"></i></span>
+                    <span class="notify-copy">
+                      <strong><?= $role === 'admin' ? 'Thông báo vận hành' : 'Đăng nhập tài khoản' ?></strong>
+                      <span><?= $role === 'admin' ? 'Mở dashboard để xem đơn hàng, liên hệ và hội thoại cần xử lý.' : 'Theo dõi trạng thái đơn hàng và cập nhật bảo mật tại đây.' ?></span>
+                    </span>
+                  </a>
+                <?php elseif (!empty($headerNotificationItems)): ?>
+                  <?php foreach ($headerNotificationItems as $notice): ?>
+                    <a class="notify-item <?= empty($notice['is_read']) ? 'is-unread' : '' ?>"
+                       href="<?= htmlspecialchars((string) ($notice['href'] ?? '#'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                       data-notify-id="<?= (int) $notice['id'] ?>">
+                      <span class="notify-icon"><i class="<?= htmlspecialchars((string) ($notice['icon'] ?? 'fa-solid fa-bell'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" aria-hidden="true"></i></span>
+                      <span class="notify-copy">
+                        <strong><?= htmlspecialchars((string) $notice['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>
+                        <span><?= htmlspecialchars((string) $notice['message'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></span>
+                        <time datetime="<?= htmlspecialchars((string) $notice['created_at'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"><?= htmlspecialchars((string) $notice['created_label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></time>
+                      </span>
+                    </a>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <div class="notify-empty">
+                    <span class="notify-icon"><i class="fa-regular fa-bell" aria-hidden="true"></i></span>
+                    <span class="notify-copy">
+                      <strong>Chưa có thông báo</strong>
+                      <span>Các cập nhật đơn hàng và tài khoản sẽ xuất hiện tại đây.</span>
+                    </span>
+                  </div>
+                <?php endif; ?>
+              </div>
             </div>
           </div>
         </div>
@@ -1267,10 +1510,178 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     });
   });
 
-  function toggleNotify() {
-    const box = document.getElementById("notifyList");
-    box.style.display = box.style.display === "block" ? "none" : "block";
-  }
+  (function () {
+    const notifyBox = document.getElementById('headerNotifyBox');
+    const notifyBtn = document.getElementById('headerNotifyBtn');
+    const notifyPanel = document.getElementById('notifyList');
+    const notifyBadge = document.getElementById('header-notify-badge');
+    const notifySummary = document.getElementById('headerNotifySummary');
+    const notifyItems = document.getElementById('headerNotifyItems');
+    const markAllBtn = document.getElementById('headerNotifyMarkAll');
+    const endpoint = <?= json_encode(rtrim(BASE_URL, '/') . '/api/notifications.php') ?>;
+    const csrfToken = notifyBtn ? notifyBtn.dataset.csrf : '';
+    const canUseNotificationApi = <?= $isNotificationUser ? 'true' : 'false' ?>;
+    let unreadCount = <?= (int) $headerUnreadNotificationCount ?>;
+
+    if (!notifyBox || !notifyBtn || !notifyPanel) return;
+
+    function setNotifyOpen(open) {
+      notifyPanel.hidden = !open;
+      notifyBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function updateUnread(count) {
+      unreadCount = Math.max(0, parseInt(count, 10) || 0);
+      if (notifyBadge) {
+        notifyBadge.hidden = unreadCount <= 0;
+        notifyBadge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+        if (unreadCount > 0) {
+          notifyBadge.classList.add('pop');
+          setTimeout(function () { notifyBadge.classList.remove('pop'); }, 260);
+        }
+      }
+      if (markAllBtn) markAllBtn.hidden = unreadCount <= 0;
+      if (notifySummary) {
+        notifySummary.textContent = unreadCount > 0
+          ? unreadCount + ' thông báo chưa đọc'
+          : 'Không có thông báo chưa đọc';
+      }
+    }
+
+    function renderNotifications(items) {
+      if (!notifyItems || !canUseNotificationApi) return;
+      notifyItems.innerHTML = '';
+
+      if (!Array.isArray(items) || items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'notify-empty';
+        empty.innerHTML = '<span class="notify-icon"><i class="fa-regular fa-bell" aria-hidden="true"></i></span>' +
+          '<span class="notify-copy"><strong>Chưa có thông báo</strong><span>Các cập nhật đơn hàng và tài khoản sẽ xuất hiện tại đây.</span></span>';
+        notifyItems.appendChild(empty);
+        return;
+      }
+
+      items.forEach(function (notice) {
+        const item = document.createElement('a');
+        item.className = 'notify-item' + (notice.is_read ? '' : ' is-unread');
+        item.href = notice.href || '#';
+        item.dataset.notifyId = String(notice.id || '');
+
+        const icon = document.createElement('span');
+        icon.className = 'notify-icon';
+        const iconNode = document.createElement('i');
+        iconNode.className = notice.icon || 'fa-solid fa-bell';
+        iconNode.setAttribute('aria-hidden', 'true');
+        icon.appendChild(iconNode);
+
+        const copy = document.createElement('span');
+        copy.className = 'notify-copy';
+        const title = document.createElement('strong');
+        title.textContent = notice.title || 'Thông báo';
+        const message = document.createElement('span');
+        message.textContent = notice.message || '';
+        const time = document.createElement('time');
+        time.dateTime = notice.created_at || '';
+        time.textContent = notice.created_label || '';
+
+        copy.appendChild(title);
+        copy.appendChild(message);
+        copy.appendChild(time);
+        item.appendChild(icon);
+        item.appendChild(copy);
+        notifyItems.appendChild(item);
+      });
+    }
+
+    function postNotification(action, payload, keepalive) {
+      if (!csrfToken) return Promise.resolve(null);
+      const body = Object.assign({ action: action, csrf_token: csrfToken }, payload || {});
+      return fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        keepalive: !!keepalive,
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (response) {
+        return response.ok ? response.json() : null;
+      }).then(function (data) {
+        if (data && typeof data.unread_count !== 'undefined') {
+          updateUnread(data.unread_count);
+        }
+        if (data && Array.isArray(data.notifications) && !keepalive) {
+          renderNotifications(data.notifications);
+        }
+        return data;
+      }).catch(function () {
+        return null;
+      });
+    }
+
+    function refreshNotifications() {
+      if (!canUseNotificationApi) return;
+      fetch(endpoint, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      }).then(function (response) {
+        return response.ok ? response.json() : null;
+      }).then(function (data) {
+        if (!data) return;
+        if (typeof data.unread_count !== 'undefined') updateUnread(data.unread_count);
+        if (Array.isArray(data.notifications)) renderNotifications(data.notifications);
+      }).catch(function () {});
+    }
+
+    window.toggleNotify = function () {
+      const shouldOpen = notifyPanel.hidden;
+      setNotifyOpen(shouldOpen);
+      if (shouldOpen) refreshNotifications();
+    };
+
+    notifyBtn.addEventListener('click', function (event) {
+      event.stopPropagation();
+      window.toggleNotify();
+    });
+
+    notifyBox.addEventListener('click', function (event) {
+      event.stopPropagation();
+    });
+
+    document.addEventListener('click', function () {
+      setNotifyOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !notifyPanel.hidden) {
+        setNotifyOpen(false);
+        notifyBtn.focus();
+      }
+    });
+
+    if (notifyItems) {
+      notifyItems.addEventListener('click', function (event) {
+        const item = event.target.closest('.notify-item[data-notify-id]');
+        if (!item) return;
+        const id = parseInt(item.dataset.notifyId || '0', 10);
+        if (id > 0 && item.classList.contains('is-unread')) {
+          item.classList.remove('is-unread');
+          updateUnread(unreadCount - 1);
+          postNotification('mark_read', { id: id }, true);
+        }
+      });
+    }
+
+    if (markAllBtn) {
+      markAllBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        document.querySelectorAll('.notify-item.is-unread').forEach(function (item) {
+          item.classList.remove('is-unread');
+        });
+        updateUnread(0);
+        postNotification('mark_all_read');
+      });
+    }
+  })();
 </script>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

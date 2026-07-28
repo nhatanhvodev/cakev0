@@ -1,5 +1,7 @@
 <?php
 // includes/internal_order_api.php
+require_once __DIR__ . '/notifications.php';
+
 function internal_api_verify_signature(string $body, ?string $signature, string $secret): bool
 {
     if ($signature === null || $signature === '' || $secret === '') {
@@ -89,6 +91,7 @@ function create_order_internal(mysqli $conn, array $p): array
         $insItem->close();
         $decStock->close();
         $conn->commit();
+        notifyOrderCreated($conn, $userId, (int) $orderId, $status, (float) $total);
         return ['order_id' => $orderId, 'total_amount' => $total, 'status' => $status];
     } catch (Throwable $e) {
         $conn->rollback();

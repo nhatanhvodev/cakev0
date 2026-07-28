@@ -5,6 +5,7 @@
  *     POST handler (admin.php L689-765)
  * The mailer dependency is loaded by admin/bootstrap.php.
  */
+require_once __DIR__ . '/../../includes/notifications.php';
 
 function handle_update_password_request_status(mysqli $conn): void
 {
@@ -62,6 +63,7 @@ function handle_update_password_request_status(mysqli $conn): void
                      <p>Tran trong,<br><strong>Gau Bakery Team</strong></p>";
 
             send_custom_mail($userEmail, $subject, $body);
+            notifyPasswordRequestResult($conn, $userId, $requestId, 'approved');
             setAdminToast("Da duyet yeu cau doi mat khau thanh cong.");
         } else {
             setAdminToast("Yeu cau khong ton tai hoac da duoc xu ly truoc do.", "warning");
@@ -69,6 +71,12 @@ function handle_update_password_request_status(mysqli $conn): void
     }
 
     if ($requestStatus === 'rejected') {
+        $stmt = $conn->prepare("SELECT user_id FROM password_reset_requests WHERE id = ? AND status = 'pending'");
+        $stmt->bind_param("i", $requestId);
+        $stmt->execute();
+        $request = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
         $stmt = $conn->prepare(
             "UPDATE password_reset_requests
              SET status = 'rejected', approved_at = NULL
@@ -80,6 +88,7 @@ function handle_update_password_request_status(mysqli $conn): void
         $stmt->close();
 
         if ($affected > 0) {
+            notifyPasswordRequestResult($conn, (int) ($request['user_id'] ?? 0), $requestId, 'rejected');
             setAdminToast("Da tu choi yeu cau doi mat khau.");
         } else {
             setAdminToast("Yeu cau khong ton tai hoac da duoc xu ly truoc do.", "warning");

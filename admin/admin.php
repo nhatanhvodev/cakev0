@@ -15,6 +15,7 @@ require_once '../config/uploadthing.php';
 require_once '../config/connect.php';
 require_once '../includes/mailer.php';
 require_once '../includes/invoice_mailer.php';
+require_once '../includes/notifications.php';
 
 ensureCartCouponInfrastructure($conn);
 
@@ -476,7 +477,7 @@ exit;
         }
 
         $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-        $paymentStmt = $conn->prepare("SELECT payment_method, status FROM orders WHERE id = ? LIMIT 1");
+        $paymentStmt = $conn->prepare("SELECT user_id, payment_method, status FROM orders WHERE id = ? LIMIT 1");
         $updated = 0;
 
         foreach ($selected as $id) {
@@ -507,6 +508,14 @@ exit;
             if ($shouldSendInvoice) {
                 send_order_invoice_email($conn, $id);
             }
+
+            notifyOrderStatusChanged(
+                $conn,
+                (int) ($orderMeta['user_id'] ?? 0),
+                $id,
+                (string) ($orderMeta['status'] ?? ''),
+                $status
+            );
 
             $updated++;
         }
@@ -744,6 +753,7 @@ exit;
                          <p>Tran trong,<br><strong>Gau Bakery Team</strong></p>";
 
                 send_custom_mail($userEmail, $subject, $body);
+                notifyPasswordRequestResult($conn, $userId, $requestId, 'approved');
                 setAdminToast("Da duyet yeu cau doi mat khau thanh cong.");
             } else {
                 setAdminToast("Yeu cau khong ton tai hoac da duoc xu ly truoc do.", "warning");
@@ -751,6 +761,12 @@ exit;
         }
 
         if ($requestStatus === 'rejected') {
+            $stmt = $conn->prepare("SELECT user_id FROM password_reset_requests WHERE id = ? AND status = 'pending'");
+            $stmt->bind_param("i", $requestId);
+            $stmt->execute();
+            $request = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
             $stmt = $conn->prepare(
                 "UPDATE password_reset_requests
                  SET status = 'rejected', approved_at = NULL
@@ -762,6 +778,7 @@ exit;
             $stmt->close();
 
             if ($affected > 0) {
+                notifyPasswordRequestResult($conn, (int) ($request['user_id'] ?? 0), $requestId, 'rejected');
                 setAdminToast("Da tu choi yeu cau doi mat khau.");
             } else {
                 setAdminToast("Yeu cau khong ton tai hoac da duoc xu ly truoc do.", "warning");
@@ -893,6 +910,8 @@ if (isset($_SESSION['admin_logged_in'])) {
             $stmt->bind_param("i", $orderId);
             $stmt->execute();
             $stmt->close();
+
+            deleteOrderNotifications($conn, $orderId);
 
             $stmt = $conn->prepare("DELETE FROM orders WHERE id = ?");
             $stmt->bind_param("i", $orderId);

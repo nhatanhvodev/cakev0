@@ -101,14 +101,14 @@ td { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 13.5px;
 tbody tr:hover { background: var(--surface-2); }
 
 .orders-panel {
-  display: flex; flex-direction: column; height: calc(100dvh - 156px);
-  min-height: 520px; overflow: hidden; position: relative;
+  display: flex; flex-direction: column; max-height: calc(100dvh - 156px);
+  min-height: 0; overflow: hidden;
 }
 .orders-form { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 10px; }
 .orders-actionbar {
   display: flex; align-items: center; justify-content: flex-end; gap: 12px;
-  width: fit-content; max-width: calc(100% - 36px);
-  position: absolute; top: 18px; right: 18px; z-index: 4;
+  align-self: flex-end; width: fit-content; max-width: 100%; margin-left: auto;
+  position: sticky; top: 0; z-index: 4;
   padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
   background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
   box-shadow: var(--shadow);
@@ -117,9 +117,9 @@ tbody tr:hover { background: var(--surface-2); }
 .orders-selection strong { color: var(--text); font-size: 13px; }
 .orders-bulk-button { white-space: nowrap; }
 .orders-bulk-button:disabled { opacity: .55; cursor: not-allowed; filter: grayscale(.2); }
-.orders-table-shell { flex: 1; min-height: 0; }
+.orders-table-shell { min-height: 0; }
 .orders-table-shell .table-scroll {
-  height: 100%; overflow: auto; border: 1px solid var(--border); border-radius: 10px;
+  max-height: calc(100dvh - 260px); overflow: auto; border: 1px solid var(--border); border-radius: 10px;
 }
 .orders-table-shell table { min-width: 1120px; }
 .orders-table-shell th {
@@ -133,8 +133,9 @@ tbody tr:hover { background: var(--surface-2); }
   background: var(--surface); color: var(--text);
 }
 @media (max-width: 760px) {
-  .orders-panel { height: calc(100dvh - 128px); min-height: 440px; padding: 12px; }
-  .orders-actionbar { align-items: stretch; flex-direction: column; position: static; width: 100%; max-width: 100%; }
+  .orders-panel { max-height: calc(100dvh - 128px); padding: 12px; }
+  .orders-actionbar { align-items: stretch; flex-direction: column; width: 100%; max-width: 100%; }
+  .orders-table-shell .table-scroll { max-height: calc(100dvh - 280px); }
   .orders-bulk-button { justify-content: center; width: 100%; }
 }
 

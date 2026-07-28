@@ -1274,9 +1274,53 @@ foreach ($orders as $order) {
                 height: min(560px, calc(100dvh - 180px));
             }
 
+            .content-card.settings-mode {
+                height: auto;
+                max-height: none;
+                overflow: visible;
+            }
+
+            .content-card:has(#settings-tab.active) {
+                height: auto;
+                max-height: none;
+                overflow: visible;
+            }
+
+            .content-card.settings-mode .tab-content,
+            .content-card.settings-mode .tab-pane.active {
+                flex: 0 0 auto;
+                min-height: 0;
+                overflow: visible;
+            }
+
+            .content-card:has(#settings-tab.active) .tab-content,
+            .content-card:has(#settings-tab.active) .tab-pane.active {
+                flex: 0 0 auto;
+                min-height: 0;
+                overflow: visible;
+            }
+
             .nav-tabs .nav-link {
                 padding: 8px 12px;
                 font-size: 13px;
+            }
+
+            #settings-tab.active {
+                overflow: visible;
+            }
+
+            #settings-tab > .row {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                min-height: 0;
+                overflow: visible;
+            }
+
+            #settings-tab > .row > [class*="col-"] {
+                padding: 14px;
+                border-radius: 16px;
+                overflow: visible;
             }
 
             #settings-tab form,
@@ -1285,7 +1329,33 @@ foreach ($orders as $order) {
             }
 
             #settings-tab form > .row > [class*="col-"] {
-                margin-bottom: 10px;
+                margin-bottom: 12px;
+            }
+
+            #settings-tab .form-label {
+                margin-bottom: 5px;
+                font-size: 10.5px !important;
+            }
+
+            #settings-tab .form-control,
+            #settings-tab .form-control-sm {
+                min-height: 44px;
+                padding: 9px 12px;
+                font-size: 14px;
+            }
+
+            #settings-tab .form-control::placeholder {
+                font-size: 12px;
+            }
+
+            #settings-tab .col-12:last-child {
+                display: block;
+            }
+
+            #settings-tab .btn-theme,
+            #settings-tab .btn-theme-danger {
+                min-height: 44px;
+                font-size: 14px;
             }
 
             .account-table-wrap {
@@ -1635,6 +1705,23 @@ foreach ($orders as $order) {
         const cancelOrderCancel = document.getElementById('cancelOrderCancel');
         const cancelOrderId = document.getElementById('cancelOrderId');
         const cancelOrderDesc = document.getElementById('cancelOrderDesc');
+        const accountContentCard = document.querySelector('.content-card');
+        const settingsTabPane = document.getElementById('settings-tab');
+
+        function syncAccountContentMode() {
+            if (!accountContentCard || !settingsTabPane) {
+                return;
+            }
+            accountContentCard.classList.toggle('settings-mode', settingsTabPane.classList.contains('active'));
+        }
+
+        document.querySelectorAll('#profileTab button[data-bs-toggle="tab"]').forEach(function (tabButton) {
+            tabButton.addEventListener('shown.bs.tab', syncAccountContentMode);
+            tabButton.addEventListener('click', function () {
+                setTimeout(syncAccountContentMode, 0);
+            });
+        });
+        syncAccountContentMode();
 
         function closeCancelOrderModal() {
             cancelOrderModal.classList.remove('is-open');

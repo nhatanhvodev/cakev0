@@ -101,23 +101,31 @@ td { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 13.5px;
 tbody tr:hover { background: var(--surface-2); }
 
 .orders-panel {
-  display: flex; flex-direction: column; max-height: calc(100dvh - 156px);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, auto);
+  align-items: center; gap: 8px 12px; max-height: calc(100dvh - 156px);
   min-height: 0; overflow: hidden;
 }
-.orders-form { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 10px; }
+.orders-panel > .panel-head { grid-column: 1; grid-row: 1; min-height: 32px; margin-bottom: 0; }
+.orders-form { display: contents; min-height: 0; }
 .orders-actionbar {
+  grid-column: 2; grid-row: 1;
   display: flex; align-items: center; justify-content: flex-end; gap: 12px;
-  align-self: flex-end; width: fit-content; max-width: 100%; margin-left: auto;
-  position: sticky; top: 0; z-index: 4;
-  padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
-  background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
-  box-shadow: var(--shadow);
+  align-self: center; justify-self: end; width: fit-content; max-width: 100%; margin-left: auto;
+  position: relative; z-index: 4;
+  padding: 0; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none;
 }
-.orders-selection { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
+.orders-selection {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
+  color: var(--muted); font-size: 12px;
+}
 .orders-selection strong { color: var(--text); font-size: 13px; }
-.orders-bulk-button { white-space: nowrap; }
+.orders-bulk-button {
+  min-height: 32px; padding: 6px 11px; border-radius: 8px;
+  white-space: nowrap; font-size: 12.5px;
+}
 .orders-bulk-button:disabled { opacity: .55; cursor: not-allowed; filter: grayscale(.2); }
-.orders-table-shell { min-height: 0; }
+.orders-table-shell { grid-column: 1 / -1; grid-row: 2; min-height: 0; }
 .orders-table-shell .table-scroll {
   max-height: calc(100dvh - 260px); overflow: auto; border: 1px solid var(--border); border-radius: 10px;
 }
@@ -133,7 +141,11 @@ tbody tr:hover { background: var(--surface-2); }
   background: var(--surface); color: var(--text);
 }
 @media (max-width: 760px) {
-  .orders-panel { max-height: calc(100dvh - 128px); padding: 12px; }
+  .orders-panel {
+    display: flex; flex-direction: column; align-items: stretch;
+    max-height: calc(100dvh - 128px); padding: 12px;
+  }
+  .orders-form { display: flex; min-height: 0; flex-direction: column; gap: 8px; }
   .orders-actionbar { align-items: stretch; flex-direction: column; width: 100%; max-width: 100%; }
   .orders-table-shell .table-scroll { max-height: calc(100dvh - 280px); }
   .orders-bulk-button { justify-content: center; width: 100%; }

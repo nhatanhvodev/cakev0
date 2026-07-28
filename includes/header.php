@@ -565,65 +565,99 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   #user-actions {
+    --header-action-size: 40px;
+    --header-action-icon: 20px;
+    --header-action-badge-size: 18px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
     margin-left: auto;
     flex-shrink: 0;
   }
 
-  #user-actions a {
-    color: var(--header-text);
-    font-size: 22px;
-    transition: 0.25s ease;
-  }
-
-  #user-actions a:hover {
-    color: var(--header-accent);
-  }
-
-  .cart-wrapper {
+  #user-actions a,
+  .notify-trigger {
     position: relative;
+    width: var(--header-action-size);
+    height: var(--header-action-size);
+    min-width: var(--header-action-size);
+    min-height: var(--header-action-size);
+    border: 0;
+    padding: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--header-text);
+    font-size: var(--header-action-icon);
+    line-height: 1;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: color 0.2s ease, background 0.2s ease, transform 0.12s ease;
   }
 
+  #user-actions a:hover,
+  .notify-trigger:hover,
+  .notify-trigger[aria-expanded="true"] {
+    color: var(--header-accent);
+    background: rgba(74, 29, 31, 0.06);
+  }
+
+  #user-actions a:active,
+  .notify-trigger:active {
+    transform: scale(0.96);
+  }
+
+  #user-actions a:focus-visible,
+  .notify-trigger:focus-visible,
+  .notify-action:focus-visible,
+  .notify-item:focus-visible {
+    outline: 2px solid rgba(106, 45, 34, 0.35);
+    outline-offset: 3px;
+  }
+
+  #user-actions a > i,
+  .notify-trigger > i {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cart-wrapper,
   .favorite-wrapper {
     position: relative;
     display: inline-flex;
     align-items: center;
   }
 
-  .cart-badge {
+  .cart-badge,
+  .favorite-badge,
+  .notify-badge {
     position: absolute;
-    top: -8px;
-    right: -10px;
-    background: #ff0000;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 11px;
-    font-weight: bold;
-    min-width: 18px;
+    top: 1px;
+    right: -2px;
+    min-width: var(--header-action-badge-size);
+    height: var(--header-action-badge-size);
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #e3342f;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: var(--header-action-badge-size);
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 2px var(--header-bg), 0 4px 10px rgba(141, 30, 25, 0.25);
+    pointer-events: none;
+    transform-origin: center;
     transition: transform 0.2s;
+    z-index: 2;
   }
 
-  .favorite-badge {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    background: #ff0000;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 11px;
-    font-weight: bold;
-    min-width: 18px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
+  .notify-badge[hidden] {
+    display: none;
   }
 
   @media (max-width: 900px) {
@@ -784,11 +818,10 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     #user-actions {
-      gap: 8px;
-    }
-
-    #user-actions a {
-      font-size: 18px;
+      --header-action-size: 36px;
+      --header-action-icon: 18px;
+      --header-action-badge-size: 16px;
+      gap: 5px;
     }
 
     .cate-panel-links a {
@@ -870,22 +903,19 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     #user-actions {
-      gap: 7px;
-    }
-
-    #user-actions a,
-    .notify-trigger {
-      font-size: 17px;
+      --header-action-size: 34px;
+      --header-action-icon: 17px;
+      --header-action-badge-size: 16px;
+      gap: 4px;
     }
 
     .cart-badge,
     .favorite-badge,
     .notify-badge {
-      top: -6px;
-      right: -8px;
-      min-width: 16px;
+      top: -1px;
+      right: -4px;
       font-size: 10px;
-      padding: 1px 5px;
+      padding: 0 5px;
     }
 
     .menu-container #main-nav {
@@ -984,12 +1014,9 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     }
 
     #user-actions {
+      --header-action-size: 32px;
+      --header-action-icon: 16px;
       gap: 6px;
-    }
-
-    #user-actions a,
-    .notify-trigger {
-      font-size: 16px;
     }
 
     .menu-container #main-nav,
@@ -1017,57 +1044,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   }
 
   .notify-trigger {
-    position: relative;
-    width: 24px;
-    min-width: 44px;
-    min-height: 44px;
-    border: 0;
-    padding: 0;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--header-text);
-    font-size: 20px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease, background 0.2s ease, transform 0.12s ease;
-  }
-
-  .notify-trigger:hover,
-  .notify-trigger[aria-expanded="true"] {
-    color: var(--header-accent);
-    background: rgba(74, 29, 31, 0.06);
-  }
-
-  .notify-trigger:active {
-    transform: scale(0.96);
-  }
-
-  .notify-trigger:focus-visible,
-  .notify-action:focus-visible,
-  .notify-item:focus-visible {
-    outline: 2px solid rgba(106, 45, 34, 0.35);
-    outline-offset: 3px;
+    appearance: none;
+    font-family: inherit;
   }
 
   .notify-badge {
-    position: absolute;
-    top: 3px;
-    right: 1px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: #d45445;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 18px;
-    text-align: center;
     font-variant-numeric: tabular-nums;
-    box-shadow: 0 0 0 2px #fff;
-    transition: transform 0.2s ease;
   }
 
   .notify-list {
@@ -1240,14 +1222,16 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
           <div class="search-result" id="searchResult"></div>
         </div>
         <div id="user-actions">
-          <a href="<?= BASE_URL ?>pages/account.php"><i class="fa-regular fa-user"></i></a>
+          <a href="<?= BASE_URL ?>pages/account.php" aria-label="Tài khoản">
+            <i class="fa-regular fa-user" aria-hidden="true"></i>
+          </a>
           <a href="<?= BASE_URL ?>pages/favorites.php" class="favorite-wrapper" aria-label="Sản phẩm yêu thích">
-            <i class="fa-regular fa-heart"></i>
+            <i class="fa-regular fa-heart" aria-hidden="true"></i>
             <span id="header-favorite-badge" class="favorite-badge"
               style="<?= $favoriteItemCount > 0 ? '' : 'display:none;' ?>"><?= $favoriteItemCount ?></span>
           </a>
-          <a href="<?= BASE_URL ?>pages/cart.php" class="cart-wrapper">
-            <i class="fa-solid fa-cart-shopping"></i>
+          <a href="<?= BASE_URL ?>pages/cart.php" class="cart-wrapper" aria-label="Giỏ hàng">
+            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
             <span id="header-cart-badge" class="cart-badge"
               style="<?= $cartItemCount > 0 ? '' : 'display:none;' ?>"><?= $cartItemCount ?></span>
           </a>
@@ -1879,7 +1863,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     let n = parseInt(count) || 0;
     if (n > 0) {
       badge.innerText = n;
-      badge.style.display = 'inline-block';
+      badge.style.display = 'inline-flex';
       badge.classList.add('pop');
       setTimeout(function () { badge.classList.remove('pop'); }, 300);
     } else {
@@ -1902,7 +1886,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     let n = parseInt(count) || 0;
     if (n > 0) {
       badge.innerText = n;
-      badge.style.display = 'inline-block';
+      badge.style.display = 'inline-flex';
       badge.classList.add('pop');
       setTimeout(function () { badge.classList.remove('pop'); }, 300);
     } else {

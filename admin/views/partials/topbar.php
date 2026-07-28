@@ -20,7 +20,7 @@ $meta = $tabMeta[$tab ?? 'dashboard'] ?? $tabMeta['dashboard'];
 $notificationCount = (int) $topbarData['notification_count'];
 ?>
 <header class="topbar">
-  <button class="toggle" id="collapseBtn" title="Thu gọn menu" aria-label="Thu gọn menu"><i class="bi bi-list"></i></button>
+  <button class="toggle" id="collapseBtn" title="Thu gọn menu" aria-label="Thu gọn menu" aria-controls="adminSidebar" aria-expanded="false"><i class="bi bi-list"></i></button>
   <div class="titlewrap">
     <div class="crumb"><?= htmlspecialchars($meta['crumb'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
     <h1><?= htmlspecialchars($meta['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></h1>

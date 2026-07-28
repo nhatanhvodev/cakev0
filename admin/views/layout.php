@@ -18,7 +18,7 @@ $adminAssetVersion = static function (string $path): string {
 </head><body class="<?= ($tab ?? '') === 'chat' ? 'admin-chat-view' : '' ?>">
 <div class="app" id="app">
   <div class="backdrop"></div>
-  <aside class="sidebar"><?php require __DIR__ . '/partials/sidebar.php'; ?></aside>
+  <aside class="sidebar" id="adminSidebar"><?php require __DIR__ . '/partials/sidebar.php'; ?></aside>
   <div class="main">
     <?php require __DIR__ . '/partials/topbar.php'; ?>
     <main class="content">

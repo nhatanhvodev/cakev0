@@ -1410,6 +1410,11 @@ foreach ($orders as $order) {
                 width: 100%;
             }
 
+            .account-orders-table th:nth-child(n),
+            .account-orders-table td:nth-child(n) {
+                width: 100%;
+            }
+
             .account-orders-table tbody {
                 display: grid;
                 gap: 14px;
@@ -1437,6 +1442,14 @@ foreach ($orders as $order) {
                 grid-template-columns: minmax(84px, 96px) minmax(0, 1fr);
                 gap: 10px;
                 align-items: start;
+                min-width: 0;
+            }
+
+            .account-orders-table td[data-label="Ngày đặt"],
+            .account-orders-table td[data-label="Tổng tiền"] {
+                white-space: nowrap;
+                overflow-wrap: normal;
+                word-break: normal;
             }
 
             .account-orders-table td[data-label]::before {

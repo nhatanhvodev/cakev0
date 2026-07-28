@@ -99,14 +99,14 @@ foreach ($orders as $o) {
     $deleteUrl = '?tab=orders&delete_order_id=' . $orderId . '&csrf=' . urlencode($_SESSION['csrf_token']);
 
     $rowsHtml .= '<tr>'
-        . '<td><input type="checkbox" name="selected_orders[]" value="' . $orderId . '" class="order-select"></td>'
+        . '<td><input type="checkbox" id="order-select-' . $orderId . '" name="selected_orders[]" value="' . $orderId . '" class="order-select" aria-label="Chọn đơn #' . $orderId . '"></td>'
         . '<td>#' . $orderId . '</td>'
         . '<td><strong>' . htmlspecialchars((string) ($o['username'] ?? 'N/A')) . '</strong><br>'
         . '<span style="color:var(--muted);font-size:12px;">' . htmlspecialchars((string) ($o['email'] ?? '')) . '</span></td>'
         . '<td>' . $itemsHtml . '</td>'
         . '<td style="font-weight:700;">' . number_format((float) $o['total_amount'], 0, ',', '.') . ' VNĐ</td>'
         . '<td>' . render_badge((string) $o['status']) . '</td>'
-        . '<td><select name="order_status[' . $orderId . ']" style="min-width:160px;">' . $optionsHtml . '</select></td>'
+        . '<td><select name="order_status[' . $orderId . ']" class="order-status-select" data-order-id="' . $orderId . '" aria-label="Trạng thái đơn #' . $orderId . '">' . $optionsHtml . '</select></td>'
         . '<td>'
         . '<button type="button" class="btn btn-ghost" data-modal-open="adminOrderModal" data-order-id="' . $orderId . '" title="Chi tiết đơn hàng"><i class="bi bi-eye"></i></button> '
         . '<button type="button" class="btn btn-danger" data-delete-url="' . htmlspecialchars($deleteUrl) . '" data-confirm-text="Đơn hàng sẽ bị xóa vĩnh viễn và không thể khôi phục." title="Xóa đơn hàng"><i class="bi bi-trash"></i></button>'
@@ -114,14 +114,25 @@ foreach ($orders as $o) {
         . '</tr>';
 }
 ?>
-<div class="card panel">
+<div class="card panel orders-panel">
   <div class="panel-head"><h2>Quản Lý Đơn Hàng</h2></div>
-  <form method="POST">
+  <form method="POST" id="ordersBulkForm" class="orders-form">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
     <input type="hidden" name="tab" value="orders">
+    <div class="orders-actionbar">
+      <div class="orders-selection" aria-live="polite">
+        <i class="bi bi-check2-square" aria-hidden="true"></i>
+        <strong id="ordersSelectedCount">Chưa chọn đơn</strong>
+      </div>
+      <button type="submit" name="update_order_statuses" id="ordersBulkSubmit" class="btn btn-primary orders-bulk-button">
+        <i class="bi bi-check2-circle"></i> Cập nhật trạng thái đã chọn
+      </button>
+    </div>
+    <div class="orders-table-shell">
     <?php render_table(['', 'ID', 'Khách hàng', 'Chi tiết SP', 'Tổng tiền', 'Trạng thái', 'Cập nhật', 'Hành động'], $rowsHtml); ?>
-    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
-      <button type="submit" name="update_order_statuses" class="btn btn-primary">
+    </div>
+    <div class="orders-bottom-action">
+      <button type="submit" name="update_order_statuses" class="btn btn-primary orders-bulk-button">
         <i class="bi bi-check2-circle"></i> Cập nhật trạng thái đã chọn
       </button>
     </div>
@@ -198,5 +209,42 @@ render_modal('adminOrderModal', 'Chi tiết đơn hàng', $orderModalBody, $orde
       renderAdminOrderDetail(btn.dataset.orderId);
     });
   });
+
+  var bulkForm = document.getElementById('ordersBulkForm');
+  if (bulkForm) {
+    var selectedCount = document.getElementById('ordersSelectedCount');
+    var submitButtons = Array.prototype.slice.call(bulkForm.querySelectorAll('.orders-bulk-button'));
+    var checkboxes = Array.prototype.slice.call(bulkForm.querySelectorAll('.order-select'));
+
+    function updateSelectionState() {
+      var count = checkboxes.filter(function (checkbox) { return checkbox.checked; }).length;
+      if (selectedCount) {
+        selectedCount.textContent = count > 0 ? count + ' đơn đã chọn' : 'Chưa chọn đơn';
+      }
+      submitButtons.forEach(function (button) { button.disabled = count === 0; });
+      checkboxes.forEach(function (checkbox) {
+        var row = checkbox.closest('tr');
+        if (row) {
+          row.classList.toggle('is-selected', checkbox.checked);
+        }
+      });
+    }
+
+    checkboxes.forEach(function (checkbox) {
+      checkbox.addEventListener('change', updateSelectionState);
+    });
+
+    bulkForm.querySelectorAll('.order-status-select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        var checkbox = document.getElementById('order-select-' + select.dataset.orderId);
+        if (checkbox && !checkbox.checked) {
+          checkbox.checked = true;
+        }
+        updateSelectionState();
+      });
+    });
+
+    updateSelectionState();
+  }
 })();
 </script>

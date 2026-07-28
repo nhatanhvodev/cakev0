@@ -577,53 +577,58 @@ foreach ($orders as $order) {
 
         .account-shell {
             max-width: 1180px;
-            margin: 24px auto 60px;
+            margin: 10px auto 8px;
             padding: 0 24px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 14px;
+            height: min(560px, max(420px, calc(100dvh - 236px)));
+            min-height: 0;
         }
 
         .account-hero {
             background: linear-gradient(135deg, #fff7ea, #fdf1db);
             border: 1px solid var(--caramel);
-            border-radius: 26px;
-            padding: 24px 28px;
+            border-radius: 20px;
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
-            box-shadow: 0 18px 40px rgba(74, 29, 31, 0.12);
+            gap: 14px;
+            box-shadow: 0 10px 24px rgba(74, 29, 31, 0.08);
         }
 
         .hero-chip {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
+            gap: 6px;
+            padding: 4px 10px;
             border-radius: 999px;
             background: #fff;
             border: 1px solid var(--caramel);
-            font-size: 12px;
+            font-size: 11px;
             color: var(--brown-700);
             letter-spacing: 0.1em;
             text-transform: uppercase;
         }
 
         .account-hero h1 {
-            margin: 10px 0 6px;
+            margin: 5px 0 2px;
             color: var(--brown-800);
-            font-size: 26px;
+            font-size: 22px;
+            line-height: 1.2;
         }
 
         .account-hero p {
             margin: 0;
             color: #4a4a4a;
+            font-size: 14px;
+            line-height: 1.35;
         }
 
         .hero-actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -632,9 +637,13 @@ foreach ($orders as $order) {
             background: #fff;
             color: var(--brown-700);
             border-radius: 999px;
-            padding: 10px 16px;
+            padding: 8px 14px;
             font-weight: 600;
             text-decoration: none;
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
         }
 
         .btn-outline {
@@ -642,37 +651,44 @@ foreach ($orders as $order) {
             background: transparent;
             color: var(--brown-800);
             border-radius: 999px;
-            padding: 10px 16px;
+            padding: 8px 14px;
             font-weight: 600;
             text-decoration: none;
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
         }
 
         .account-grid {
             display: grid;
             grid-template-columns: 320px minmax(0, 1fr);
-            gap: 24px;
-            align-items: start;
+            gap: 16px;
+            align-items: stretch;
+            flex: 1 1 auto;
+            min-height: 0;
         }
 
         .profile-card {
             background: #fff;
-            border-radius: 24px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 18px;
             border: 1px solid var(--caramel);
             box-shadow: 0 16px 32px rgba(74, 29, 31, 0.08);
+            align-self: start;
         }
 
         .profile-header {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .profile-avatar {
-            width: 86px;
-            height: 86px;
+            width: 72px;
+            height: 72px;
             object-fit: cover;
-            border-radius: 18px;
+            border-radius: 16px;
             border: 2px solid #fff;
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
         }
@@ -681,26 +697,27 @@ foreach ($orders as $order) {
             margin: 0;
             font-weight: 700;
             color: var(--brown-800);
+            font-size: 22px;
         }
 
         .profile-meta p {
             margin: 4px 0 0;
             color: #6a6a6a;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            margin: 20px 0;
+            gap: 10px;
+            margin: 14px 0;
         }
 
         .stat-item {
             background: #fff7ea;
             border: 1px solid var(--caramel);
             border-radius: 14px;
-            padding: 12px;
+            padding: 10px;
             text-align: center;
         }
 
@@ -722,21 +739,25 @@ foreach ($orders as $order) {
 
         .content-card {
             background: #ffffff;
-            border-radius: 24px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 18px;
             border: 1px solid var(--caramel);
             box-shadow: 0 16px 32px rgba(74, 29, 31, 0.08);
             min-height: 0;
-            height: min(700px, calc(100dvh - 340px));
+            height: 100%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            align-self: stretch;
         }
 
         .nav-tabs {
             border-bottom: none;
             gap: 10px;
             flex-wrap: nowrap;
+            flex: 0 0 auto;
+            min-height: 38px;
+            margin-bottom: 10px !important;
             overflow-x: auto;
             overflow-y: hidden;
             scrollbar-width: none;
@@ -752,7 +773,11 @@ foreach ($orders as $order) {
             font-weight: 600;
             color: var(--brown-700);
             background: #fff7ea;
-            padding: 10px 18px;
+            padding: 8px 16px;
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
             transition: .25s;
         }
 
@@ -767,6 +792,8 @@ foreach ($orders as $order) {
             font-weight: 700;
             color: var(--brown-800);
             margin: 0;
+            font-size: 20px;
+            line-height: 1.2;
         }
 
         .content-card .tab-content {
@@ -797,7 +824,7 @@ foreach ($orders as $order) {
             min-height: 0;
             display: grid;
             grid-template-rows: auto minmax(0, 1fr);
-            gap: 14px;
+            gap: 10px;
             overflow: hidden;
         }
 
@@ -805,12 +832,12 @@ foreach ($orders as $order) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            min-height: 38px;
+            gap: 12px;
+            min-height: 32px;
         }
 
         .account-orders-sub {
-            margin: 4px 0 0;
+            margin: 2px 0 0;
             color: #86766b;
             font-size: 12px;
         }
@@ -819,8 +846,8 @@ foreach ($orders as $order) {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            min-height: 32px;
-            padding: 6px 11px;
+            min-height: 30px;
+            padding: 5px 10px;
             border-radius: 8px;
             background: #fff7ea;
             border: 1px solid var(--caramel);
@@ -852,7 +879,7 @@ foreach ($orders as $order) {
             position: sticky;
             top: 0;
             z-index: 2;
-            padding: 14px 14px 12px;
+            padding: 11px 14px 10px;
             background: #fffdf8;
             box-shadow: 0 1px 0 rgba(74, 29, 31, 0.14);
             color: #9c958c;
@@ -864,7 +891,7 @@ foreach ($orders as $order) {
         }
 
         .account-orders-table td {
-            padding: 13px 14px;
+            padding: 11px 14px;
             border-top: 1px solid rgba(74, 29, 31, 0.1);
             color: #2f2b27;
             font-size: 13.5px;
@@ -1088,36 +1115,48 @@ foreach ($orders as $order) {
         }
 
         @media (max-width: 992px) {
+            .account-shell {
+                height: auto;
+                min-height: 0;
+                margin: 16px auto 32px;
+                gap: 16px;
+            }
+
             .account-grid {
                 grid-template-columns: 1fr;
+                flex: none;
             }
             .account-hero {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .content-card {
+                height: min(620px, calc(100dvh - 190px));
             }
         }
 
         @media (max-width: 768px) {
             .account-shell {
                 padding: 0 16px;
-                margin: 16px auto 40px;
+                margin: 14px auto 28px;
             }
 
             .account-hero {
-                padding: 18px;
+                padding: 14px;
             }
 
             .account-hero h1 {
-                font-size: 22px;
+                font-size: 20px;
             }
 
             .profile-card,
             .content-card {
-                padding: 18px;
+                padding: 16px;
             }
 
             .content-card {
-                height: min(640px, calc(100dvh - 190px));
+                height: min(560px, calc(100dvh - 180px));
             }
 
             .nav-tabs .nav-link {

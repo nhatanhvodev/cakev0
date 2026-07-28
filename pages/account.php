@@ -726,7 +726,11 @@ foreach ($orders as $order) {
             padding: 24px;
             border: 1px solid var(--caramel);
             box-shadow: 0 16px 32px rgba(74, 29, 31, 0.08);
-            min-height: 400px;
+            min-height: 0;
+            height: min(700px, calc(100dvh - 340px));
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .nav-tabs {
@@ -762,17 +766,242 @@ foreach ($orders as $order) {
         .section-title {
             font-weight: 700;
             color: var(--brown-800);
-            margin-bottom: 18px;
+            margin: 0;
         }
 
-        .table {
-            border-radius: 12px;
+        .content-card .tab-content {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-card .tab-pane.active {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        #orders-tab.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #settings-tab.active {
+            display: block;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .account-orders-panel {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
+            gap: 14px;
             overflow: hidden;
         }
 
-        .table thead {
-            background: #fff1d6;
+        .account-orders-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-height: 38px;
+        }
+
+        .account-orders-sub {
+            margin: 4px 0 0;
+            color: #86766b;
+            font-size: 12px;
+        }
+
+        .account-orders-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 32px;
+            padding: 6px 11px;
+            border-radius: 8px;
+            background: #fff7ea;
+            border: 1px solid var(--caramel);
+            color: var(--brown-700);
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .account-table-wrap {
+            min-height: 0;
+            height: 100%;
+            overflow: auto;
+            border: 1px solid rgba(74, 29, 31, 0.14);
+            border-radius: 12px;
+            background: #fffdf8;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        .account-orders-table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .account-orders-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 14px 14px 12px;
+            background: #fffdf8;
+            box-shadow: 0 1px 0 rgba(74, 29, 31, 0.14);
+            color: #9c958c;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .account-orders-table td {
+            padding: 13px 14px;
+            border-top: 1px solid rgba(74, 29, 31, 0.1);
+            color: #2f2b27;
+            font-size: 13.5px;
+            vertical-align: middle;
+        }
+
+        .account-orders-table tbody tr {
+            transition: background 0.12s ease;
+        }
+
+        .account-orders-table tbody tr:hover {
+            background: #f5f2ea;
+        }
+
+        .account-order-id {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 46px;
+            min-height: 24px;
+            padding: 3px 9px;
+            border-radius: 8px;
+            background: #697480;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .account-order-total {
+            color: #13815a;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .account-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 26px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .account-status-pill::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .account-status-success {
+            color: #16804d;
+            background: #e5f5eb;
+        }
+
+        .account-status-warning {
+            color: #a56a09;
+            background: #fff1d7;
+        }
+
+        .account-status-primary {
+            color: #2878c7;
+            background: #e5f0ff;
+        }
+
+        .account-status-info {
+            color: #25849b;
+            background: #e1f6fb;
+        }
+
+        .account-status-danger {
+            color: #ba3b32;
+            background: #fee9e7;
+        }
+
+        .account-status-secondary {
+            color: #67737f;
+            background: #edf0f2;
+        }
+
+        .account-order-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .account-order-btn {
+            min-height: 34px;
+            padding: 6px 12px;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            line-height: 1;
+            font-family: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+        }
+
+        .account-order-btn:active {
+            transform: scale(0.97);
+        }
+
+        .account-order-btn-view {
+            border: 1px solid var(--caramel);
+            background: #fff;
             color: var(--brown-800);
+        }
+
+        .account-order-btn-view:hover {
+            border-color: var(--brown-800);
+            color: var(--brown-800);
+            background: #fff7ea;
+        }
+
+        .account-order-btn-cancel {
+            border: 1px solid #f1b3ad;
+            background: #fff;
+            color: #b42318;
+        }
+
+        .account-order-btn-cancel:hover {
+            background: #fff2f0;
+            color: #7a271a;
         }
 
         .subsection-title {
@@ -887,13 +1116,17 @@ foreach ($orders as $order) {
                 padding: 18px;
             }
 
+            .content-card {
+                height: min(640px, calc(100dvh - 190px));
+            }
+
             .nav-tabs .nav-link {
                 padding: 8px 12px;
                 font-size: 13px;
             }
 
             .account-table-wrap {
-                overflow: visible;
+                overflow: auto;
             }
 
             .account-orders-table {
@@ -922,6 +1155,10 @@ foreach ($orders as $order) {
                 padding: 14px;
                 background: #fffdf8;
                 box-shadow: 0 10px 22px rgba(74, 29, 31, 0.08);
+            }
+
+            .account-orders-table tbody tr:hover {
+                background: #fffdf8;
             }
 
             .account-orders-table td {
@@ -1070,11 +1307,18 @@ foreach ($orders as $order) {
                 <div class="tab-content">
                         <!-- TAB 1: LỊCH SỬ ĐƠN HÀNG -->
                         <div class="tab-pane fade show active" id="orders-tab">
-                            <h5 class="section-title">Lịch sử mua hàng</h5>
+                            <div class="account-orders-panel">
+                                <div class="account-orders-head">
+                                    <div>
+                                        <h5 class="section-title">Lịch sử mua hàng</h5>
+                                        <p class="account-orders-sub">Theo dõi đơn gần đây và trạng thái xử lý.</p>
+                                    </div>
+                                    <span class="account-orders-count"><i class="fa-solid fa-receipt"></i> <?= count($orders) ?> đơn</span>
+                                </div>
                             <?php if (count($orders) > 0): ?>
                                 <div class="table-responsive account-table-wrap">
-                                    <table class="table table-hover align-middle account-orders-table">
-                                        <thead class="table-light">
+                                    <table class="account-orders-table">
+                                        <thead>
                                             <tr>
                                                 <th>Mã ĐH</th>
                                                 <th>Ngày đặt</th>
@@ -1086,40 +1330,42 @@ foreach ($orders as $order) {
                                         <tbody>
                                             <?php foreach ($orders as $o): ?>
                                                 <tr>
-                                                    <td data-label="Mã ĐH"><span class="badge bg-secondary">#<?= $o['id'] ?></span></td>
+                                                    <td data-label="Mã ĐH"><span class="account-order-id">#<?= $o['id'] ?></span></td>
                                                     <td data-label="Ngày đặt"><?= date("d/m/Y", strtotime($o['created_at'])) ?></td>
-                                                    <td data-label="Tổng tiền" class="fw-bold text-success"><?= number_format($o['total_amount']) ?> VNĐ
+                                                    <td data-label="Tổng tiền" class="account-order-total"><?= number_format($o['total_amount']) ?> VNĐ
                                                     </td>
                                                     <td data-label="Trạng thái">
                                                         <?php
                                                         $statusData = match (strtolower($o['status'])) {
-                                                            'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
-                                                            'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
-                                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Chờ xác nhận COD'],
-                                                            'cod_deposited' => ['badge' => 'primary', 'label' => 'COD đã xác nhận'],
-                                                            'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
-                                                            'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
-                                                            'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
-                                                            'delivered', 'da giao' => ['badge' => 'info', 'label' => 'Đã giao'],
-                                                            'failed' => ['badge' => 'danger', 'label' => 'Thanh toán lỗi'],
-                                                            'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
-                                                            default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
+                                                            'completed', 'thanh cong' => ['tone' => 'success', 'label' => 'Hoàn tất'],
+                                                            'pending', 'cho xu ly' => ['tone' => 'warning', 'label' => 'Đang chờ xác nhận'],
+                                                            'cod_not_deposited' => ['tone' => 'warning', 'label' => 'Chờ xác nhận COD'],
+                                                            'cod_deposited' => ['tone' => 'primary', 'label' => 'COD đã xác nhận'],
+                                                            'paid' => ['tone' => 'primary', 'label' => 'Đã thanh toán'],
+                                                            'approved', 'confirmed' => ['tone' => 'info', 'label' => 'Đã xác nhận'],
+                                                            'delivering' => ['tone' => 'info', 'label' => 'Đang giao'],
+                                                            'delivered', 'da giao' => ['tone' => 'info', 'label' => 'Đã giao'],
+                                                            'failed' => ['tone' => 'danger', 'label' => 'Thanh toán lỗi'],
+                                                            'cancelled', 'huy' => ['tone' => 'danger', 'label' => 'Đã hủy'],
+                                                            default => ['tone' => 'secondary', 'label' => 'Không rõ']
                                                         };
                                                         ?>
-                                                        <span class="badge bg-<?= $statusData['badge'] ?>">
+                                                        <span class="account-status-pill account-status-<?= $statusData['tone'] ?>">
                                                             <?= $statusData['label'] ?>
                                                         </span>
                                                     </td>
                                                     <td data-label="Thao tác" class="order-action-cell">
+                                                        <span class="account-order-actions">
                                                         <a href="/cakev0/pages/order-detail.php?id=<?= $o['id'] ?>"
-                                                            class="btn btn-sm btn-outline-primary">Xem</a>
+                                                            class="account-order-btn account-order-btn-view"><i class="fa-regular fa-eye"></i> Xem</a>
                                                         <?php if (canCustomerCancelOrder((string) ($o['payment_method'] ?? ''), (string) $o['status'])): ?>
                                                             <button type="button"
-                                                                class="btn btn-sm btn-outline-danger cancel-order-btn"
+                                                                class="account-order-btn account-order-btn-cancel cancel-order-btn"
                                                                 data-order-id="<?= $o['id'] ?>">
-                                                                Hủy dơn
+                                                                <i class="fa-regular fa-circle-xmark"></i> Hủy đơn
                                                             </button>
                                                         <?php endif; ?>
+                                                        </span>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -1132,6 +1378,7 @@ foreach ($orders as $order) {
                                     <p>Bạn chưa có đơn hàng nào.</p>
                                 </div>
                             <?php endif; ?>
+                            </div>
 
                             <div id="cancelOrderModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancelOrderTitle">
                                 <div class="confirm-modal-box">

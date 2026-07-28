@@ -131,11 +131,6 @@ foreach ($orders as $o) {
     <div class="orders-table-shell">
     <?php render_table(['', 'ID', 'Khách hàng', 'Chi tiết SP', 'Tổng tiền', 'Trạng thái', 'Cập nhật', 'Hành động'], $rowsHtml); ?>
     </div>
-    <div class="orders-bottom-action">
-      <button type="submit" name="update_order_statuses" class="btn btn-primary orders-bulk-button">
-        <i class="bi bi-check2-circle"></i> Cập nhật trạng thái đã chọn
-      </button>
-    </div>
   </form>
 </div>
 

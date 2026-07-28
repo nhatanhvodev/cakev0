@@ -106,7 +106,8 @@ tbody tr:hover { background: var(--surface-2); }
 }
 .orders-form { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 10px; }
 .orders-actionbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+  align-self: flex-end; width: fit-content; max-width: 100%;
   position: sticky; top: 0; z-index: 4;
   padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
   background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
@@ -131,12 +132,10 @@ tbody tr:hover { background: var(--surface-2); }
   border: 1px solid var(--border); border-radius: 8px;
   background: var(--surface); color: var(--text);
 }
-.orders-bottom-action { display: flex; justify-content: flex-end; margin-top: 12px; }
 @media (max-width: 760px) {
   .orders-panel { height: calc(100dvh - 128px); min-height: 440px; padding: 12px; }
-  .orders-actionbar { align-items: stretch; flex-direction: column; }
-  .orders-bulk-button, .orders-bottom-action .btn { justify-content: center; width: 100%; }
-  .orders-bottom-action { margin-top: 8px; }
+  .orders-actionbar { align-items: stretch; flex-direction: column; width: 100%; }
+  .orders-bulk-button { justify-content: center; width: 100%; }
 }
 
 .product-actions { display: inline-flex; align-items: center; gap: 6px; }

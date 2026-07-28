@@ -1366,6 +1366,33 @@ body {
     .mobile-buy-btn { min-width: 96px; }
 }
 
+@media (max-width: 640px) {
+    .quantity-field { max-width: 124px; }
+
+    .quantity-control {
+        width: 124px;
+        min-height: 40px;
+        grid-template-columns: 38px 48px 38px;
+        border-radius: 13px;
+    }
+
+    .qty-step {
+        width: 38px;
+        height: 40px;
+        min-height: 40px;
+        font-size: 16px;
+    }
+
+    .quantity-control .qty-input {
+        grid-column: auto;
+        width: 48px !important;
+        height: 40px;
+        min-height: 40px;
+        padding: 0;
+        font-size: 15px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .product-detail *,
     .product-detail *::before,

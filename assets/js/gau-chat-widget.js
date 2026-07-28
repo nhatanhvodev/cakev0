@@ -8,7 +8,14 @@
   const root = document.createElement('div');
   root.id = 'gau-chat';
   root.innerHTML = `
-    <button id="gau-chat-toggle" aria-label="Mở chat">💬</button>
+    <button id="gau-chat-toggle" aria-label="Mở chat AI">
+      <span class="gau-toggle-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M5 7.2C5 4.9 6.9 3 9.2 3h5.6C17.1 3 19 4.9 19 7.2v3.2c0 2.3-1.9 4.2-4.2 4.2h-3.9l-3.6 3.2c-.9.8-2.3.2-2.3-1V7.2Z" />
+          <path d="M9 8h6M9 11h3.6" />
+        </svg>
+      </span>
+    </button>
     <div id="gau-chat-window" hidden>
       <div class="gau-chat-header" title="Thu nhỏ">
         <div class="gau-ava"><img src="/cakev0/assets/img/logo.png" alt="Gấu Bakery"></div>

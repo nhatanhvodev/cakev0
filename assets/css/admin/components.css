@@ -151,6 +151,26 @@ tbody tr:hover { background: var(--surface-2); }
   .orders-bulk-button { justify-content: center; width: 100%; }
 }
 
+.best-selling-panel {
+  display: flex; flex-direction: column;
+  height: min(760px, calc(100dvh - 120px)); min-height: min(560px, calc(100dvh - 120px)); overflow: hidden;
+}
+.best-selling-form { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+.best-selling-table-shell { flex: 1; min-height: 0; overflow: hidden; }
+.best-selling-table-shell .table-scroll {
+  height: 100%; overflow: auto; border: 1px solid var(--border); border-radius: 10px;
+}
+.best-selling-table-shell table { min-width: 920px; }
+.best-selling-table-shell th {
+  position: sticky; top: 0; z-index: 2; padding-top: 12px;
+  background: var(--surface); box-shadow: 0 1px 0 var(--border);
+}
+@media (max-width: 760px) {
+  .best-selling-panel { height: auto; min-height: 0; overflow: visible; }
+  .best-selling-form { flex: none; min-height: 0; }
+  .best-selling-table-shell .table-scroll { height: auto; max-height: min(520px, calc(100dvh - 280px)); }
+}
+
 .product-actions { display: inline-flex; align-items: center; gap: 6px; }
 .product-visibility-form { display: inline-flex; margin: 0; }
 .product-row-hidden { opacity: .68; }

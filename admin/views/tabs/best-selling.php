@@ -75,7 +75,7 @@ foreach ($products as $p) {
         . '</tr>';
 }
 ?>
-<div class="card panel">
+<div class="card panel best-selling-panel">
   <div class="panel-head"><h2>Best Selling</h2></div>
   <p style="color:var(--muted);margin:0 0 16px;max-width:760px;">Tick những bánh bạn muốn ưu tiên hiển thị ở mục Best Selling ngoài trang chủ. Số thứ tự càng nhỏ thì ưu tiên càng cao. Để trống hoặc để <strong>0</strong> nếu bạn chỉ muốn đánh dấu mà không ép thứ tự.</p>
 
@@ -94,13 +94,15 @@ foreach ($products as $p) {
     </div>
   </div>
 
-  <form method="POST" id="bestSellingForm">
+  <form method="POST" id="bestSellingForm" class="best-selling-form">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
     <input type="hidden" name="tab" value="best-selling">
 
     <input type="text" id="bestSellingSearch" placeholder="Nhập tên bánh để lọc nhanh" style="max-width:280px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:12px;">
 
-    <?php render_table(['Ảnh', 'Sản phẩm', 'Đã bán', 'Chọn thủ công', 'Thứ tự ưu tiên'], $rowsHtml); ?>
+    <div class="best-selling-table-shell">
+      <?php render_table(['Ảnh', 'Sản phẩm', 'Đã bán', 'Chọn thủ công', 'Thứ tự ưu tiên'], $rowsHtml); ?>
+    </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px;">
       <div style="color:var(--muted);font-size:13px;">Bạn có thể chọn nhiều sản phẩm, nhưng nên ưu tiên một nhóm ngắn để ngoài trang chủ gọn và rõ.</div>

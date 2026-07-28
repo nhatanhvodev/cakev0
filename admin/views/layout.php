@@ -30,10 +30,10 @@ $adminAssetVersion = static function (string $path): string {
     </main>
   </div>
 </div>
-<script src="../assets/js/admin/theme.js"></script>
-<script src="../assets/js/admin/topbar.js"></script>
-<script src="../assets/js/admin/nav.js"></script>
-<script src="../assets/js/admin/modals.js"></script>
-<script src="../assets/js/admin/dashboard.js"></script>
-<?php if (($tab ?? '') === 'chat'): ?><script src="../assets/js/admin-chat.js"></script><?php endif; ?>
+<script src="../assets/js/admin/theme.js?v=<?= $adminAssetVersion('assets/js/admin/theme.js') ?>"></script>
+<script src="../assets/js/admin/topbar.js?v=<?= $adminAssetVersion('assets/js/admin/topbar.js') ?>"></script>
+<script src="../assets/js/admin/nav.js?v=<?= $adminAssetVersion('assets/js/admin/nav.js') ?>"></script>
+<script src="../assets/js/admin/modals.js?v=<?= $adminAssetVersion('assets/js/admin/modals.js') ?>"></script>
+<script src="../assets/js/admin/dashboard.js?v=<?= $adminAssetVersion('assets/js/admin/dashboard.js') ?>"></script>
+<?php if (($tab ?? '') === 'chat'): ?><script src="../assets/js/admin-chat.js?v=<?= $adminAssetVersion('assets/js/admin-chat.js') ?>"></script><?php endif; ?>
 </body></html>

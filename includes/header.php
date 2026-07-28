@@ -575,7 +575,8 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     flex-shrink: 0;
   }
 
-  #user-actions a,
+  #user-actions > a,
+  .cart-trigger,
   .notify-trigger {
     position: relative;
     width: var(--header-action-size);
@@ -597,37 +598,49 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     transition: color 0.2s ease, background 0.2s ease, transform 0.12s ease;
   }
 
-  #user-actions a:hover,
+  #user-actions > a:hover,
+  .cart-trigger:hover,
+  .cart-trigger[aria-expanded="true"],
   .notify-trigger:hover,
   .notify-trigger[aria-expanded="true"] {
     color: var(--header-accent);
     background: rgba(74, 29, 31, 0.06);
   }
 
-  #user-actions a:active,
+  #user-actions > a:active,
+  .cart-trigger:active,
   .notify-trigger:active {
     transform: scale(0.96);
   }
 
-  #user-actions a:focus-visible,
+  #user-actions > a:focus-visible,
+  .cart-trigger:focus-visible,
   .notify-trigger:focus-visible,
   .notify-action:focus-visible,
-  .notify-item:focus-visible {
+  .notify-item:focus-visible,
+  .mini-cart-link:focus-visible,
+  .mini-cart-item:focus-visible {
     outline: 2px solid rgba(106, 45, 34, 0.35);
     outline-offset: 3px;
   }
 
-  #user-actions a > i,
+  #user-actions > a > i,
+  .cart-trigger > i,
   .notify-trigger > i {
     position: relative;
     z-index: 1;
   }
 
-  .cart-wrapper,
+  .cart-box,
   .favorite-wrapper {
     position: relative;
     display: inline-flex;
     align-items: center;
+  }
+
+  .cart-trigger {
+    appearance: none;
+    font-family: inherit;
   }
 
   .cart-badge,
@@ -1204,6 +1217,201 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     align-items: center;
   }
 
+  .mini-cart-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 360px;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    border: 1px solid rgba(74, 29, 31, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 18px 42px rgba(47, 20, 21, 0.18);
+    padding: 8px;
+    z-index: 1200;
+    transform-origin: top right;
+    animation: notifyPanelIn 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .mini-cart-panel[hidden] {
+    display: none;
+  }
+
+  .mini-cart-head,
+  .mini-cart-foot {
+    padding: 9px 10px;
+  }
+
+  .mini-cart-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    color: #4a1d1f;
+    border-bottom: 1px solid rgba(74, 29, 31, 0.1);
+  }
+
+  .mini-cart-head strong {
+    display: block;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .mini-cart-head small {
+    display: block;
+    margin-top: 2px;
+    color: #8d7e73;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .mini-cart-items {
+    display: grid;
+    gap: 4px;
+    max-height: min(350px, calc(100vh - 190px));
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+
+  .mini-cart-item,
+  .mini-cart-state {
+    border-radius: 12px;
+    color: #4a1d1f;
+  }
+
+  .mini-cart-item {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+
+  .mini-cart-item:hover {
+    background: #fff6ed;
+  }
+
+  .mini-cart-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #f6eadf;
+  }
+
+  .mini-cart-copy {
+    min-width: 0;
+  }
+
+  .mini-cart-copy strong {
+    display: block;
+    overflow: hidden;
+    color: #2b2020;
+    font-size: 13px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mini-cart-copy span {
+    display: block;
+    margin-top: 3px;
+    color: #756860;
+    font-size: 12px;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-cart-price {
+    color: #4a1d1f;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-cart-state {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 12px 10px;
+    color: #756860;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .mini-cart-state i {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: #f6eadf;
+    color: #8b4513;
+  }
+
+  .mini-cart-foot {
+    border-top: 1px solid rgba(74, 29, 31, 0.1);
+  }
+
+  .mini-cart-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #756860;
+    font-size: 12px;
+    margin-bottom: 9px;
+  }
+
+  .mini-cart-total strong {
+    color: #4a1d1f;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-cart-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mini-cart-link {
+    min-height: 38px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+    color: #4a1d1f;
+    background: #fff6ed;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-decoration: none;
+  }
+
+  .mini-cart-link.is-primary {
+    color: #fff;
+    background: #6a2d22;
+  }
+
+  @media (max-width: 600px) {
+    .notify-list,
+    .mini-cart-panel {
+      position: fixed;
+      top: 70px;
+      left: 12px;
+      right: 12px;
+      width: auto;
+      max-width: none;
+    }
+  }
+
 </style>
 
 
@@ -1230,11 +1438,43 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
             <span id="header-favorite-badge" class="favorite-badge"
               style="<?= $favoriteItemCount > 0 ? '' : 'display:none;' ?>"><?= $favoriteItemCount ?></span>
           </a>
-          <a href="<?= BASE_URL ?>pages/cart.php" class="cart-wrapper" aria-label="Giỏ hàng">
-            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
-            <span id="header-cart-badge" class="cart-badge"
-              style="<?= $cartItemCount > 0 ? '' : 'display:none;' ?>"><?= $cartItemCount ?></span>
-          </a>
+          <div class="cart-box" id="headerCartBox">
+            <button type="button"
+                    class="cart-trigger"
+                    id="headerCartBtn"
+                    aria-label="Giỏ hàng"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="headerMiniCart">
+              <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+              <span id="header-cart-badge" class="cart-badge"
+                style="<?= $cartItemCount > 0 ? '' : 'display:none;' ?>"><?= $cartItemCount ?></span>
+            </button>
+            <div class="mini-cart-panel" id="headerMiniCart" hidden>
+              <div class="mini-cart-head">
+                <span>
+                  <strong>Giỏ hàng</strong>
+                  <small id="headerMiniCartSummary"><?= $cartItemCount > 0 ? $cartItemCount . ' sản phẩm trong giỏ' : 'Chưa có sản phẩm trong giỏ' ?></small>
+                </span>
+              </div>
+              <div class="mini-cart-items" id="headerMiniCartItems">
+                <div class="mini-cart-state">
+                  <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+                  <span>Mở giỏ hàng để xem sản phẩm mới nhất.</span>
+                </div>
+              </div>
+              <div class="mini-cart-foot" id="headerMiniCartFoot">
+                <div class="mini-cart-total">
+                  <span>Tạm tính</span>
+                  <strong id="headerMiniCartTotal">0 VNĐ</strong>
+                </div>
+                <div class="mini-cart-actions">
+                  <a class="mini-cart-link" href="<?= BASE_URL ?>pages/cart.php"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Xem giỏ</a>
+                  <a class="mini-cart-link is-primary" href="<?= BASE_URL ?>pages/checkout.php"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Thanh toán</a>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="notify-box" id="headerNotifyBox">
             <button type="button"
                     class="notify-trigger"
@@ -1495,6 +1735,178 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
   });
 
   (function () {
+    const cartBox = document.getElementById('headerCartBox');
+    const cartBtn = document.getElementById('headerCartBtn');
+    const cartPanel = document.getElementById('headerMiniCart');
+    const cartItems = document.getElementById('headerMiniCartItems');
+    const cartSummary = document.getElementById('headerMiniCartSummary');
+    const cartTotal = document.getElementById('headerMiniCartTotal');
+    const cartFoot = document.getElementById('headerMiniCartFoot');
+    const cartEndpoint = <?= json_encode(rtrim(BASE_URL, '/') . '/api/cart-preview.php') ?>;
+    let miniCartLoaded = false;
+    let miniCartLoading = false;
+
+    if (!cartBox || !cartBtn || !cartPanel || !cartItems) return;
+
+    function formatVnd(value) {
+      try {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+          maximumFractionDigits: 0
+        }).format(Number(value || 0));
+      } catch (error) {
+        return (Number(value || 0)).toLocaleString('vi-VN') + ' VNĐ';
+      }
+    }
+
+    function syncCartBadge(count) {
+      const badge = document.getElementById('header-cart-badge');
+      if (!badge) return;
+      const n = Math.max(0, parseInt(count, 10) || 0);
+      if (n > 0) {
+        badge.textContent = String(n);
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.textContent = '0';
+        badge.style.display = 'none';
+      }
+    }
+
+    function renderState(message, iconClass) {
+      cartItems.innerHTML = '';
+      const state = document.createElement('div');
+      state.className = 'mini-cart-state';
+      const icon = document.createElement('i');
+      icon.className = iconClass || 'fa-solid fa-cart-shopping';
+      icon.setAttribute('aria-hidden', 'true');
+      const text = document.createElement('span');
+      text.textContent = message;
+      state.appendChild(icon);
+      state.appendChild(text);
+      cartItems.appendChild(state);
+    }
+
+    function renderMiniCart(data) {
+      const items = Array.isArray(data && data.items) ? data.items : [];
+      const count = Math.max(0, parseInt((data && data.count) || items.length, 10) || 0);
+      const total = Number((data && data.subtotal) || 0);
+
+      syncCartBadge(count);
+      if (cartSummary) {
+        cartSummary.textContent = count > 0
+          ? count + ' sản phẩm trong giỏ'
+          : (data && data.authenticated === false ? 'Đăng nhập để xem giỏ hàng' : 'Chưa có sản phẩm trong giỏ');
+      }
+      if (cartTotal) cartTotal.textContent = formatVnd(total);
+      if (cartFoot) cartFoot.hidden = (data && data.authenticated === false) || count <= 0;
+
+      if (data && data.authenticated === false) {
+        renderState('Đăng nhập để xem và tiếp tục giỏ hàng của bạn.', 'fa-solid fa-user-lock');
+        return;
+      }
+
+      if (items.length === 0) {
+        renderState('Giỏ hàng đang trống.', 'fa-solid fa-basket-shopping');
+        return;
+      }
+
+      cartItems.innerHTML = '';
+      items.forEach(function (item) {
+        const row = document.createElement('a');
+        row.className = 'mini-cart-item';
+        row.href = item.href || <?= json_encode(rtrim(BASE_URL, '/') . '/pages/cart.php') ?>;
+
+        const image = document.createElement('img');
+        image.className = 'mini-cart-thumb';
+        image.src = item.image || <?= json_encode(rtrim(BASE_URL, '/') . '/assets/img/no-image.jpg') ?>;
+        image.alt = item.name || 'Sản phẩm';
+        image.loading = 'lazy';
+        image.decoding = 'async';
+
+        const copy = document.createElement('span');
+        copy.className = 'mini-cart-copy';
+        const title = document.createElement('strong');
+        title.textContent = item.name || 'Sản phẩm';
+        const meta = document.createElement('span');
+        meta.textContent = 'x' + (parseInt(item.quantity, 10) || 1);
+        copy.appendChild(title);
+        copy.appendChild(meta);
+
+        const price = document.createElement('span');
+        price.className = 'mini-cart-price';
+        price.textContent = formatVnd(item.line_total || 0);
+
+        row.appendChild(image);
+        row.appendChild(copy);
+        row.appendChild(price);
+        cartItems.appendChild(row);
+      });
+    }
+
+    function refreshMiniCart(options) {
+      if (miniCartLoading) return Promise.resolve(null);
+      const quiet = !!(options && options.quiet);
+      miniCartLoading = true;
+      if (!quiet) {
+        if (cartFoot) cartFoot.hidden = true;
+        renderState('Đang tải giỏ hàng...', 'fa-solid fa-spinner fa-spin');
+      }
+
+      return fetch(cartEndpoint, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      }).then(function (response) {
+        return response.ok ? response.json() : { authenticated: false, count: 0, subtotal: 0, items: [] };
+      }).then(function (data) {
+        miniCartLoaded = true;
+        renderMiniCart(data || {});
+        return data;
+      }).catch(function () {
+        if (cartFoot) cartFoot.hidden = true;
+        renderState('Không tải được giỏ hàng, vui lòng thử lại.', 'fa-solid fa-triangle-exclamation');
+        return null;
+      }).finally(function () {
+        miniCartLoading = false;
+      });
+    }
+
+    function setMiniCartOpen(open) {
+      cartPanel.hidden = !open;
+      cartBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        if (window.setHeaderNotifyOpen) window.setHeaderNotifyOpen(false);
+        refreshMiniCart({ quiet: miniCartLoaded });
+      }
+    }
+
+    window.setMiniCartOpen = setMiniCartOpen;
+    window.refreshMiniCart = refreshMiniCart;
+
+    cartBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      setMiniCartOpen(cartPanel.hidden);
+    });
+
+    cartBox.addEventListener('click', function (event) {
+      event.stopPropagation();
+    });
+
+    document.addEventListener('click', function () {
+      setMiniCartOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !cartPanel.hidden) {
+        setMiniCartOpen(false);
+        cartBtn.focus();
+      }
+    });
+  })();
+
+  (function () {
     const notifyBox = document.getElementById('headerNotifyBox');
     const notifyBtn = document.getElementById('headerNotifyBtn');
     const notifyPanel = document.getElementById('notifyList');
@@ -1510,9 +1922,12 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     if (!notifyBox || !notifyBtn || !notifyPanel) return;
 
     function setNotifyOpen(open) {
+      if (open && window.setMiniCartOpen) window.setMiniCartOpen(false);
       notifyPanel.hidden = !open;
       notifyBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
+
+    window.setHeaderNotifyOpen = setNotifyOpen;
 
     function updateUnread(count) {
       unreadCount = Math.max(0, parseInt(count, 10) || 0);
@@ -1869,6 +2284,9 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
     } else {
       badge.style.display = 'none';
       badge.innerText = '0';
+    }
+    if (window.refreshMiniCart) {
+      window.refreshMiniCart({ quiet: true });
     }
   };
 

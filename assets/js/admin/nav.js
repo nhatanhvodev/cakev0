@@ -1,7 +1,7 @@
 (function(){
   var app=document.getElementById('app');
   var collapse=document.getElementById('collapseBtn');
-  var sidebar=document.querySelector('.sidebar');
+  var sidebar=document.getElementById('adminSidebar')||document.querySelector('.sidebar');
 
   function isDrawerViewport(){
     return matchMedia('(max-width:760px)').matches;
@@ -23,8 +23,18 @@
   });
   var bd=document.querySelector('.backdrop');
   if(bd)bd.addEventListener('click',closeDrawer);
+  function navLinkFromEvent(event){
+    if(!event.target||!event.target.closest)return null;
+    return event.target.closest('#adminSidebar a[href], .sidebar a[href]');
+  }
+
+  document.addEventListener('click',function(event){
+    var link=navLinkFromEvent(event);
+    if(link&&isDrawerViewport())closeDrawer();
+  },true);
+
   if(sidebar)sidebar.addEventListener('click',function(event){
-    var link=event.target.closest('.nav a');
+    var link=navLinkFromEvent(event);
     if(link&&isDrawerViewport())closeDrawer();
   });
   addEventListener('resize',function(){

@@ -942,7 +942,9 @@ foreach ($orders as $order) {
         .account-table-wrap {
             min-height: 0;
             height: 100%;
-            overflow: auto;
+            max-width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
             border: 1px solid rgba(74, 29, 31, 0.14);
             border-radius: 12px;
             background: #fffdf8;
@@ -951,9 +953,35 @@ foreach ($orders as $order) {
 
         .account-orders-table {
             width: 100%;
-            min-width: 760px;
+            min-width: 0;
+            table-layout: fixed;
             border-collapse: collapse;
             margin: 0;
+        }
+
+        .account-orders-table th:nth-child(1),
+        .account-orders-table td:nth-child(1) {
+            width: 13%;
+        }
+
+        .account-orders-table th:nth-child(2),
+        .account-orders-table td:nth-child(2) {
+            width: 19%;
+        }
+
+        .account-orders-table th:nth-child(3),
+        .account-orders-table td:nth-child(3) {
+            width: 22%;
+        }
+
+        .account-orders-table th:nth-child(4),
+        .account-orders-table td:nth-child(4) {
+            width: 26%;
+        }
+
+        .account-orders-table th:nth-child(5),
+        .account-orders-table td:nth-child(5) {
+            width: 20%;
         }
 
         .account-orders-table th {
@@ -969,6 +997,8 @@ foreach ($orders as $order) {
             letter-spacing: 0.06em;
             text-transform: uppercase;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .account-orders-table td {
@@ -977,6 +1007,7 @@ foreach ($orders as $order) {
             color: #2f2b27;
             font-size: 13.5px;
             vertical-align: middle;
+            overflow-wrap: anywhere;
         }
 
         .account-orders-table tbody tr {
@@ -1359,11 +1390,13 @@ foreach ($orders as $order) {
             }
 
             .account-table-wrap {
-                overflow: auto;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
             .account-orders-table {
                 min-width: 0;
+                table-layout: auto;
             }
 
             .account-orders-table thead {

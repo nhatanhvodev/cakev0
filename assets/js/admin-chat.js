@@ -21,6 +21,29 @@
     unread: 0
   };
   const drafts = new Map();
+  const INTENT_LABELS = {
+    faq: 'Câu hỏi thường gặp',
+    catalog_search: 'Tìm sản phẩm',
+    product_recommend: 'Gợi ý sản phẩm',
+    promotion: 'Khuyến mãi',
+    bestseller: 'Sản phẩm bán chạy',
+    order_status: 'Tra cứu đơn hàng',
+    order_create: 'Tạo đơn hàng',
+    policy_shipping: 'Chính sách giao hàng',
+    policy_payment: 'Chính sách thanh toán',
+    policy_return: 'Chính sách đổi trả',
+    complaint: 'Khiếu nại',
+    chitchat: 'Trò chuyện',
+    handoff_request: 'Gặp nhân viên',
+    coupon_inquiry: 'Hỏi mã giảm giá',
+    review_lookup: 'Xem đánh giá',
+    product_compare: 'So sánh sản phẩm',
+    favorite_add: 'Thêm yêu thích',
+    favorite_view: 'Xem yêu thích',
+    dietary_inquiry: 'Hỏi thành phần',
+    custom_cake_quote: 'Báo giá bánh đặt riêng',
+    unknown: 'Chưa phân loại'
+  };
 
   root.innerHTML = `
     <section class="ac-shell" aria-label="Quản lý hội thoại khách hàng">
@@ -170,11 +193,13 @@
 
   function statusLabel(status) {
     return {
+      open: 'Chờ hỗ trợ',
+      handoff: 'Chờ hỗ trợ',
       waiting: 'Chờ hỗ trợ',
       in_progress: 'Đang xử lý',
       closed: 'Đã đóng',
       active: 'Tự động'
-    }[status] || status || 'Tự động';
+    }[status] || (status ? 'Không rõ' : 'Tự động');
   }
 
   function normalizedStatus(status) {
@@ -186,6 +211,24 @@
   function setText(id, value) {
     const element = document.getElementById(id);
     if (element) element.textContent = String(value ?? 0);
+  }
+
+  function intentLabel(intent) {
+    const key = String(intent || '').trim().toLowerCase();
+    return INTENT_LABELS[key] || 'Khác';
+  }
+
+  function intentSummary(intentCounts) {
+    const totals = new Map();
+    Object.entries(intentCounts || {}).forEach(([key, value]) => {
+      const label = intentLabel(key);
+      const count = Number(value) || 0;
+      if (count <= 0) return;
+      totals.set(label, (totals.get(label) || 0) + count);
+    });
+    return Array.from(totals.entries())
+      .map(([label, value]) => `${label}: ${value}`)
+      .join(', ');
   }
 
   function renderStats(stats) {
@@ -200,10 +243,7 @@
 
     const intents = document.getElementById('ac-stat-intents');
     if (intents) {
-      const entries = Object.entries(stats.intent_counts || {});
-      intents.textContent = entries.length
-        ? entries.map(([key, value]) => `${key}: ${value}`).join(', ')
-        : '—';
+      intents.textContent = intentSummary(stats.intent_counts) || '—';
     }
   }
 

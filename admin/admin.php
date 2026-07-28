@@ -1192,7 +1192,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
     <link rel="icon" href="/cakev0/assets/img/logo.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Gấu Bakery</title>
+    <title>Bảng quản trị - Gấu Bakery</title>
 
     <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1983,13 +1983,13 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
             <nav class="nav flex-column">
                 <a class="nav-link active" href="admin.php?tab=dashboard#dashboard" data-tab="dashboard"
                     onclick="showTab(event, 'dashboard')"><i class="bi bi-speedometer2"></i>
-                    Dashboard</a>
+                    Tổng quan</a>
                 <a class="nav-link" href="admin.php?tab=orders#orders" data-tab="orders"
                     onclick="showTab(event, 'orders')"><i class="bi bi-cart-check"></i> Đơn hàng</a>
                 <a class="nav-link" href="admin.php?tab=products#products" data-tab="products"
                     onclick="showTab(event, 'products')"><i class="bi bi-box-seam"></i> Sản phẩm</a>
                 <a class="nav-link" href="admin.php?tab=best-selling#best-selling" data-tab="best-selling"
-                    onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Best Selling</a>
+                    onclick="showTab(event, 'best-selling')"><i class="bi bi-star"></i> Bán chạy</a>
                 <a class="nav-link" href="admin.php?tab=testimonials#testimonials" data-tab="testimonials"
                     onclick="showTab(event, 'testimonials')"><i class="bi bi-chat-quote"></i> Đánh giá</a>
                 <a class="nav-link" href="admin.php?tab=password-requests#password-requests" data-tab="password-requests"
@@ -2133,7 +2133,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             'delivered', 'da giao' => ['badge' => 'info', 'label' => 'Đã giao'],
                                             'failed' => ['badge' => 'danger', 'label' => 'Thanh toán lỗi'],
                                             'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
-                                            default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
+                                            default => ['badge' => 'secondary', 'label' => 'Không rõ']
                                         };
                                         ?>
                                         <span class="badge bg-<?= $statusData['badge'] ?>"><?= $statusData['label'] ?></span>
@@ -2198,7 +2198,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                 'delivered', 'da giao' => ['badge' => 'info', 'label' => 'Đã giao'],
                                                 'failed' => ['badge' => 'danger', 'label' => 'Thanh toán lỗi'],
                                                 'cancelled', 'huy' => ['badge' => 'danger', 'label' => 'Đã hủy'],
-                                                default => ['badge' => 'secondary', 'label' => ucfirst($o['status'])]
+                                                default => ['badge' => 'secondary', 'label' => 'Không rõ']
                                             };
                                             ?>
                                             <span
@@ -2229,7 +2229,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                     ] + $statusOptions;
                                                 }
                                                 if (!isset($statusOptions[$currentStatus])) {
-                                                    $statusOptions = [$currentStatus => ucfirst((string) $o['status'])] + $statusOptions;
+                                                    $statusOptions = [$currentStatus => 'Không rõ'] + $statusOptions;
                                                 }
                                                 foreach ($statusOptions as $value => $label):
                                                     $selected = ($currentStatus === $value) ? 'selected' : '';
@@ -2398,7 +2398,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Username</th>
+                                <th>Tên đăng nhập</th>
                                 <th>Email</th>
                                 <th>Tổng chi tiêu</th>
                                 <th>Ngày đăng ký</th>
@@ -2447,14 +2447,14 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     }
                 }
                 ?>
-                <h3 class="mb-4" style="color:#4a1d1f;">Best Selling</h3>
+                <h3 class="mb-4" style="color:#4a1d1f;">Bán chạy</h3>
 
                 <div class="custom-table mb-4">
                     <div class="best-selling-panel">
                         <div class="best-selling-hero">
                             <div class="best-selling-copy">
                                 <h5>Chọn thủ công sản phẩm bán chạy</h5>
-                                <p>Tick những bánh bạn muốn ưu tiên hiển thị ở mục Best Selling ngoài trang chủ. Số thứ tự càng nhỏ thì ưu tiên càng cao. Để trống hoặc để <strong>0</strong> nếu bạn chỉ muốn đánh dấu mà không ép thứ tự.</p>
+                                <p>Chọn những bánh bạn muốn ưu tiên hiển thị ở mục Bán chạy ngoài trang chủ. Số thứ tự càng nhỏ thì ưu tiên càng cao. Để trống hoặc để <strong>0</strong> nếu bạn chỉ muốn đánh dấu mà không ép thứ tự.</p>
                             </div>
                             <div class="best-selling-stats">
                                 <div class="best-selling-stat">
@@ -2572,7 +2572,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                             <div class="best-selling-actions">
                                 <div class="best-selling-note">Bạn có thể chọn nhiều sản phẩm, nhưng nên ưu tiên một nhóm ngắn để ngoài trang chủ gọn và rõ.</div>
                                 <button type="submit" name="update_best_selling" class="btn btn-green">
-                                    <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
+                                    <i class="bi bi-check2-circle"></i> Cập nhật bán chạy
                                 </button>
                             </div>
                         </form>
@@ -2603,7 +2603,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                     'pending' => ['label' => 'Chờ duyệt', 'badge' => 'warning text-dark'],
                                     'approved' => ['label' => 'Đã duyệt', 'badge' => 'success'],
                                     'rejected' => ['label' => 'Đã từ chối', 'badge' => 'danger'],
-                                    default => ['label' => ucfirst($reviewStatusRaw), 'badge' => 'secondary']
+                                    default => ['label' => 'Không rõ', 'badge' => 'secondary']
                                 };
                                 ?>
                                 <tr>
@@ -2671,7 +2671,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                     <td>
                                         <?php
                                         $passwordRequestStatus = (string) ($request['status'] ?? 'pending');
-                                        $passwordRequestMeta = $passwordRequestLabels[$passwordRequestStatus] ?? ['label' => ucfirst($passwordRequestStatus), 'class' => 'secondary'];
+                                        $passwordRequestMeta = $passwordRequestLabels[$passwordRequestStatus] ?? ['label' => 'Không rõ', 'class' => 'secondary'];
                                         ?>
                                         <span class="badge bg-<?= htmlspecialchars($passwordRequestMeta['class']) ?>"><?= htmlspecialchars($passwordRequestMeta['label']) ?></span>
                                     </td>
@@ -2963,11 +2963,11 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         <span class="ac-stat-value" id="ac-stat-today">-</span>
                     </div>
                     <div class="ac-stat-box">
-                        <span class="ac-stat-label">Đang chờ hỗ trợ (handoff)</span>
+                        <span class="ac-stat-label">Đang chờ hỗ trợ</span>
                         <span class="ac-stat-value" id="ac-stat-handoff">-</span>
                     </div>
                     <div class="ac-stat-box">
-                        <span class="ac-stat-label">Ý định (intent)</span>
+                        <span class="ac-stat-label">Ý định</span>
                         <span class="ac-stat-value" id="ac-stat-intents" style="font-size:13px;">-</span>
                     </div>
                 </div>
@@ -3685,7 +3685,7 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                         cancelled: 'Đã hủy'
                     };
                     const key = (status || '').toLowerCase();
-                    return map[key] || status;
+                    return map[key] || 'Không rõ';
                 }
 
                 function renderOrderDetail(orderId) {

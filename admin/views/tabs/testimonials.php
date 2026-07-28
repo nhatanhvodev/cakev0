@@ -35,7 +35,7 @@ foreach ($reviews as $r) {
         $pendingCount++;
     }
 
-    $statusData = $reviewStatusMap[$status] ?? ['badge' => $status, 'label' => ucfirst($status)];
+    $statusData = $reviewStatusMap[$status] ?? ['badge' => 'unknown', 'label' => 'Không rõ'];
 
     $actionsHtml = '<span style="color:var(--muted);font-size:12.5px;">Đã xử lý</span>';
     if ($status === 'pending') {

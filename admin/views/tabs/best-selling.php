@@ -68,7 +68,7 @@ foreach ($products as $p) {
 }
 ?>
 <div class="card panel best-selling-panel">
-  <div class="panel-head"><h2>Best Selling</h2></div>
+  <div class="panel-head"><h2>Bán chạy</h2></div>
   <p style="color:var(--muted);margin:0 0 16px;max-width:760px;">Ghim những bánh muốn ưu tiên ngoài trang chủ. Nếu chưa đủ vị trí, hệ thống tự bù bằng sản phẩm bán chạy thật và cuối cùng là sản phẩm mới nhất đang hiển thị.</p>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
@@ -97,9 +97,9 @@ foreach ($products as $p) {
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px;">
-      <div style="color:var(--muted);font-size:13px;">Sản phẩm đã ẩn không được đưa vào Best Selling. Số ưu tiên càng nhỏ thì càng lên trước; để 0 nếu chỉ muốn ghim mà không ép thứ tự.</div>
+      <div style="color:var(--muted);font-size:13px;">Sản phẩm đã ẩn không được đưa vào mục Bán chạy. Số ưu tiên càng nhỏ thì càng lên trước; để 0 nếu chỉ muốn ghim mà không ép thứ tự.</div>
       <button type="submit" name="update_best_selling" class="btn btn-primary">
-        <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
+        <i class="bi bi-check2-circle"></i> Cập nhật bán chạy
       </button>
     </div>
   </form>

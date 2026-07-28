@@ -89,7 +89,7 @@ foreach ($users as $u) {
 ?>
 <div class="card panel">
   <div class="panel-head"><h2>Khách Hàng</h2></div>
-  <?php render_table(['ID', 'Username', 'Email', 'Tổng chi tiêu', 'Ngày đăng ký', 'Hành động'], $rowsHtml); ?>
+  <?php render_table(['ID', 'Tên đăng nhập', 'Email', 'Tổng chi tiêu', 'Ngày đăng ký', 'Hành động'], $rowsHtml); ?>
 </div>
 
 <?php
@@ -120,7 +120,7 @@ render_modal('userOrdersModal', 'Đơn hàng của khách', $userOrdersBodyHtml,
       cod_not_deposited: 'Chờ xác nhận COD', cod_deposited: 'COD đã xác nhận'
     };
     var key = (status || '').toLowerCase();
-    return map[key] || status;
+    return map[key] || 'Không rõ';
   }
 
   function escapeHtml(value) {

@@ -7,7 +7,7 @@ $tabMeta = [
     'dashboard' => ['crumb' => 'Trang chủ · Tổng quan', 'title' => 'Bảng điều khiển'],
     'orders' => ['crumb' => 'Vận hành · Đơn hàng', 'title' => 'Đơn hàng'],
     'products' => ['crumb' => 'Danh mục · Sản phẩm', 'title' => 'Sản phẩm'],
-    'best-selling' => ['crumb' => 'Danh mục · Bán chạy', 'title' => 'Best Selling'],
+    'best-selling' => ['crumb' => 'Danh mục · Bán chạy', 'title' => 'Bán chạy'],
     'testimonials' => ['crumb' => 'Khách hàng · Đánh giá', 'title' => 'Đánh giá'],
     'password-requests' => ['crumb' => 'Khách hàng · Bảo mật', 'title' => 'Yêu cầu mật khẩu'],
     'users' => ['crumb' => 'Khách hàng · Người dùng', 'title' => 'Người dùng'],

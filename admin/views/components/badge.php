@@ -13,6 +13,6 @@ function render_badge(string $status): string {
     'contact-pending' => ['warn','Chờ xử lý'], 'contact-replied' => ['success','Đã phản hồi'],
   ];
   $key = strtolower(trim($status));
-  [$cls,$label] = $map[$key] ?? ['info', $status];
+  [$cls,$label] = $map[$key] ?? ['info', 'Không rõ'];
   return '<span class="pill ' . $cls . '">' . htmlspecialchars($label) . '</span>';
 }

@@ -39,6 +39,19 @@ if (!function_exists('admin_topbar_initials')) {
     }
 }
 
+if (!function_exists('admin_topbar_role_label')) {
+    function admin_topbar_role_label(string $role): string
+    {
+        $map = [
+            'admin' => 'Quản trị viên',
+            'manager' => 'Quản lý',
+            'staff' => 'Nhân viên',
+        ];
+        $key = strtolower(trim($role));
+        return $map[$key] ?? 'Quản trị viên';
+    }
+}
+
 if (!function_exists('admin_topbar_data')) {
     function admin_topbar_data(mysqli $conn): array
     {
@@ -124,7 +137,7 @@ if (!function_exists('admin_topbar_data')) {
             'notifications' => $notifications,
             'notification_count' => $totalNotifications,
             'admin_name' => $adminName,
-            'admin_role' => (string) ($_SESSION['role'] ?? 'admin'),
+            'admin_role' => admin_topbar_role_label((string) ($_SESSION['role'] ?? 'admin')),
             'admin_initials' => admin_topbar_initials($adminName),
         ];
     }

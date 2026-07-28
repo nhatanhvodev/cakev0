@@ -5,10 +5,10 @@
 </div>
 <nav class="nav">
   <div class="group-label">Tổng quan</div>
-  <a<?= $tab === 'dashboard' ? ' class="active"' : '' ?> href="index.php?tab=dashboard#dashboard"><span class="ico"><i class="bi bi-speedometer2"></i></span><span class="label">Dashboard</span></a>
+  <a<?= $tab === 'dashboard' ? ' class="active"' : '' ?> href="index.php?tab=dashboard#dashboard"><span class="ico"><i class="bi bi-speedometer2"></i></span><span class="label">Tổng quan</span></a>
   <a<?= $tab === 'orders' ? ' class="active"' : '' ?> href="index.php?tab=orders#orders"><span class="ico"><i class="bi bi-cart-check"></i></span><span class="label">Đơn hàng</span></a>
   <a<?= $tab === 'products' ? ' class="active"' : '' ?> href="index.php?tab=products#products"><span class="ico"><i class="bi bi-box-seam"></i></span><span class="label">Sản phẩm</span></a>
-  <a<?= $tab === 'best-selling' ? ' class="active"' : '' ?> href="index.php?tab=best-selling#best-selling"><span class="ico"><i class="bi bi-star"></i></span><span class="label">Best Selling</span></a>
+  <a<?= $tab === 'best-selling' ? ' class="active"' : '' ?> href="index.php?tab=best-selling#best-selling"><span class="ico"><i class="bi bi-star"></i></span><span class="label">Bán chạy</span></a>
   <a<?= $tab === 'testimonials' ? ' class="active"' : '' ?> href="index.php?tab=testimonials#testimonials"><span class="ico"><i class="bi bi-chat-quote"></i></span><span class="label">Đánh giá</span></a>
 
   <div class="group-label">Khách hàng</div>

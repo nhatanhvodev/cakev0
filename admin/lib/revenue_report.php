@@ -32,7 +32,7 @@ if (!function_exists('admin_order_status_label')) {
             'cod_deposited' => 'COD đã xác nhận',
         ];
         $key = strtolower(trim($status));
-        return $map[$key] ?? ($status !== '' ? $status : 'Không rõ');
+        return $map[$key] ?? 'Không rõ';
     }
 }
 

@@ -192,9 +192,9 @@ if (!function_exists('admin_revenue_report')) {
              FROM order_items oi
              JOIN orders o ON o.id = oi.order_id
              JOIN banh b ON b.id = oi.banh_id
-             WHERE LOWER(o.status) IN ('paid','approved','delivered','completed')
+             WHERE b.is_hidden = 0 AND LOWER(o.status) IN ('paid','approved','delivered','completed')
              GROUP BY oi.banh_id, b.ten_banh
-             ORDER BY revenue DESC, sold_qty DESC
+             ORDER BY sold_qty DESC, revenue DESC
              LIMIT 8"
         )->fetch_all(MYSQLI_ASSOC);
 

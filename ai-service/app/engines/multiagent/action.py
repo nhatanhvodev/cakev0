@@ -81,7 +81,7 @@ def _query_bestsellers(conn, limit=5) -> list[dict]:
             "SUM(oi.quantity) AS total_sold "
             "FROM order_items oi JOIN banh b ON b.id = oi.banh_id "
             "JOIN orders o ON o.id = oi.order_id "
-            "WHERE b.is_hidden = 0 AND o.status NOT IN ('cancelled') "
+            "WHERE b.is_hidden = 0 AND LOWER(o.status) IN ('paid','approved','delivered','completed') "
             "GROUP BY b.id ORDER BY total_sold DESC LIMIT %s", (limit,))
         return list(cur.fetchall())
 

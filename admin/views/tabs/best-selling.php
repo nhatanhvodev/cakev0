@@ -2,6 +2,7 @@
 /* admin/views/tabs/best-selling.php — expects $conn (mysqli), $tab in scope (see admin/views/layout.php) */
 require_once __DIR__ . '/../components/data_table.php';
 require_once __DIR__ . '/../../lib/images.php';
+require_once __DIR__ . '/../../../includes/best_selling.php';
 
 // =====================================================================
 // Data — ported verbatim from admin/admin.php:
@@ -18,20 +19,8 @@ require_once __DIR__ . '/../../lib/images.php';
 //   (schema: database/banh_store.sql L33-46); order_items.banh_id/quantity/
 //   order_id (L191-202 area); orders.id/status.
 // =====================================================================
-$products = $conn->query("SELECT * FROM banh ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
-
-$bestSalesRows = $conn->query(
-    "SELECT oi.banh_id, SUM(oi.quantity) AS sold_qty
-     FROM order_items oi
-     JOIN orders o ON o.id = oi.order_id
-     WHERE o.status IN ('paid','approved','delivered','completed')
-     GROUP BY oi.banh_id"
-)->fetch_all(MYSQLI_ASSOC);
-
-$bestSalesMap = [];
-foreach ($bestSalesRows as $row) {
-    $bestSalesMap[(int) $row['banh_id']] = (int) $row['sold_qty'];
-}
+$products = $conn->query("SELECT * FROM banh WHERE is_hidden = 0 ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
+$bestSalesMap = best_selling_sales_map($conn);
 
 $manualSelectedCount = 0;
 $topSoldProductCount = 0;
@@ -52,6 +41,8 @@ foreach ($products as $p) {
     $soldQty = (int) ($bestSalesMap[$productId] ?? 0);
     $isSelected = !empty($p['is_best_manual']);
     $rank = (int) ($p['best_rank'] ?? 0);
+    $sourceLabel = $isSelected ? 'Đã ghim' : ($soldQty > 0 ? 'Theo doanh số' : 'Dự phòng');
+    $sourceClass = $isSelected ? 'success' : ($soldQty > 0 ? 'info' : 'warn');
     $typeLabel = match ((string) ($p['loai'] ?? '')) {
         'kem' => 'Bánh kem',
         'ngot' => 'Bánh ngọt',
@@ -67,6 +58,7 @@ foreach ($products as $p) {
         . '<strong>' . htmlspecialchars((string) $p['ten_banh']) . '</strong><br>'
         . '<span style="color:var(--muted);font-size:12px;">' . htmlspecialchars($typeLabel) . '</span></td>'
         . '<td style="font-weight:700;">' . $soldQty . '</td>'
+        . '<td><span class="pill ' . $sourceClass . '">' . $sourceLabel . '</span></td>'
         . '<td><input type="checkbox" class="best-selling-toggle" name="manual_best[' . $productId . ']" data-best-toggle'
         . ($isSelected ? ' checked' : '') . '></td>'
         . '<td><input type="number" min="0" class="best-selling-rank-input" name="best_rank[' . $productId . ']"'
@@ -77,11 +69,11 @@ foreach ($products as $p) {
 ?>
 <div class="card panel best-selling-panel">
   <div class="panel-head"><h2>Best Selling</h2></div>
-  <p style="color:var(--muted);margin:0 0 16px;max-width:760px;">Tick những bánh bạn muốn ưu tiên hiển thị ở mục Best Selling ngoài trang chủ. Số thứ tự càng nhỏ thì ưu tiên càng cao. Để trống hoặc để <strong>0</strong> nếu bạn chỉ muốn đánh dấu mà không ép thứ tự.</p>
+  <p style="color:var(--muted);margin:0 0 16px;max-width:760px;">Ghim những bánh muốn ưu tiên ngoài trang chủ. Nếu chưa đủ vị trí, hệ thống tự bù bằng sản phẩm bán chạy thật và cuối cùng là sản phẩm mới nhất đang hiển thị.</p>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
     <div class="card kpi" style="min-width:132px;">
-      <div class="top"><span class="label">Đã chọn</span></div>
+      <div class="top"><span class="label">Đã ghim</span></div>
       <div class="val num" id="bestSellingSelectedCount"><?= $manualSelectedCount ?></div>
     </div>
     <div class="card kpi" style="min-width:132px;">
@@ -101,11 +93,11 @@ foreach ($products as $p) {
     <input type="text" id="bestSellingSearch" placeholder="Nhập tên bánh để lọc nhanh" style="max-width:280px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:12px;">
 
     <div class="best-selling-table-shell">
-      <?php render_table(['Ảnh', 'Sản phẩm', 'Đã bán', 'Chọn thủ công', 'Thứ tự ưu tiên'], $rowsHtml); ?>
+      <?php render_table(['Ảnh', 'Sản phẩm', 'Đã bán', 'Nguồn', 'Ghim trang chủ', 'Ưu tiên'], $rowsHtml); ?>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px;">
-      <div style="color:var(--muted);font-size:13px;">Bạn có thể chọn nhiều sản phẩm, nhưng nên ưu tiên một nhóm ngắn để ngoài trang chủ gọn và rõ.</div>
+      <div style="color:var(--muted);font-size:13px;">Sản phẩm đã ẩn không được đưa vào Best Selling. Số ưu tiên càng nhỏ thì càng lên trước; để 0 nếu chỉ muốn ghim mà không ép thứ tự.</div>
       <button type="submit" name="update_best_selling" class="btn btn-primary">
         <i class="bi bi-check2-circle"></i> Cập nhật Best Selling
       </button>

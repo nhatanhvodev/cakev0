@@ -4,6 +4,7 @@ session_start();
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 require_once 'config/connect.php';
+require_once __DIR__ . '/includes/best_selling.php';
 
 $cartItems = [];
 if (isset($_SESSION['user_id'])) {
@@ -282,51 +283,7 @@ $slides = [
 ];
 
 $bestLimit = 8;
-$manualBestRes = $conn->query(
-    "SELECT * FROM banh WHERE is_best_manual = 1 ORDER BY (best_rank = 0), best_rank ASC, id DESC LIMIT {$bestLimit}"
-);
-$manualBest = ($manualBestRes) ? $manualBestRes->fetch_all(MYSQLI_ASSOC) : [];
-
-$topSellingRes = $conn->query(
-    "SELECT b.*, SUM(oi.quantity) AS sold_qty
-     FROM banh b
-     JOIN order_items oi ON oi.banh_id = b.id
-     JOIN orders o ON o.id = oi.order_id
-     WHERE o.status IN ('paid','approved','delivered','completed')
-     GROUP BY b.id
-     ORDER BY sold_qty DESC, b.id DESC
-     LIMIT {$bestLimit}"
-);
-$topSelling = ($topSellingRes) ? $topSellingRes->fetch_all(MYSQLI_ASSOC) : [];
-
-$bestList = [];
-$bestMap = [];
-foreach ($manualBest as $item) {
-    $bestMap[$item['id']] = true;
-    $bestList[] = $item;
-}
-foreach ($topSelling as $item) {
-    if (!isset($bestMap[$item['id']])) {
-        $bestMap[$item['id']] = true;
-        $bestList[] = $item;
-    }
-    if (count($bestList) >= $bestLimit) {
-        break;
-    }
-}
-if (count($bestList) < $bestLimit) {
-    $fallbackLimit = $bestLimit - count($bestList);
-    $fallbackRes = $conn->query(
-        "SELECT * FROM banh ORDER BY id DESC LIMIT {$fallbackLimit}"
-    );
-    $fallback = ($fallbackRes) ? $fallbackRes->fetch_all(MYSQLI_ASSOC) : [];
-    foreach ($fallback as $item) {
-        if (!isset($bestMap[$item['id']])) {
-            $bestMap[$item['id']] = true;
-            $bestList[] = $item;
-        }
-    }
-}
+$bestList = best_selling_products($conn, $bestLimit);
 
 $sql_review = "SELECT * FROM reviews WHERE status = 'approved' ORDER BY timestamp DESC LIMIT 3";
 $res_review = $conn->query($sql_review);

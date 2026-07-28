@@ -814,9 +814,90 @@ foreach ($orders as $order) {
         }
 
         #settings-tab.active {
-            display: block;
-            overflow: auto;
-            padding-right: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-right: 0;
+        }
+
+        #settings-tab > .row {
+            --bs-gutter-x: 0;
+            --bs-gutter-y: 0;
+            margin: 0;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        #settings-tab > .row > hr {
+            display: none;
+        }
+
+        #settings-tab > .row > [class*="col-"] {
+            width: auto;
+            max-width: none;
+            margin: 0 !important;
+            padding: 12px;
+            border: 1px solid rgba(74, 29, 31, 0.14);
+            border-radius: 14px;
+            background: linear-gradient(180deg, #fffdf8 0%, #fff9ef 100%);
+            box-shadow: 0 8px 18px rgba(74, 29, 31, 0.06);
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #settings-tab form {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+        }
+
+        #settings-tab form > .row {
+            --bs-gutter-x: 10px;
+            --bs-gutter-y: 8px;
+            width: 100%;
+            margin: 0;
+            align-content: start;
+        }
+
+        #settings-tab .form-label {
+            margin-bottom: 4px;
+            color: #7b6d63 !important;
+            font-size: 11px !important;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        #settings-tab .form-control {
+            min-height: 38px;
+            border-radius: 10px;
+            border-color: rgba(74, 29, 31, 0.14);
+            background-color: #fff;
+            padding: 7px 10px;
+            color: var(--brown-800);
+            font-size: 13px;
+            box-shadow: none;
+        }
+
+        #settings-tab .form-control:focus {
+            border-color: var(--brown-700);
+            box-shadow: 0 0 0 3px rgba(106, 45, 34, 0.12);
+        }
+
+        #settings-tab .form-control-sm {
+            min-height: 36px;
+            padding: 6px 10px;
+        }
+
+        #settings-tab .col-12:last-child {
+            display: flex;
+            align-items: flex-end;
         }
 
         .account-orders-panel {
@@ -1037,6 +1118,16 @@ foreach ($orders as $order) {
             margin-bottom: 14px;
         }
 
+        #settings-tab .subsection-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
         .subsection-title.danger {
             color: #b42318;
         }
@@ -1048,6 +1139,18 @@ foreach ($orders as $order) {
             border-radius: 999px;
             padding: 10px 18px;
             font-weight: 600;
+        }
+
+        #settings-tab .btn-theme,
+        #settings-tab .btn-theme-danger {
+            width: 100%;
+            min-height: 38px;
+            padding: 8px 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
         }
 
         .btn-theme:hover {
@@ -1134,6 +1237,18 @@ foreach ($orders as $order) {
             .content-card {
                 height: min(620px, calc(100dvh - 190px));
             }
+
+            #settings-tab > .row {
+                grid-template-columns: 1fr;
+            }
+
+            #settings-tab.active {
+                overflow: auto;
+            }
+
+            #settings-tab > .row > [class*="col-"] {
+                overflow: visible;
+            }
         }
 
         @media (max-width: 768px) {
@@ -1162,6 +1277,15 @@ foreach ($orders as $order) {
             .nav-tabs .nav-link {
                 padding: 8px 12px;
                 font-size: 13px;
+            }
+
+            #settings-tab form,
+            #settings-tab form > .row {
+                display: block;
+            }
+
+            #settings-tab form > .row > [class*="col-"] {
+                margin-bottom: 10px;
             }
 
             .account-table-wrap {

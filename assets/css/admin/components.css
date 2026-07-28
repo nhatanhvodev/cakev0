@@ -102,13 +102,13 @@ tbody tr:hover { background: var(--surface-2); }
 
 .orders-panel {
   display: flex; flex-direction: column; height: calc(100dvh - 156px);
-  min-height: 520px; overflow: hidden;
+  min-height: 520px; overflow: hidden; position: relative;
 }
 .orders-form { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 10px; }
 .orders-actionbar {
   display: flex; align-items: center; justify-content: flex-end; gap: 12px;
-  align-self: flex-end; width: fit-content; max-width: 100%;
-  position: sticky; top: 0; z-index: 4;
+  width: fit-content; max-width: calc(100% - 36px);
+  position: absolute; top: 18px; right: 18px; z-index: 4;
   padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
   background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
   box-shadow: var(--shadow);
@@ -134,7 +134,7 @@ tbody tr:hover { background: var(--surface-2); }
 }
 @media (max-width: 760px) {
   .orders-panel { height: calc(100dvh - 128px); min-height: 440px; padding: 12px; }
-  .orders-actionbar { align-items: stretch; flex-direction: column; width: 100%; }
+  .orders-actionbar { align-items: stretch; flex-direction: column; position: static; width: 100%; max-width: 100%; }
   .orders-bulk-button { justify-content: center; width: 100%; }
 }
 

@@ -1,12 +1,18 @@
-<?php /* admin/views/layout.php — expects $tab, $conn in scope */ ?>
+<?php
+/* admin/views/layout.php — expects $tab, $conn in scope */
+$adminAssetVersion = static function (string $path): string {
+  $absolutePath = dirname(__DIR__, 2) . '/' . ltrim($path, '/');
+  return is_file($absolutePath) ? (string) filemtime($absolutePath) : (string) time();
+};
+?>
 <!doctype html><html lang="vi"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bảng điều khiển | Gấu Bakery</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <script>(function(){var t=localStorage.getItem('admin-theme');if(t){document.documentElement.setAttribute('data-theme',t);}})();</script>
-<link rel="stylesheet" href="../assets/css/admin/tokens.css">
-<link rel="stylesheet" href="../assets/css/admin/layout.css">
-<link rel="stylesheet" href="../assets/css/admin/components.css">
+<link rel="stylesheet" href="../assets/css/admin/tokens.css?v=<?= $adminAssetVersion('assets/css/admin/tokens.css') ?>">
+<link rel="stylesheet" href="../assets/css/admin/layout.css?v=<?= $adminAssetVersion('assets/css/admin/layout.css') ?>">
+<link rel="stylesheet" href="../assets/css/admin/components.css?v=<?= $adminAssetVersion('assets/css/admin/components.css') ?>">
 <?php if (($tab ?? '') === 'chat'): ?><link rel="stylesheet" href="../assets/css/admin-chat.css"><?php endif; ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head><body class="<?= ($tab ?? '') === 'chat' ? 'admin-chat-view' : '' ?>">

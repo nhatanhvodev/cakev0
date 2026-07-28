@@ -101,9 +101,9 @@ td { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 13.5px;
 tbody tr:hover { background: var(--surface-2); }
 
 .orders-panel {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr);
   align-items: center; gap: 8px 12px;
-  min-height: 0; overflow: visible;
+  height: calc(100dvh - 150px); min-height: 520px; overflow: hidden;
 }
 .orders-panel > .panel-head { grid-column: 1; grid-row: 1; min-height: 32px; margin-bottom: 0; }
 .orders-form { display: contents; min-height: 0; }
@@ -125,9 +125,9 @@ tbody tr:hover { background: var(--surface-2); }
   white-space: nowrap; font-size: 12.5px;
 }
 .orders-bulk-button:disabled { opacity: .55; cursor: not-allowed; filter: grayscale(.2); }
-.orders-table-shell { grid-column: 1 / -1; grid-row: 2; min-height: 0; }
+.orders-table-shell { grid-column: 1 / -1; grid-row: 2; align-self: stretch; min-height: 0; overflow: hidden; }
 .orders-table-shell .table-scroll {
-  max-height: min(540px, calc(100dvh - 300px)); overflow: auto; border: 1px solid var(--border); border-radius: 10px;
+  height: 100%; overflow: auto; border: 1px solid var(--border); border-radius: 10px;
 }
 .orders-table-shell table { min-width: 1120px; }
 .orders-table-shell th {
@@ -143,11 +143,11 @@ tbody tr:hover { background: var(--surface-2); }
 @media (max-width: 760px) {
   .orders-panel {
     display: flex; flex-direction: column; align-items: stretch;
-    padding: 12px;
+    height: auto; min-height: 0; padding: 12px; overflow: visible;
   }
   .orders-form { display: flex; min-height: 0; flex-direction: column; gap: 8px; }
   .orders-actionbar { align-items: stretch; flex-direction: column; width: 100%; max-width: 100%; }
-  .orders-table-shell .table-scroll { max-height: min(520px, calc(100dvh - 280px)); }
+  .orders-table-shell .table-scroll { height: auto; max-height: min(520px, calc(100dvh - 280px)); }
   .orders-bulk-button { justify-content: center; width: 100%; }
 }
 

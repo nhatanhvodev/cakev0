@@ -103,7 +103,7 @@ tbody tr:hover { background: var(--surface-2); }
 .orders-panel {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr);
   align-items: center; gap: 8px 12px;
-  height: calc(100dvh - 88px); min-height: 580px; overflow: hidden;
+  height: calc(100dvh - 88px); min-height: 560px; overflow: hidden;
 }
 .orders-panel > .panel-head { grid-column: 1; grid-row: 1; min-height: 32px; margin-bottom: 0; }
 .orders-form { display: contents; min-height: 0; }

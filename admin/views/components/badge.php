@@ -4,6 +4,7 @@ function render_badge(string $status): string {
     'completed' => ['success','Hoàn thành'], 'delivered' => ['success','Đã giao'],
     'paid' => ['success','Đã thanh toán'], 'approved' => ['info','Đang xử lý'],
     'processing' => ['info','Đang xử lý'], 'pending' => ['warn','Chờ duyệt'],
+    'cod_not_deposited' => ['warn','Chờ COD'], 'cod_deposited' => ['info','COD xác nhận'],
     'cancelled' => ['danger','Đã huỷ'], 'canceled' => ['danger','Đã huỷ'],
     'review-approved' => ['success','Đã duyệt'], 'rejected' => ['danger','Đã từ chối'],
     'request-approved' => ['success','Đã duyệt'],

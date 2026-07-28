@@ -76,8 +76,8 @@ if (!function_exists('notification_order_status_label')) {
             'completed' => 'Hoàn tất',
             'failed' => 'Thanh toán lỗi',
             'cancelled' => 'Đã hủy',
-            'cod_not_deposited' => 'Chưa đặt cọc',
-            'cod_deposited' => 'Đã đặt cọc',
+            'cod_not_deposited' => 'Chờ xác nhận COD',
+            'cod_deposited' => 'COD đã xác nhận',
         ];
         $key = strtolower(trim($status));
         return $map[$key] ?? ($status !== '' ? $status : 'Không rõ');
@@ -143,10 +143,6 @@ if (!function_exists('notifyOrderCreated')) {
     {
         $label = notification_order_status_label($status);
         $message = 'Gấu Bakery đã ghi nhận đơn ' . notification_vnd($totalAmount) . '. Trạng thái hiện tại: ' . $label . '.';
-        if ($status === 'cod_not_deposited') {
-            $message = 'Gấu Bakery đã nhận đơn ' . notification_vnd($totalAmount) . '. Vui lòng đặt cọc để shop xác nhận đơn.';
-        }
-
         return createUserNotification(
             $conn,
             $userId,

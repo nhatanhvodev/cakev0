@@ -101,8 +101,8 @@ $statusLabel = match ($status) {
     'failed' => 'Thất bại',
     'cancelled', 'huy' => 'Đã hủy',
     'pending', 'cho xac nhan' => 'Chờ xác nhận',
-    'cod_not_deposited' => 'Ch&#432;a &#273;&#7863;t c&#7885;c',
-    'cod_deposited' => '&#272;&#227; &#273;&#7863;t c&#7885;c',
+    'cod_not_deposited' => 'Chờ xác nhận COD',
+    'cod_deposited' => 'COD đã xác nhận',
     default => ucfirst($order['status'])
 };
 

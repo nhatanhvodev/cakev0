@@ -1095,8 +1095,8 @@ foreach ($orders as $order) {
                                                         $statusData = match (strtolower($o['status'])) {
                                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                                             'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
-                                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Ch&#432;a &#273;&#7863;t c&#7885;c'],
-                                                            'cod_deposited' => ['badge' => 'primary', 'label' => '&#272;&#227; &#273;&#7863;t c&#7885;c'],
+                                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Chờ xác nhận COD'],
+                                                            'cod_deposited' => ['badge' => 'primary', 'label' => 'COD đã xác nhận'],
                                                             'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                                             'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                                             'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],

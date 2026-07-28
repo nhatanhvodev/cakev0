@@ -117,7 +117,7 @@ render_modal('userOrdersModal', 'Đơn hàng của khách', $userOrdersBodyHtml,
       pending: 'Đang chờ xác nhận', paid: 'Đã thanh toán', approved: 'Đã xác nhận',
       confirmed: 'Đã xác nhận', delivering: 'Đang giao', delivered: 'Đã giao',
       completed: 'Hoàn tất', failed: 'Thanh toán lỗi', cancelled: 'Đã hủy',
-      cod_not_deposited: 'Chưa đặt cọc', cod_deposited: 'Đã đặt cọc'
+      cod_not_deposited: 'Chờ xác nhận COD', cod_deposited: 'COD đã xác nhận'
     };
     var key = (status || '').toLowerCase();
     return map[key] || status;

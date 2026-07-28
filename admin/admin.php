@@ -2125,8 +2125,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                         $statusData = match (strtolower($o['status'])) {
                                             'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                             'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
-                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Ch&#432;a &#273;&#7863;t c&#7885;c'],
-                                            'cod_deposited' => ['badge' => 'primary', 'label' => '&#272;&#227; &#273;&#7863;t c&#7885;c'],
+                                            'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Chờ xác nhận COD'],
+                                            'cod_deposited' => ['badge' => 'primary', 'label' => 'COD đã xác nhận'],
                                             'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                             'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                             'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -2190,8 +2190,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                             $statusData = match (strtolower($o['status'])) {
                                                 'completed', 'thanh cong' => ['badge' => 'success', 'label' => 'Hoàn tất'],
                                                 'pending', 'cho xu ly' => ['badge' => 'warning', 'label' => 'Đang chờ xác nhận'],
-                                                'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Ch&#432;a &#273;&#7863;t c&#7885;c'],
-                                                'cod_deposited' => ['badge' => 'primary', 'label' => '&#272;&#227; &#273;&#7863;t c&#7885;c'],
+                                                'cod_not_deposited' => ['badge' => 'warning text-dark', 'label' => 'Chờ xác nhận COD'],
+                                                'cod_deposited' => ['badge' => 'primary', 'label' => 'COD đã xác nhận'],
                                                 'paid' => ['badge' => 'primary', 'label' => 'Đã thanh toán'],
                                                 'approved', 'confirmed' => ['badge' => 'info', 'label' => 'Đã xác nhận'],
                                                 'delivering' => ['badge' => 'info', 'label' => 'Đang giao'],
@@ -2209,7 +2209,6 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                 style="min-width: 160px;">
                                                 <?php
                                                 $currentStatus = strtolower((string) $o['status']);
-                                                $isCodOrder = isCodPaymentMethod((string) ($o['payment_method'] ?? ''));
                                                 $statusOptions = [
                                                     'pending' => 'Đang chờ',
                                                     'paid' => 'Đã thanh toán',
@@ -2220,10 +2219,13 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                                                     'cancelled' => 'Đã hủy',
                                                     'failed' => 'Thanh toán lỗi'
                                                 ];
-                                                if ($isCodOrder) {
+                                                $legacyCodLabels = [
+                                                    'cod_not_deposited' => 'Chờ xác nhận COD',
+                                                    'cod_deposited' => 'COD đã xác nhận'
+                                                ];
+                                                if (isset($legacyCodLabels[$currentStatus])) {
                                                     $statusOptions = [
-                                                        'cod_not_deposited' => 'Ch&#432;a &#273;&#7863;t c&#7885;c',
-                                                        'cod_deposited' => '&#272;&#227; &#273;&#7863;t c&#7885;c'
+                                                        $currentStatus => $legacyCodLabels[$currentStatus]
                                                     ] + $statusOptions;
                                                 }
                                                 if (!isset($statusOptions[$currentStatus])) {
@@ -3672,8 +3674,8 @@ if (isset($_GET['export_revenue']) && isset($_SESSION['admin_logged_in'])) {
                     const map = {
                         completed: 'Hoàn tất',
                         pending: '&#272;ang ch&#7901; x&#225;c nh&#7853;n',
-                        cod_not_deposited: 'Ch&#432;a &#273;&#7863;t c&#7885;c',
-                        cod_deposited: '&#272;&#227; &#273;&#7863;t c&#7885;c',
+                        cod_not_deposited: 'Chờ xác nhận COD',
+                        cod_deposited: 'COD đã xác nhận',
                         paid: 'Đã thanh toán',
                         approved: 'Đã xác nhận',
                         confirmed: 'Đã xác nhận',

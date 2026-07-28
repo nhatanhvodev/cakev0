@@ -28,8 +28,8 @@ if (!function_exists('admin_order_status_label')) {
             'completed' => 'Hoàn tất',
             'failed' => 'Thanh toán lỗi',
             'cancelled' => 'Đã hủy',
-            'cod_not_deposited' => 'Chưa đặt cọc',
-            'cod_deposited' => 'Đã đặt cọc',
+            'cod_not_deposited' => 'Chờ xác nhận COD',
+            'cod_deposited' => 'COD đã xác nhận',
         ];
         $key = strtolower(trim($status));
         return $map[$key] ?? ($status !== '' ? $status : 'Không rõ');

@@ -64,22 +64,20 @@ $statusLabelsBase = [
     'cancelled' => 'Đã hủy',
     'failed' => 'Thanh toán lỗi',
 ];
-$codLabels = [
-    'cod_not_deposited' => 'Chưa đặt cọc',
-    'cod_deposited' => 'Đã đặt cọc',
+$legacyCodLabels = [
+    'cod_not_deposited' => 'Chờ xác nhận COD',
+    'cod_deposited' => 'COD đã xác nhận',
 ];
 
 $rowsHtml = '';
 foreach ($orders as $o) {
     $orderId = (int) $o['id'];
     $currentStatus = strtolower((string) $o['status']);
-    $isCodOrder = isCodPaymentMethod((string) ($o['payment_method'] ?? ''));
 
     $statusOptions = $statusLabelsBase;
-    if ($isCodOrder) {
-        $statusOptions = $codLabels + $statusOptions;
-    }
-    if (!isset($statusOptions[$currentStatus])) {
+    if (isset($legacyCodLabels[$currentStatus])) {
+        $statusOptions = [$currentStatus => $legacyCodLabels[$currentStatus]] + $statusOptions;
+    } elseif (!isset($statusOptions[$currentStatus])) {
         $statusOptions = [$currentStatus => ucfirst((string) $o['status'])] + $statusOptions;
     }
 
@@ -157,7 +155,7 @@ render_modal('adminOrderModal', 'Chi tiết đơn hàng', $orderModalBody, $orde
       pending: 'Đang chờ xác nhận', paid: 'Đã thanh toán', approved: 'Đã xác nhận',
       confirmed: 'Đã xác nhận', delivering: 'Đang giao', delivered: 'Đã giao',
       completed: 'Hoàn tất', failed: 'Thanh toán lỗi', cancelled: 'Đã hủy',
-      cod_not_deposited: 'Chưa đặt cọc', cod_deposited: 'Đã đặt cọc'
+      cod_not_deposited: 'Chờ xác nhận COD', cod_deposited: 'COD đã xác nhận'
     };
     var key = (status || '').toLowerCase();
     return map[key] || status;

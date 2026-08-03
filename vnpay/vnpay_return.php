@@ -97,7 +97,7 @@ $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
     <div class="container">
         <?php
         $toast = null;
-        if ($secureHash == $vnp_SecureHash) {
+        if (hash_equals($secureHash, (string) $vnp_SecureHash)) {
             $order_id = (int) $_GET['vnp_TxnRef'];
             if ($_GET['vnp_ResponseCode'] == '00') {
                 // Thành công

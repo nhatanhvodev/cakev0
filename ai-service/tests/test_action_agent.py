@@ -81,24 +81,27 @@ def _state(query, user_id=None):
             "context": {"user_id": user_id} if user_id else {}}
 
 
-def test_action_node_no_conn_asks_for_phone():
+def test_action_node_guest_asks_to_login():
+    # A guest (no authenticated user_id) must be told to log in — never a lookup.
     deps = _Deps(conn_factory=lambda: None)
     out = action_node(deps, _state("đơn của tôi sao rồi"))
-    assert "số điện thoại" in out["response"]
+    assert "đăng nhập" in out["response"].lower()
     assert "action_result" not in out
 
 
-def test_action_node_guest_no_phone_asks_for_phone_and_closes_conn():
+def test_action_node_guest_never_opens_db():
+    # The login guard must short-circuit before any DB connection is opened.
     conn = _FakeConn([{"id": 1, "status": "pending", "total_amount": Decimal("100000"),
                         "created_at": "2026-07-19", "payment_method": "COD"}])
     deps = _Deps(conn_factory=lambda: conn)
     out = action_node(deps, _state("đơn của tôi sao rồi"))
-    assert "số điện thoại" in out["response"]
+    assert "đăng nhập" in out["response"].lower()
     assert "action_result" not in out
-    assert conn.closed is True
+    assert conn.closed is False  # connection was never opened
 
 
-def test_action_node_guest_with_phone_looks_up_order():
+def test_action_node_guest_with_phone_is_refused():
+    # IDOR guard: a guest typing someone's phone must NOT get their orders.
     orders_rows = [{"id": 7, "status": "shipping", "total_amount": Decimal("350000"),
                      "created_at": "2026-07-19", "payment_method": "COD"}]
     items_rows = [{"ten_banh": "Bánh kem dâu", "quantity": 1, "price": Decimal("350000")}]
@@ -107,14 +110,9 @@ def test_action_node_guest_with_phone_looks_up_order():
 
     out = action_node(deps, _state("sdt 0901234567 đơn #7 sao rồi"))
 
-    assert out["action_result"]["type"] == "order_status"
-    order = out["action_result"]["orders"][0]
-    assert order["id"] == 7
-    assert isinstance(order["total_amount"], float)
-    assert isinstance(order["created_at"], str)
-    assert isinstance(order["items"][0]["price"], float)
-    assert "Đang giao" in out["response"]
-    assert conn.closed is True
+    assert "đăng nhập" in out["response"].lower()
+    assert "action_result" not in out
+    assert conn.closed is False
 
 
 def test_action_node_logged_in_user_looks_up_by_user_id():

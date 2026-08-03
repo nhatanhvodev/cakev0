@@ -57,10 +57,12 @@ if ($afterId !== null) {
 }
 
 $adminBypass = false;
+$userIdentity = null;
 if (!empty($_SESSION['admin_logged_in'])) {
     $adminBypass = true;
 } elseif (isset($_SESSION['user_id'])) {
-    $query['user_id'] = (int) $_SESSION['user_id'];
+    // Send a signed identity header instead of a spoofable user_id query param.
+    $userIdentity = chat_user_identity_header((int) $_SESSION['user_id']);
 } elseif (!empty($_GET['guest_token'])) {
     $query['guest_token'] = substr((string) $_GET['guest_token'], 0, 64);
 }
@@ -72,6 +74,8 @@ if ($adminBypass) {
     if ($bypass !== null) {
         $headers[] = $bypass;
     }
+} elseif ($userIdentity !== null) {
+    $headers[] = $userIdentity;
 }
 
 $ch = curl_init($url);

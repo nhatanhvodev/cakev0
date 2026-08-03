@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     enable_normalizer: bool = True
     telegram_bot_token: str = ""       # handoff notification via Telegram
     telegram_chat_id: str = ""         # chat/group ID to receive handoff alerts
+    expose_debug: bool = False         # gate /debug/* diagnostics; keep off in prod
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

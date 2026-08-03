@@ -8,7 +8,14 @@ def lookup_orders(conn, phone=None, order_id=None, user_id=None, limit=5) -> lis
     payment_method) each with a nested `items` list of
     `{ten_banh, quantity, price}`. Returns [] when no filter is given,
     to avoid ever returning the whole orders table.
+
+    A valid `user_id` is REQUIRED: order lookups must always be scoped to the
+    authenticated owner. Without it (e.g. phone-only), returns [] so no caller
+    can read another customer's orders. Defense in depth behind the API layer.
     """
+    if not user_id:
+        return []
+
     where, params = [], []
     if order_id:
         where.append("o.id = %s")

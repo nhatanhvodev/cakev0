@@ -22,10 +22,18 @@ if (trim((string) ($input['message'] ?? '')) === '') {
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
 $payload = chat_build_forward_payload($input, $userId);
 
+$headers = ['Content-Type: application/json'];
+if ($userId !== null) {
+    $identity = chat_user_identity_header($userId);
+    if ($identity !== null) {
+        $headers[] = $identity;
+    }
+}
+
 $ch = curl_init(chat_ai_service_url() . '/chat/send');
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_HTTPHEADER => $headers,
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 30,

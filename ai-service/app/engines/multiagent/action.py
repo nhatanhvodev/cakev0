@@ -149,19 +149,24 @@ def action_node(deps, state):
             conn.close()
         return {"response": text, "products": products[:5]}
 
-    # order_status
+    # order_status — only the authenticated owner may look up their own orders.
+    # Phone-based lookup was removed: it let any guest read another customer's
+    # order history by typing their phone number (IDOR / PII exposure).
     user_id = state.get("context", {}).get("user_id")
-    phone = extract_phone(state["query"])
     order_id = extract_order_id(state["query"])
 
+    if not user_id:
+        return {"response": "Bạn vui lòng đăng nhập để mình tra cứu đơn hàng của bạn nhé, "
+                            "hoặc mình chuyển bạn tới nhân viên hỗ trợ."}
+
     conn = deps.conn_factory()
-    if conn is None or (not user_id and not phone):
-        if conn is not None:
-            conn.close()
-        return {"response": "Bạn cho mình xin số điện thoại đặt hàng (hoặc đăng nhập) để tra cứu đơn nhé."}
+    if conn is None:
+        return {"response": "Không kết nối được cơ sở dữ liệu, vui lòng thử lại sau."}
 
     try:
-        orders = lookup_orders(conn, phone=phone, order_id=order_id, user_id=user_id)
+        # order_id is AND-combined with user_id, so it can only ever match the
+        # caller's own order.
+        orders = lookup_orders(conn, order_id=order_id, user_id=user_id)
     finally:
         conn.close()
 

@@ -1,7 +1,7 @@
 import json
 import time
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.config import get_settings
@@ -156,6 +156,8 @@ def health():
 
 @app.get("/debug/config")
 def debug_config():
+    if not settings.expose_debug:
+        raise HTTPException(status_code=404)
     return {
         "llm_provider": settings.llm_provider,
         "llm_model": settings.llm_model,
@@ -167,6 +169,8 @@ def debug_config():
 
 @app.get("/debug/llm-test")
 def debug_llm_test():
+    if not settings.expose_debug:
+        raise HTTPException(status_code=404)
     import traceback
     try:
         from app.llm import build_llm_client

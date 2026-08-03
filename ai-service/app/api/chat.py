@@ -44,6 +44,7 @@ class HandoffRequest(BaseModel):
     session_id: int
     reason: str = ""
     priority: str = "medium"
+    guest_token: str | None = None
 
 
 class AdminReply(BaseModel):
@@ -102,6 +103,37 @@ def _require_admin(x_admin_bypass: str | None) -> None:
         raise HTTPException(status_code=403, detail="admin_auth_required")
 
 
+def _verify_user_identity(header_val: str | None) -> int | None:
+    """Verify HMAC(secret, "user:<ts>:<user_id>") and return the signed user_id.
+
+    Mirrors _verify_admin_bypass. Returns None on any failure (missing/malformed
+    header, stale timestamp, bad signature) so the caller is treated as a guest
+    (fail-closed). The PHP proxy signs this header from the server-side session,
+    so a direct caller cannot forge another user's identity.
+    """
+    if not header_val or header_val.count(":") < 2:
+        return None
+    ts_str, uid_str, signature = header_val.split(":", 2)
+    try:
+        timestamp = int(ts_str)
+        user_id = int(uid_str)
+    except ValueError:
+        return None
+    if user_id <= 0:
+        return None
+    if abs(time.time() - timestamp) > ADMIN_BYPASS_MAX_AGE:
+        return None
+    secret = get_settings().internal_api_secret
+    expected = _hmac.new(
+        secret.encode(),
+        f"user:{timestamp}:{user_id}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    if not _hmac.compare_digest(expected, signature):
+        return None
+    return user_id
+
+
 def _serialize_message(message: dict) -> dict:
     return {
         "id": message["id"],
@@ -135,7 +167,14 @@ def _serialize_admin_session(row: dict) -> dict:
 
 
 @router.post("/chat/send")
-def chat_send(req: ChatSendRequest, engine=Depends(deps_mod.get_engine)):
+def chat_send(
+    req: ChatSendRequest,
+    x_user_identity: str | None = Header(default=None),
+    engine=Depends(deps_mod.get_engine),
+):
+    # Trust only the signed identity from the PHP proxy, never req.user_id (which
+    # a direct caller could spoof). Guests (no valid header) are scoped by guest_token.
+    trusted_uid = _verify_user_identity(x_user_identity)
     conn = engine.deps.conn_factory()
     history = []
     session = {"id": 0}
@@ -143,7 +182,7 @@ def chat_send(req: ChatSendRequest, engine=Depends(deps_mod.get_engine)):
         if conn is not None:
             session = chat_repo.get_or_create_session(
                 conn,
-                user_id=req.user_id,
+                user_id=trusted_uid,
                 guest_token=req.guest_token,
                 session_id=req.session_id,
             )
@@ -157,7 +196,7 @@ def chat_send(req: ChatSendRequest, engine=Depends(deps_mod.get_engine)):
 
         context = dict(req.context)
         context["session"] = session
-        context["user_id"] = req.user_id
+        context["user_id"] = trusted_uid
         reply = engine.handle(history, req.message, context)
 
         if conn is not None:
@@ -211,10 +250,15 @@ def chat_history(
     after_id: int | None = Query(default=None, gt=0),
     limit: int = Query(default=50, ge=1, le=100),
     x_admin_bypass: str | None = Header(default=None),
+    x_user_identity: str | None = Header(default=None),
     engine=Depends(deps_mod.get_engine),
 ):
     if before_id is not None and after_id is not None:
         raise HTTPException(status_code=422, detail="use_only_one_cursor")
+
+    # Ownership is decided by the signed identity (or guest_token), not the
+    # spoofable user_id query param.
+    trusted_uid = _verify_user_identity(x_user_identity)
 
     conn = engine.deps.conn_factory()
     if conn is None:
@@ -237,7 +281,7 @@ def chat_history(
         if session_row is None or (
             not is_admin
             and not chat_repo._session_owner_matches(
-                session_row, user_id, guest_token, None
+                session_row, trusted_uid, guest_token, None
             )
         ):
             raise HTTPException(status_code=403, detail="session_not_owned")
@@ -264,13 +308,33 @@ def chat_history(
 
 
 @router.post("/chat/handoff")
-def chat_handoff(req: HandoffRequest, engine=Depends(deps_mod.get_engine)):
+def chat_handoff(
+    req: HandoffRequest,
+    x_admin_bypass: str | None = Header(default=None),
+    x_user_identity: str | None = Header(default=None),
+    engine=Depends(deps_mod.get_engine),
+):
     from app.db import ticket_repo
 
     conn = engine.deps.conn_factory()
     if conn is None:
         return {"ticket_id": None, "status": "open"}
     try:
+        # Only the session owner (or an admin) may open a handoff/ticket for it.
+        is_admin = _verify_admin_bypass(x_admin_bypass)
+        if not is_admin:
+            trusted_uid = _verify_user_identity(x_user_identity)
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM chat_sessions WHERE id = %s",
+                    (req.session_id,),
+                )
+                session_row = cursor.fetchone()
+            if session_row is None or not chat_repo._session_owner_matches(
+                session_row, trusted_uid, req.guest_token, None
+            ):
+                raise HTTPException(status_code=403, detail="session_not_owned")
+
         ticket_id = ticket_repo.create_ticket(
             conn,
             req.session_id,

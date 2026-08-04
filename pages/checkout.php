@@ -108,9 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone   = trim($_POST['phone']);
     $address = trim($_POST['address']);
     $note    = trim($_POST['note'] ?? '');
-    $payment = $_POST['payment_method']; //
+    $payment = trim((string) ($_POST['payment_method'] ?? ''));
 
-    if (!$name || !$phone || !$address || !$payment) {
+    if (!$name || !$phone || !$address || !in_array($payment, ['Tiền mặt', 'SePay'], true)) {
         echo "<script>window.showToast('Vui lòng điền đầy đủ thông tin!', 'success');</script>";
     } else {
         // Bắt đầu Transaction
@@ -131,14 +131,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_item->execute();
             }
 
-            // C. Xóa giỏ hàng ngay với COD và chuyển khoản thủ công
+            // C. COD xóa giỏ ngay, SePay chờ webhook trừ theo từng sản phẩm
             if (shouldClearCartAfterOrderPlacement($payment)) {
                 $stmt_clear = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
                 $stmt_clear->bind_param("i", $user_id);
                 $stmt_clear->execute();
             }
 
-            if ($payment !== 'VNPAY' && !empty($couponCodeForOrder) && $discountAmount > 0) {
+            if ($payment !== 'SePay' && !empty($couponCodeForOrder) && $discountAmount > 0) {
                 incrementCouponUsage($conn, (string) $couponCodeForOrder);
             }
 
@@ -149,59 +149,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['csrf_token']);
 
             // Thông báo & Chuyển trang
-            if ($payment === 'VNPAY') {
-                require_once "../vnpay/config.php";
-
-                $vnp_TxnRef = $order_id;
-                $vnp_OrderInfo = "Thanh toan don hang Cake #" . $vnp_TxnRef;
-                $vnp_OrderType = 'billpayment';
-                $vnp_Amount = $total * 100;
-                $vnp_Locale = 'vn';
-                $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
-
-                $inputData = array(
-                    "vnp_Version" => "2.1.0",
-                    "vnp_TmnCode" => $vnp_TmnCode,
-                    "vnp_Amount" => $vnp_Amount,
-                    "vnp_Command" => "pay",
-                    "vnp_CreateDate" => date('YmdHis'),
-                    "vnp_CurrCode" => "VND",
-                    "vnp_IpAddr" => $vnp_IpAddr,
-                    "vnp_Locale" => $vnp_Locale,
-                    "vnp_OrderInfo" => $vnp_OrderInfo,
-                    "vnp_OrderType" => $vnp_OrderType,
-                    "vnp_ReturnUrl" => $vnp_Returnurl,
-                    "vnp_TxnRef" => $vnp_TxnRef,
-                    "vnp_ExpireDate" => $expire
-                );
-
-                ksort($inputData);
-                $query = "";
-                $i = 0;
-                $hashdata = "";
-                foreach ($inputData as $key => $value) {
-                    if ($i == 1) {
-                        $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
-                    } else {
-                        $hashdata .= urlencode($key) . "=" . urlencode($value);
-                        $i = 1;
-                    }
-                    $query .= urlencode($key) . "=" . urlencode($value) . '&';
-                }
-
-                $vnp_Url = $vnp_Url . "?" . $query;
-                if (isset($vnp_HashSecret)) {
-                    $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
-                    $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
-                }
-
-                header('Location: ' . $vnp_Url);
+            if ($payment === 'SePay') {
+                header('Location: /cakev0/sepay/payment.php?order=' . (int) $order_id);
                 exit;
             } else {
-                $toastMsg = ($payment === 'Chuyển khoản')
-                    ? "Đặt hàng thành công! Vui lòng chuyển khoản để hoàn tất. Mã đơn: #$order_id"
-                    : "Đặt hàng thành công! Mã đơn: #$order_id";
-                $_SESSION['toast'] = ['msg' => $toastMsg, 'type' => 'success'];
+                $_SESSION['toast'] = ['msg' => "Đặt hàng thành công! Mã đơn: #$order_id", 'type' => 'success'];
                 header("Location: /cakev0/index.php");
                 exit;
             }
@@ -443,23 +395,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #c44536;
         }
 
-        .qr-box {
-            display: none;
-            margin-top: 18px;
-            text-align: center;
-            background: #fff1e6;
-            padding: 18px;
-            border-radius: 16px;
-            border: 1px dashed rgba(74, 29, 31, 0.3);
-        }
-
-        .qr-box img {
-            display: block;
-            max-width: 180px;
-            border-radius: 12px;
-            margin: 10px auto 0;
-        }
-
         @media (max-width: 900px) {
             .checkout-hero {
                 flex-direction: column;
@@ -542,22 +477,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span><i class="fa-solid fa-truck-fast" style="color: #8b4513;"></i> Thanh toán khi nhận hàng (COD)</span>
                     </label>
                     <label class="payment-option">
-                        <input type="radio" name="payment_method" value="Chuyển khoản" id="bank">
-                        <span><i class="fa-regular fa-credit-card" style="color: #8b4513;"></i> Chuyển khoản ngân hàng (QR Code)</span>
+                        <input type="radio" name="payment_method" value="SePay" id="sepay">
+                        <span><i class="fa-solid fa-qrcode" style="color: #8b4513;"></i> Chuyển khoản QR (SePay)</span>
                     </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="VNPAY" id="vnpay">
-                        <span><i class="fa-solid fa-wallet" style="color: #8b4513;"></i> Thanh toán qua VNPAY</span>
-                    </label>
-                </div>
-
-                <!-- Khu vực QR Code -->
-                <div class="qr-box" id="qr">
-                    <p style="margin:0"><strong>Ngân hàng Vietcombank</strong></p>
-                    <p style="margin:5px 0">STK: 1028944280 - VO LY NHAT ANH</p>
-                    <p style="color:#c44536; font-weight:bold;">Số tiền: <?= number_format($total, 0, ',', '.') ?> VNĐ</p>
-                    <img id="qr-img" src="/cakev0/assets/img/qr.jpg" alt="Mã QR thanh toán Vietcombank">
-                    <p style="font-size:12px; color:#666; margin-top:8px;">Quét mã để thanh toán nhanh</p>
                 </div>
 
                 <button type="submit" class="btn-submit"><i class="fa-solid fa-circle-check" style="color: #2e7d32;"></i> Hoàn tất đặt hàng</button>
@@ -608,34 +530,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 
 <?php include '../includes/footer.html'; ?>
-```
-
----
-
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    // Khai báo biến
-    const qrBox = document.getElementById("qr");
-    const bankRadio = document.getElementById("bank");
-    const codRadio = document.getElementById("cod");
-    const vnpayRadio = document.getElementById("vnpay");
-
-    // Hàm cập nhật QR Code
-    function updatePaymentMethod() {
-        if (bankRadio.checked) {
-            qrBox.style.display = "block";
-        } else {
-            qrBox.style.display = "none";
-        }
-    }
-
-    // Lắng nghe sự kiện thay đổi radio button
-    bankRadio.addEventListener("change", updatePaymentMethod);
-    codRadio.addEventListener("change", updatePaymentMethod);
-    vnpayRadio.addEventListener("change", updatePaymentMethod);
-});
-</script>
 </body>
 </html>
 <?php 

@@ -29,6 +29,6 @@ if (!function_exists('shouldClearCartAfterOrderPlacement')) {
     {
         $paymentMethod = trim((string) $paymentMethod);
 
-        return in_array($paymentMethod, ['Tiền mặt', 'Chuyển khoản'], true);
+        return $paymentMethod === 'Tiền mặt';
     }
 }

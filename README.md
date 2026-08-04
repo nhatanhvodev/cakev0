@@ -1,6 +1,6 @@
 # Gấu Bakery Web
 
-Website bán bánh online viết bằng PHP thuần, phục vụ cả phía khách hàng và quản trị viên. Dự án hỗ trợ danh mục sản phẩm, giỏ hàng, yêu thích, đặt hàng, theo dõi đơn, thanh toán qua VNPAY, gửi email và quản trị nội dung ngay trong trang `admin/admin.php`.
+Website bán bánh online viết bằng PHP thuần, phục vụ cả phía khách hàng và quản trị viên. Dự án hỗ trợ danh mục sản phẩm, giỏ hàng, yêu thích, đặt hàng, theo dõi đơn, thanh toán qua SePay QR, gửi email và quản trị nội dung ngay trong trang `admin/admin.php`.
 
 ## Tổng quan
 
@@ -12,7 +12,7 @@ Các nhóm chức năng chính:
 - Danh sách sản phẩm, chi tiết sản phẩm, hình ảnh phụ, đánh giá sản phẩm.
 - Đăng ký, đăng nhập, quên mật khẩu, hồ sơ tài khoản, lịch sử đơn hàng.
 - Giỏ hàng, mã giảm giá, checkout, ghi chú đơn hàng.
-- Thanh toán bằng tiền mặt, chuyển khoản và VNPAY Sandbox.
+- Thanh toán bằng tiền mặt (COD) và chuyển khoản QR tự động qua SePay.
 - Danh sách yêu thích.
 - Trang chính sách, liên hệ, giới thiệu.
 - Trang quản trị: sản phẩm, đơn hàng, khuyến mãi, review, liên hệ, người dùng, thống kê doanh thu và xuất Excel.
@@ -40,7 +40,7 @@ cakev0/
 |-- includes/      # Header, footer, mail helper
 |-- pages/         # Các trang người dùng
 |-- vendor/        # Composer dependencies
-|-- vnpay/         # Tích hợp VNPAY
+|-- sepay/         # Trang QR thanh toán SePay
 |-- index.php      # Trang chủ
 |-- Dockerfile
 |-- docker-compose.yml
@@ -58,7 +58,7 @@ cakev0/
 - Lưu sản phẩm yêu thích.
 - Đăng ký, đăng nhập, quên mật khẩu, cập nhật thông tin cá nhân.
 - Tạo đơn hàng và theo dõi trạng thái đơn.
-- Thanh toán với VNPAY Sandbox hoặc COD.
+- Thanh toán với SePay QR hoặc COD.
 
 ### Phía quản trị
 
@@ -163,12 +163,10 @@ DB_PASS=
 DB_NAME=
 DB_CHARSET=
 
-VNPAY_TMN_CODE=
-VNPAY_HASH_SECRET=
-VNPAY_URL=
-VNPAY_RETURN_URL=
-VNPAY_MERCHANT_URL=
-VNPAY_TRANSACTION_API_URL=
+SEPAY_WEBHOOK_API_KEY=
+SEPAY_ACCOUNT_NUMBER=
+SEPAY_BANK_CODE=
+SEPAY_ACCOUNT_NAME=
 
 UPLOADTHING_API_KEY=
 UPLOADTHING_APP_ID=
@@ -189,6 +187,12 @@ GMAIL_CLIENT_SECRET=
 GMAIL_REFRESH_TOKEN=
 GMAIL_USER_ID=me
 ```
+
+### Thanh toán SePay
+
+- Webhook production: `https://cake-i8l0.onrender.com/cakev0/api/sepay/webhook.php`.
+- SePay gửi header `Authorization: Apikey <SEPAY_WEBHOOK_API_KEY>`; endpoint từ chối nếu key trống hoặc sai.
+- Khi test trên SePay, dùng "Mô phỏng chuyển khoản" với đúng số tiền và nội dung `DH<order_id>` để đơn tự chuyển sang `paid`.
 
 ### Mail tren Render qua Gmail API
 
@@ -212,7 +216,7 @@ Các cơ chế bảo mật đang có trong codebase:
 
 - Dang ky tai khoan chi hoan tat sau khi nguoi dung bam lien ket xac minh email trong vong 24 gio.
 - Mat khau dang ky phai co it nhat 12 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet.
-- Hoa don PDF duoc gui qua email sau khi don VNPAY thanh toan thanh cong hoac khi admin xac nhan don COD.
+- Hoa don PDF duoc gui qua email sau khi don SePay thanh toan thanh cong hoac khi admin xac nhan don COD.
 - Moi don chi tu dong gui hoa don mot lan, duoc theo doi bang `orders.invoice_email_sent_at`.
 - Hash mật khẩu bằng `password_hash()` và xác thực bằng `password_verify()`.
 - Chống CSRF cho các form quan trọng như đăng nhập, quên mật khẩu và nhiều thao tác trong trang admin bằng token sinh từ `random_bytes()` và kiểm tra với `hash_equals()`.
@@ -235,7 +239,7 @@ Lưu ý hiện trạng:
 - Trang chủ: `index.php`
 - Khu vực khách hàng: `pages/`
 - Khu vực quản trị: `admin/admin.php`
-- Thanh toán VNPAY: `vnpay/`
+- Thanh toán SePay: `sepay/` và `api/sepay/`
 
 ## Deploy
 
@@ -243,7 +247,7 @@ Repo đã có sẵn `render.yaml` để deploy bằng Render với runtime Docke
 
 - `APP_ORIGIN`
 - Kết nối MySQL production
-- Thông tin VNPAY thật hoặc sandbox tùy môi trường
+- Thông tin SePay (`SEPAY_WEBHOOK_API_KEY`, tài khoản, ngân hàng, tên chủ tài khoản)
 - UploadThing credentials
 - SMTP credentials
 

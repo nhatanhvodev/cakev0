@@ -14,6 +14,14 @@ if (!is_array($payload)) {
 }
 
 $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null);
+if ($authHeader === null && function_exists('getallheaders')) {
+    foreach (getallheaders() as $name => $value) {
+        if (strtolower((string) $name) === 'authorization') {
+            $authHeader = (string) $value;
+            break;
+        }
+    }
+}
 
 $result = sepay_process_webhook($conn, $payload, $authHeader, sepay_config());
 http_response_code((int) $result['code']);

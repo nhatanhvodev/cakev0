@@ -102,7 +102,7 @@ if (!function_exists('markOrderPaid')) {
         $conn->begin_transaction();
 
         try {
-            $stmt = $conn->prepare("SELECT user_id, coupon_code, status FROM orders WHERE id = ? LIMIT 1");
+            $stmt = $conn->prepare("SELECT user_id, coupon_code, status FROM orders WHERE id = ? LIMIT 1 FOR UPDATE");
             $stmt->bind_param('i', $orderId);
             $stmt->execute();
             $order = $stmt->get_result()->fetch_assoc();
@@ -200,7 +200,16 @@ if (!function_exists('sepay_process_webhook')) {
 
         ensureSepayInfrastructure($conn);
 
-        $stmt = $conn->prepare("SELECT total_amount FROM orders WHERE id = ? LIMIT 1");
+        $stmt = $conn->prepare("SELECT sepay_id FROM sepay_transactions WHERE sepay_id = ? LIMIT 1");
+        $stmt->bind_param('s', $sepayId);
+        $stmt->execute();
+        $existingTransaction = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if ($existingTransaction) {
+            return ['code' => 200, 'body' => ['skipped' => 'duplicate']];
+        }
+
+        $stmt = $conn->prepare("SELECT total_amount, payment_method, status, created_at FROM orders WHERE id = ? LIMIT 1");
         $stmt->bind_param('i', $orderId);
         $stmt->execute();
         $order = $stmt->get_result()->fetch_assoc();
@@ -208,6 +217,23 @@ if (!function_exists('sepay_process_webhook')) {
 
         if (!$order) {
             return ['code' => 200, 'body' => ['skipped' => 'order_not_found']];
+        }
+
+        if ((string) ($order['payment_method'] ?? '') !== 'SePay') {
+            return ['code' => 200, 'body' => ['skipped' => 'not_sepay_order']];
+        }
+
+        $status = (string) ($order['status'] ?? '');
+        if ($status === 'paid') {
+            return ['code' => 200, 'body' => ['skipped' => 'already_paid']];
+        }
+        if ($status !== 'pending') {
+            return ['code' => 200, 'body' => ['skipped' => 'status_not_payable']];
+        }
+
+        $createdAt = strtotime((string) ($order['created_at'] ?? ''));
+        if ($createdAt > 0 && $createdAt + 15 * 60 < time()) {
+            return ['code' => 200, 'body' => ['skipped' => 'expired']];
         }
 
         if ($amount < (int) round((float) $order['total_amount'])) {
@@ -232,7 +258,19 @@ if (!function_exists('sepay_process_webhook')) {
             return ['code' => 200, 'body' => ['skipped' => 'duplicate']];
         }
 
-        markOrderPaid($conn, $orderId);
+        $paid = markOrderPaid($conn, $orderId);
+        if (($paid['changed'] ?? false) !== true) {
+            $stmt = $conn->prepare("DELETE FROM sepay_transactions WHERE sepay_id = ?");
+            $stmt->bind_param('s', $sepayId);
+            $stmt->execute();
+            $stmt->close();
+
+            if (($paid['previous'] ?? '') === 'paid') {
+                return ['code' => 200, 'body' => ['skipped' => 'already_paid']];
+            }
+
+            return ['code' => 500, 'body' => ['error' => 'mark_paid_failed']];
+        }
 
         return ['code' => 200, 'body' => ['success' => true, 'order_id' => $orderId]];
     }

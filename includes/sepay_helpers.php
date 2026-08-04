@@ -171,3 +171,69 @@ if (!function_exists('markOrderPaid')) {
         return ['changed' => true, 'previous' => $previousStatus];
     }
 }
+
+if (!function_exists('sepay_process_webhook')) {
+    function sepay_process_webhook(mysqli $conn, array $payload, ?string $authHeader, array $cfg): array
+    {
+        if (!sepay_verify_api_key($authHeader, (string) ($cfg['api_key'] ?? ''))) {
+            return ['code' => 401, 'body' => ['error' => 'unauthorized']];
+        }
+
+        $transferType = (string) ($payload['transferType'] ?? '');
+        if ($transferType !== 'in') {
+            return ['code' => 200, 'body' => ['skipped' => 'not_incoming']];
+        }
+
+        $content = (string) ($payload['content'] ?? '');
+        $code = isset($payload['code']) ? (string) $payload['code'] : null;
+        $orderId = sepay_extract_order_id($content, $code);
+        if ($orderId === null) {
+            return ['code' => 200, 'body' => ['skipped' => 'no_order']];
+        }
+
+        $sepayId = trim((string) ($payload['id'] ?? ''));
+        if ($sepayId === '') {
+            return ['code' => 200, 'body' => ['skipped' => 'missing_id']];
+        }
+
+        $amount = (int) ($payload['transferAmount'] ?? 0);
+
+        ensureSepayInfrastructure($conn);
+
+        $stmt = $conn->prepare("SELECT total_amount FROM orders WHERE id = ? LIMIT 1");
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $order = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$order) {
+            return ['code' => 200, 'body' => ['skipped' => 'order_not_found']];
+        }
+
+        if ($amount < (int) round((float) $order['total_amount'])) {
+            return ['code' => 200, 'body' => ['skipped' => 'amount_mismatch']];
+        }
+
+        $raw = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        if ($raw === false) {
+            $raw = '';
+        }
+
+        $stmt = $conn->prepare(
+            "INSERT IGNORE INTO sepay_transactions(sepay_id, order_id, amount, content, raw)
+             VALUES (?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param('siiss', $sepayId, $orderId, $amount, $content, $raw);
+        $stmt->execute();
+        $inserted = $stmt->affected_rows;
+        $stmt->close();
+
+        if ($inserted === 0) {
+            return ['code' => 200, 'body' => ['skipped' => 'duplicate']];
+        }
+
+        markOrderPaid($conn, $orderId);
+
+        return ['code' => 200, 'body' => ['success' => true, 'order_id' => $orderId]];
+    }
+}

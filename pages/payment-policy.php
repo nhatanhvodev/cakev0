@@ -73,17 +73,10 @@ $pageTitle = 'Chính sách thanh toán';
                 </div>
               </li>
               <li class="policy-item">
-                <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-building-columns"></i></span>
-                <div>
-                  <strong>Chuyển khoản ngân hàng</strong>
-                  <p>Thanh toán qua tài khoản ngân hàng theo thông tin Gấu Bakery cung cấp.</p>
-                </div>
-              </li>
-              <li class="policy-item">
                 <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-qrcode"></i></span>
                 <div>
-                  <strong>Thanh toán qua VNPAY</strong>
-                  <p>Thanh toán nhanh chóng qua cổng VNPAY bằng QR hoặc thẻ nội địa, xác nhận tự động sau khi giao dịch hoàn tất.</p>
+                  <strong>Chuyển khoản QR (SePay)</strong>
+                  <p>Quét mã VietQR, chuyển đúng nội dung đơn hàng và hệ thống tự xác nhận sau khi SePay ghi nhận giao dịch.</p>
                 </div>
               </li>
             </ul>
@@ -99,7 +92,7 @@ $pageTitle = 'Chính sách thanh toán';
                 <span class="policy-item__icon" aria-hidden="true"><i class="fa-solid fa-file-invoice"></i></span>
                 <div>
                   <strong>Xác nhận đơn hàng</strong>
-                  <p>Đơn hàng sẽ chỉ được xử lý và giao đi sau khi hệ thống xác nhận thanh toán thành công (đối với chuyển khoản và VNPAY).</p>
+                  <p>Đơn SePay sẽ được xử lý sau khi hệ thống xác nhận thanh toán thành công. Với COD, đơn được ghi nhận ngay sau khi xác nhận thông tin giao hàng.</p>
                 </div>
               </li>
             </ul>

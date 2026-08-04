@@ -18,7 +18,7 @@ _FALLBACK = {
     "order_status": "Dạ anh/chị cho shop xin mã đơn hoặc số điện thoại để tra cứu giúp ạ.",
     "order_create": "Dạ anh/chị cho shop xin tên bánh, số lượng, họ tên, SĐT và địa chỉ giao ạ.",
     "policy_shipping": "Dạ đơn đặt trước 15h shop giao trong ngày, sau 15h giao sáng hôm sau ạ.",
-    "policy_payment": "Dạ shop hỗ trợ VNPAY, chuyển khoản và COD ạ.",
+    "policy_payment": "Dạ shop hỗ trợ chuyển khoản QR qua SePay và COD ạ.",
     "policy_return": "Dạ bánh có vấn đề anh/chị chụp ảnh gửi shop trong 2h để đổi/hoàn tiền ạ.",
     "complaint": "Dạ shop ghi nhận và chuyển nhân viên xử lý ngay cho anh/chị ạ.",
     "handoff_request": "Dạ shop kết nối anh/chị với nhân viên hỗ trợ ngay ạ.",

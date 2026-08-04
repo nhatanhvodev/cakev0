@@ -6,7 +6,7 @@
   },
   {
     "question": "Tôi có thể thanh toán bằng những cách nào?",
-    "answer": "Gấu Bakery hỗ trợ: (1) VNPAY online, (2) Thanh toán khi nhận hàng (COD), (3) Chuyển khoản ngân hàng.",
+    "answer": "Gấu Bakery hỗ trợ: (1) Chuyển khoản QR qua SePay, (2) Thanh toán khi nhận hàng (COD).",
     "category": "payment"
   },
   {
@@ -45,13 +45,13 @@
     "category": "returns"
   },
   {
-    "question": "Thanh toán qua VNPAY có an toàn không?",
-    "answer": "Thanh toán qua VNPAY được xử lý nhanh chóng bằng QR hoặc thẻ nội địa, xác nhận tự động sau khi giao dịch hoàn tất. Mọi thông tin giao dịch và thanh toán đều được Gấu Bakery bảo mật tuyệt đối.",
+    "question": "Thanh toán qua SePay có an toàn không?",
+    "answer": "Thanh toán qua SePay dùng mã VietQR riêng cho từng đơn, có nội dung chuyển khoản DH kèm mã đơn và được hệ thống tự xác nhận sau khi giao dịch hoàn tất. Mọi thông tin giao dịch và thanh toán đều được Gấu Bakery bảo mật tuyệt đối.",
     "category": "payment"
   },
   {
     "question": "Khi nào đơn hàng được xử lý và giao đi?",
-    "answer": "Đơn hàng chỉ được xử lý và giao đi sau khi hệ thống xác nhận thanh toán thành công, áp dụng với hình thức chuyển khoản và VNPAY. Với COD, đơn được xử lý ngay sau khi xác nhận thông tin giao hàng.",
+    "answer": "Đơn SePay được xử lý sau khi hệ thống xác nhận thanh toán thành công. Với COD, đơn được xử lý ngay sau khi xác nhận thông tin giao hàng.",
     "category": "payment"
   },
   {
@@ -91,7 +91,7 @@
   },
   {
     "question": "Làm thế nào để đặt bánh online tại Gấu Bakery?",
-    "answer": "Rất đơn giản: quý khách chọn sản phẩm yêu thích, thêm vào giỏ hàng, điền thông tin và địa chỉ giao hàng, chọn hình thức thanh toán (VNPAY, COD hoặc chuyển khoản) rồi xác nhận đơn. Hệ thống sẽ gửi thông báo xác nhận ngay sau khi đặt hàng thành công.",
+    "answer": "Rất đơn giản: quý khách chọn sản phẩm yêu thích, thêm vào giỏ hàng, điền thông tin và địa chỉ giao hàng, chọn hình thức thanh toán (SePay QR hoặc COD) rồi xác nhận đơn. Hệ thống sẽ gửi thông báo xác nhận ngay sau khi đặt hàng thành công.",
     "category": "ordering"
   },
   {

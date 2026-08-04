@@ -33,7 +33,7 @@ Ví dụ:
 - "xem bánh yêu thích của tôi" → favorite_view
 - "bánh nào không có trứng" → dietary_inquiry
 - "ship bao lâu" → policy_shipping
-- "thanh toán vnpay được không" → policy_payment
+- "thanh toán sepay được không" → policy_payment
 - "đổi bánh bị hỏng" → policy_return
 - "shop mở mấy giờ" → faq
 - "bánh giao bị móp, bực quá" → complaint
@@ -66,7 +66,7 @@ _KEYWORDS = [
     ("order_status", ["kiểm tra đơn", "đến đâu", "mã đơn", "tình trạng đơn"]),
     ("order_create", ["đặt bánh", "mua bánh", "chốt đơn", "order"]),
     ("policy_shipping", ["giao hàng", "phí ship", "vận chuyển"]),
-    ("policy_payment", ["thanh toán", "chuyển khoản", "vnpay", "thanh toán khi nhận hàng"]),
+    ("policy_payment", ["thanh toán", "chuyển khoản", "sepay", "qr", "thanh toán khi nhận hàng"]),
     ("policy_return", ["đổi trả", "đổi bánh", "trả hàng"]),
     # coupon before promotion ("mã giảm giá" contains "giảm giá")
     ("coupon_inquiry", ["mã giảm", "ma giam", "voucher", "coupon", "mã ưu đãi", "ma uu dai",

@@ -1528,7 +1528,7 @@ body {
                 <a class="promise-card" href="/cakev0/pages/payment-policy.php">
                     <i class="fa-solid fa-wallet" aria-hidden="true"></i>
                     <strong>Thanh toán linh hoạt</strong>
-                    <span>COD, chuyển khoản, VNPAY</span>
+                    <span>COD, SePay QR</span>
                 </a>
                 <a class="promise-card" href="/cakev0/pages/exchanges-policy.php">
                     <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>

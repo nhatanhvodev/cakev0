@@ -313,10 +313,13 @@ Vào từng service → **Environment** tab → Add:
 | DB_PASS | `<Aiven password>` |
 | DB_NAME | `banh_store` |
 | APP_ORIGIN | `https://gau-bakery.onrender.com` |
-| VNPAY_RETURN_URL | `https://gau-bakery.onrender.com/cakev0/vnpay/vnpay_return.php` |
+| SEPAY_WEBHOOK_API_KEY | `<API key cấu hình trong SePay webhook>` |
+| SEPAY_ACCOUNT_NUMBER | `<số tài khoản nhận tiền>` |
+| SEPAY_BANK_CODE | `<mã ngân hàng VietQR, ví dụ MBBank>` |
+| SEPAY_ACCOUNT_NAME | `<tên chủ tài khoản>` |
 | INTERNAL_API_SECRET | `<openssl rand -hex 32>` |
 | AI_SERVICE_URL | `https://gau-bakery-ai.onrender.com` |
-| GMAIL_*, UPLOADTHING_*, VNPAY_* | copy từ env cũ |
+| GMAIL_*, UPLOADTHING_* | copy từ env cũ |
 
 **gau-bakery-ai (Python):**
 | Key | Value |

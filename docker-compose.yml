@@ -25,12 +25,10 @@ services:
       - DB_CHARSET=utf8mb4
       - AI_SERVICE_URL=http://ai-service:8000
       - INTERNAL_API_SECRET=${INTERNAL_API_SECRET:-change-me}
-      - VNPAY_TMN_CODE=${VNPAY_TMN_CODE:-GO1IEGFS}
-      - VNPAY_HASH_SECRET=${VNPAY_HASH_SECRET:-FALJ15YAAF9B9AEWXHVGBVQL6WO4SONA}
-      - VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-      - VNPAY_RETURN_URL=http://localhost:8080/cakev0/vnpay/vnpay_return.php
-      - VNPAY_MERCHANT_URL=http://sandbox.vnpayment.vn/merchant_webapi/merchant.html
-      - VNPAY_TRANSACTION_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+      - SEPAY_WEBHOOK_API_KEY=${SEPAY_WEBHOOK_API_KEY:-}
+      - SEPAY_ACCOUNT_NUMBER=${SEPAY_ACCOUNT_NUMBER:-}
+      - SEPAY_BANK_CODE=${SEPAY_BANK_CODE:-}
+      - SEPAY_ACCOUNT_NAME=${SEPAY_ACCOUNT_NAME:-}
       - UPLOADTHING_TOKEN=${UPLOADTHING_TOKEN:-eyJhcGlLZXkiOiJza19saXZlXzY1ODEwZTRlOWZjYWUxMmEyM2MyZGRiYWQ0NWVjNzAyNGQxY2RiY2I4MDJiZTg3MmVlOGE5ZjQzM2VjN2FkZjciLCJhcHBJZCI6Ingyanp1eTUzbnYiLCJyZWdpb25zIjpbInNlYTEiXX0=}
       - UPLOADTHING_APP_ID=${UPLOADTHING_APP_ID:-x2jzuy53nv}
       - MAIL_DRIVER=${MAIL_DRIVER:-smtp}

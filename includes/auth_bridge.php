@@ -30,6 +30,15 @@ if (!function_exists('auth0_extract_identity')) {
     }
 }
 
+if (!function_exists('auth0_email_verified')) {
+    // Auth0 gui email_verified=false cho tai khoan DB connection chua xac minh.
+    // Thieu claim (vd social login cu) -> coi nhu da xac minh de khong chan nham.
+    function auth0_email_verified(array $claims): bool
+    {
+        return ($claims['email_verified'] ?? true) !== false;
+    }
+}
+
 if (!function_exists('resolve_local_admin')) {
     function resolve_local_admin(mysqli $conn, array $identity): ?array
     {

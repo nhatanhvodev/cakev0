@@ -35,7 +35,21 @@ if ($credentials === null || $credentials->user === null) {
     exit;
 }
 
-$user = sync_session_from_auth0($conn, (array) $credentials->user);
+$claims = (array) $credentials->user;
+
+// Chan dang nhap khi email chua xac minh: khong tao session app, dua ve trang chu
+// kem thong bao. Auth0 da gui email xac minh luc dang ky (can email provider hoat dong).
+if (!auth0_email_verified($claims)) {
+    $auth0->clear();
+    $_SESSION['pending_verification'] = [
+        'auth0_id' => (string) ($claims['sub'] ?? ''),
+        'email' => (string) ($claims['email'] ?? ''),
+    ];
+    header('Location: ' . base_url('pages/auth/verify-notice.php'));
+    exit;
+}
+
+$user = sync_session_from_auth0($conn, $claims);
 
 $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
 $stmt = $conn->prepare("INSERT INTO login_logs (user_id, login_time, ip_address, status) VALUES (?, NOW(), ?, 'success')");

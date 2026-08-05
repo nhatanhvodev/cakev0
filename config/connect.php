@@ -40,4 +40,6 @@ $dbTimeZone = sprintf(
 );
 $conn->query("SET time_zone = '{$dbTimeZone}'");
 ensureProductVisibilityInfrastructure($conn);
+require_once __DIR__ . '/../includes/auth0_schema.php';
+ensureAuth0Infrastructure($conn);
 ?>

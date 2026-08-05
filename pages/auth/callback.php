@@ -13,16 +13,18 @@ try {
     $auth0->exchange();
 } catch (Throwable $e) {
     $reason = auth0_callback_error_reason($e, $_GET);
+    $detail = auth0_callback_error_detail($e, $_GET);
     error_log(sprintf(
-        '[auth0-callback] exchange_failed reason=%s class=%s message=%s has_code=%s has_state=%s provider_error=%s',
+        '[auth0-callback] exchange_failed reason=%s class=%s message=%s detail=%s has_code=%s has_state=%s provider_error=%s',
         $reason,
         get_class($e),
         $e->getMessage(),
+        $detail,
         isset($_GET['code']) ? 'yes' : 'no',
         isset($_GET['state']) ? 'yes' : 'no',
         (string) ($_GET['error'] ?? '')
     ));
-    header('Location: ' . base_url('index.php?toast=auth_error&auth_reason=' . rawurlencode($reason)));
+    header('Location: ' . base_url('index.php?toast=auth_error&auth_reason=' . rawurlencode($reason) . '&auth_detail=' . rawurlencode($detail)));
     exit;
 }
 

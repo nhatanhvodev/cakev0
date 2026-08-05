@@ -22,5 +22,7 @@ assert_same('/cakev0/index.php', safe_redirect_target(null, '/cakev0/index.php')
 assert_same('provider_access_denied', auth0_callback_error_reason(new RuntimeException('Missing code'), ['error' => 'access_denied']), 'provider error uu tien');
 assert_same('invalid_state', auth0_callback_error_reason(new RuntimeException('Invalid state')), 'phan loai invalid state');
 assert_same('failed_code_exchange', auth0_callback_error_reason(new RuntimeException('Code exchange was unsuccessful; network error resulted in unfulfilled request')), 'phan loai code exchange');
+assert_same('Bad request detail', auth0_callback_error_detail(new RuntimeException('Ignored'), ['error_description' => "Bad\r\nrequest\t detail"]), 'sanitize provider detail');
+assert_same('Fallback message', auth0_callback_error_detail(new RuntimeException('Fallback message')), 'fallback detail tu exception');
 
 echo "auth_bridge_session_test ... ok\n";

@@ -136,6 +136,26 @@ if (!function_exists('auth0_callback_error_reason')) {
     }
 }
 
+if (!function_exists('auth0_callback_error_detail')) {
+    function auth0_callback_error_detail(Throwable $error, array $query = []): string
+    {
+        $detail = trim((string) ($query['error_description'] ?? ''));
+        if ($detail === '') {
+            $detail = trim($error->getMessage());
+        }
+
+        $detail = preg_replace('/[\r\n\t]+/', ' ', $detail) ?? '';
+        $detail = preg_replace('/\s+/', ' ', $detail) ?? '';
+        $detail = trim($detail);
+
+        if (strlen($detail) > 180) {
+            $detail = substr($detail, 0, 180);
+        }
+
+        return $detail;
+    }
+}
+
 if (!function_exists('sync_session_from_auth0')) {
     function sync_session_from_auth0(mysqli $conn, array $claims): array
     {

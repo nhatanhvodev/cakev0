@@ -17,6 +17,20 @@ if (!function_exists('auth0_import_user_id')) {
 if (!function_exists('auth0_import_username')) {
     function auth0_import_username(array $row, bool $isAdmin): string
     {
+        $username = strtolower(trim((string) ($row['username'] ?? '')));
+        if ($username !== '') {
+            $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $username);
+            if (is_string($ascii) && trim($ascii) !== '') {
+                $username = $ascii;
+            }
+
+            $username = preg_replace('/[^a-z0-9_]+/i', '_', $username) ?? '';
+            $username = strtolower(trim($username, '_'));
+            if ($username !== '') {
+                return substr($username, 0, 128);
+            }
+        }
+
         return str_replace('-', '_', auth0_import_user_id($row, $isAdmin));
     }
 }

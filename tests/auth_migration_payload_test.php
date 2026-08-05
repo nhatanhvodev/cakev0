@@ -13,7 +13,7 @@ $row = [
 $p = build_import_payload($row, false);
 assert_same('u@test.vn', $p['email'], 'email');
 assert_true($p['email_verified'] === true, 'email_verified');
-assert_same('cakev0_user_7', $p['username'], 'root username bat buoc cho connection username');
+assert_same('nhatanh', $p['username'], 'root username tu username local');
 assert_same('cakev0-user-7', $p['user_id'], 'user_id import on dinh');
 assert_same('bcrypt', $p['custom_password_hash']['algorithm'], 'algo bcrypt');
 assert_same('$2y$10$abcdefghijklmnopqrstuv', $p['custom_password_hash']['hash']['value'], 'hash nguyen ven');
@@ -25,7 +25,11 @@ assert_true(!isset($p['app_metadata']), 'user thuong khong co app_metadata role'
 $pa = build_import_payload($row, true);
 assert_same('admin', $pa['app_metadata']['role'], 'admin co role metadata');
 assert_same('cakev0-admin-7', $pa['user_id'], 'admin user_id import on dinh');
-assert_same('cakev0_admin_7', $pa['username'], 'admin root username bat buoc');
+assert_same('nhatanh', $pa['username'], 'admin root username tu username local');
+
+$special = $row;
+$special['username'] = 'Nhat Anh!';
+assert_same('nhat_anh', build_import_payload($special, false)['username'], 'sanitize root username');
 
 $script = file_get_contents(__DIR__ . '/../scripts/migrate_users_to_auth0.php');
 assert_true(!str_contains($script, 'UPDATE users SET auth0_id'), 'khong update auth0_id truoc khi import job completed');

@@ -12,13 +12,24 @@ $auth0 = auth0_client();
 try {
     $auth0->exchange();
 } catch (Throwable $e) {
-    header('Location: ' . base_url('index.php?toast=auth_error'));
+    $reason = auth0_callback_error_reason($e, $_GET);
+    error_log(sprintf(
+        '[auth0-callback] exchange_failed reason=%s class=%s message=%s has_code=%s has_state=%s provider_error=%s',
+        $reason,
+        get_class($e),
+        $e->getMessage(),
+        isset($_GET['code']) ? 'yes' : 'no',
+        isset($_GET['state']) ? 'yes' : 'no',
+        (string) ($_GET['error'] ?? '')
+    ));
+    header('Location: ' . base_url('index.php?toast=auth_error&auth_reason=' . rawurlencode($reason)));
     exit;
 }
 
 $credentials = $auth0->getCredentials();
 if ($credentials === null || $credentials->user === null) {
-    header('Location: ' . base_url('index.php?toast=auth_error'));
+    error_log('[auth0-callback] credentials_missing');
+    header('Location: ' . base_url('index.php?toast=auth_error&auth_reason=no_credentials'));
     exit;
 }
 

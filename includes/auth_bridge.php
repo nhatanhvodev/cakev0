@@ -104,6 +104,38 @@ if (!function_exists('safe_redirect_target')) {
     }
 }
 
+if (!function_exists('auth0_callback_error_reason')) {
+    function auth0_callback_error_reason(Throwable $error, array $query = []): string
+    {
+        $providerError = strtolower(trim((string) ($query['error'] ?? '')));
+        if ($providerError !== '') {
+            return 'provider_' . preg_replace('/[^a-z0-9_]+/', '_', $providerError);
+        }
+
+        $message = strtolower($error->getMessage());
+        if (str_contains($message, 'invalid state')) {
+            return 'invalid_state';
+        }
+        if (str_contains($message, 'missing code_verifier')) {
+            return 'missing_code_verifier';
+        }
+        if (str_contains($message, 'missing code')) {
+            return 'missing_code';
+        }
+        if (str_contains($message, 'code exchange was unsuccessful')) {
+            return 'failed_code_exchange';
+        }
+        if (str_contains($message, 'nonce was not found')) {
+            return 'missing_nonce';
+        }
+        if (str_contains($message, 'invalid access_token')) {
+            return 'bad_access_token';
+        }
+
+        return 'exchange_failed';
+    }
+}
+
 if (!function_exists('sync_session_from_auth0')) {
     function sync_session_from_auth0(mysqli $conn, array $claims): array
     {

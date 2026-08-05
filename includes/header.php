@@ -9,6 +9,9 @@ if (!defined('BASE_URL') && file_exists($baseConfigPath)) {
 require_once __DIR__ . '/notifications.php';
 $role = $_SESSION['role'] ?? 'guest';
 $isNotificationUser = isset($_SESSION['user_id']) && (int) $_SESSION['user_id'] > 0;
+$accountHref = $isNotificationUser
+  ? base_url('pages/account.php')
+  : base_url('pages/auth/login.php?return=' . rawurlencode(base_url('pages/account.php')));
 $headerNotificationItems = [];
 $headerUnreadNotificationCount = 0;
 $notificationCsrf = '';
@@ -1430,7 +1433,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
           <div class="search-result" id="searchResult"></div>
         </div>
         <div id="user-actions">
-          <a href="<?= BASE_URL ?>pages/account.php" aria-label="Tài khoản">
+          <a href="<?= html_escape($accountHref) ?>" aria-label="<?= $isNotificationUser ? 'Tài khoản' : 'Đăng nhập' ?>">
             <i class="fa-regular fa-user" aria-hidden="true"></i>
           </a>
           <a href="<?= BASE_URL ?>pages/favorites.php" class="favorite-wrapper" aria-label="Sản phẩm yêu thích">
@@ -2237,6 +2240,15 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
 
   <?php if (!empty($_GET['toast']) && $_GET['toast'] === 'logout'): ?>
     window.showToast('Đăng xuất thành công!', 'success');
+    if (history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('toast');
+      history.replaceState({}, document.title, url.toString());
+    }
+  <?php endif; ?>
+
+  <?php if (!empty($_GET['toast']) && $_GET['toast'] === 'auth_error'): ?>
+    window.showToast('Dang nhap that bai. Vui long thu lai hoac dung cua so an danh neu trinh duyet con phien cu.', 'error');
     if (history.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.delete('toast');

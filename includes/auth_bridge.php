@@ -72,3 +72,44 @@ if (!function_exists('resolve_local_user')) {
         return ['id' => $newId, 'username' => $username, 'role' => $role];
     }
 }
+
+if (!function_exists('apply_session_for_user')) {
+    function apply_session_for_user(array $user): void
+    {
+        $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['username'] = (string) $user['username'];
+        $_SESSION['role'] = $user['role'] === 'admin' ? 'admin' : 'user';
+
+        if ($_SESSION['role'] === 'admin') {
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_id'] = (int) $user['id'];
+        } else {
+            unset($_SESSION['admin_logged_in'], $_SESSION['admin_id']);
+        }
+    }
+}
+
+if (!function_exists('safe_redirect_target')) {
+    function safe_redirect_target(?string $raw, string $fallback): string
+    {
+        if ($raw === null || $raw === '') {
+            return $fallback;
+        }
+
+        if (str_starts_with($raw, '/cakev0/') && !str_starts_with($raw, '//')) {
+            return $raw;
+        }
+
+        return $fallback;
+    }
+}
+
+if (!function_exists('sync_session_from_auth0')) {
+    function sync_session_from_auth0(mysqli $conn, array $claims): array
+    {
+        $identity = auth0_extract_identity($claims);
+        $user = resolve_local_user($conn, $identity);
+        apply_session_for_user($user);
+        return $user;
+    }
+}

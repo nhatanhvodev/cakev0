@@ -173,8 +173,7 @@ function slugify(string $value, ?int $id = null): string
 
 /* --- ĐĂNG XUẤT --- */
 if (isset($_GET['logout'])) {
-    session_destroy();
-    header("Location: ../pages/login.php");
+    header("Location: ../pages/auth/logout.php");
     exit;
 }
 

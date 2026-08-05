@@ -15,4 +15,11 @@ foreach ($map as $file => $needle) {
     assert_true(!str_contains($src, 'password_verify'), "$file khong con verify mat khau");
 }
 
+$adminTopbar = file_get_contents(__DIR__ . '/../admin/views/partials/topbar.php');
+assert_true(str_contains($adminTopbar, '../pages/auth/logout.php'), 'admin topbar dung Auth0 logout');
+assert_true(!str_contains($adminTopbar, 'admin.php?logout=1'), 'admin topbar khong dung logout legacy');
+
+$legacyAdmin = file_get_contents(__DIR__ . '/../admin/admin.php');
+assert_true(str_contains($legacyAdmin, 'Location: ../pages/auth/logout.php'), 'admin.php logout chuyen qua Auth0 logout');
+
 echo "auth_legacy_redirect_test ... ok\n";

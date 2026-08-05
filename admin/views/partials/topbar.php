@@ -64,7 +64,7 @@ $notificationCount = (int) $topbarData['notification_count'];
         <div><strong><?= htmlspecialchars($topbarData['admin_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong><small><?= htmlspecialchars($topbarData['admin_role'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></small></div>
       </div>
       <a class="profile-action" href="index.php?tab=dashboard"><i class="bi bi-speedometer2"></i> Tổng quan</a>
-      <a class="profile-action" href="admin.php?logout=1"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
+      <a class="profile-action" href="../pages/auth/logout.php"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
     </div>
   </div>
 </header>

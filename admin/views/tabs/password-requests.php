@@ -58,24 +58,9 @@ foreach ($passwordRequests as $request) {
         ? htmlspecialchars($approvedAt)
         : '<span style="color:var(--muted);">Chưa xử lý</span>';
 
-    $actionsHtml = '<span style="color:var(--muted);font-size:12.5px;">Đã xử lý</span>';
+    $actionsHtml = '<span style="color:var(--muted);font-size:12.5px;">Xử lý qua Auth0</span>';
     if ($status === 'pending') {
-        $actionsHtml = '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-            . '<form method="POST" style="display:inline-flex;">'
-            . '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token']) . '">'
-            . '<input type="hidden" name="tab" value="password-requests">'
-            . '<input type="hidden" name="request_id" value="' . $requestId . '">'
-            . '<input type="hidden" name="request_status" value="approved">'
-            . '<button type="submit" name="update_password_request_status" class="btn btn-primary" title="Duyệt yêu cầu"><i class="bi bi-check-lg"></i></button>'
-            . '</form>'
-            . '<form method="POST" style="display:inline-flex;">'
-            . '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token']) . '">'
-            . '<input type="hidden" name="tab" value="password-requests">'
-            . '<input type="hidden" name="request_id" value="' . $requestId . '">'
-            . '<input type="hidden" name="request_status" value="rejected">'
-            . '<button type="submit" name="update_password_request_status" class="btn btn-danger" title="Từ chối yêu cầu"><i class="bi bi-x-lg"></i></button>'
-            . '</form>'
-            . '</div>';
+        $actionsHtml = '<span style="color:var(--muted);font-size:12.5px;">Khong dung nua</span>';
     }
 
     $rowsHtml .= '<tr>'
@@ -96,8 +81,8 @@ if ($rowsHtml === '') {
 <div class="card panel">
   <div class="panel-head">
     <div>
-      <h2>Duyệt Yêu Cầu Đổi Mật Khẩu</h2>
-      <div class="sub">Phê duyệt hoặc từ chối các yêu cầu đặt lại mật khẩu đã được người dùng gửi.</div>
+      <h2>Yêu Cầu Đổi Mật Khẩu Cũ</h2>
+      <div class="sub">Mật khẩu hiện do Auth0 quản lý; người dùng đặt lại mật khẩu bằng email của Auth0.</div>
     </div>
   </div>
 

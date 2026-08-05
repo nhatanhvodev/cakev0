@@ -18,6 +18,7 @@ assert_same(26, $_SESSION['user_id'], 'admin van co user mirror id');
 assert_same('/cakev0/pages/account.php', safe_redirect_target('/cakev0/pages/account.php', '/cakev0/index.php'), 'path noi bo ok');
 assert_same('/cakev0/index.php', safe_redirect_target('https://evil.com', '/cakev0/index.php'), 'chan URL ngoai');
 assert_same('/cakev0/index.php', safe_redirect_target('//evil.com', '/cakev0/index.php'), 'chan protocol-relative');
+assert_same('/cakev0/index.php', safe_redirect_target('/cakev0/pages/../admin/index.php', '/cakev0/index.php'), 'chan path traversal');
 assert_same('/cakev0/index.php', safe_redirect_target(null, '/cakev0/index.php'), 'null -> fallback');
 
 assert_same('provider_access_denied', auth0_callback_error_reason(new RuntimeException('Missing code'), ['error' => 'access_denied']), 'provider error uu tien');

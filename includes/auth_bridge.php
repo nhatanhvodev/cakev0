@@ -147,6 +147,11 @@ if (!function_exists('safe_redirect_target')) {
             return $fallback;
         }
 
+        $path = parse_url($raw, PHP_URL_PATH);
+        if (!is_string($path) || preg_match('#(^|/)\.\.(/|$)#', $path)) {
+            return $fallback;
+        }
+
         if (str_starts_with($raw, '/cakev0/') && !str_starts_with($raw, '//')) {
             return $raw;
         }

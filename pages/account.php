@@ -414,76 +414,10 @@ if (isset($_POST['update_profile'])) {
     }
 }
 
-// --- LOGIC 2: ĐỔI MẬT KHẨU ---
+// --- LOGIC 2: MẬT KHẨU DO AUTH0 QUẢN LÝ ---
 if (isset($_POST['change_password'])) {
-    $old_pass = $_POST['old_password'];
-    $new_pass = $_POST['new_password'];
-    $confirm_pass = $_POST['confirm_password'];
-
-    if (!password_verify($old_pass, $user['password'])) {
-        $error = "Mật khẩu hiện tại không đúng.";
-    } elseif ($new_pass !== $confirm_pass) {
-        $error = "Mật khẩu xác nhận không trùng khớp.";
-    } elseif (($password_error = validate_password_strength($new_pass)) !== null) {
-        $error = $password_error;
-    } else {
-        $hash = password_hash($new_pass, PASSWORD_DEFAULT);
-        $reset_token = bin2hex(random_bytes(16));
-
-        // Nếu đã có yêu cầu pending thì cập nhật lại nội dung yêu cầu gần nhất.
-        $stmtPending = $conn->prepare(
-            "SELECT id FROM password_reset_requests WHERE user_id = ? AND status = 'pending' ORDER BY id DESC LIMIT 1"
-        );
-
-        if (!$stmtPending) {
-            $error = "Lỗi khi tạo yêu cầu đổi mật khẩu.";
-        } else {
-            $stmtPending->bind_param("i", $user_id);
-            $stmtPending->execute();
-            $pendingRequest = $stmtPending->get_result()->fetch_assoc();
-            $stmtPending->close();
-
-            if ($pendingRequest) {
-                $request_id = (int) $pendingRequest['id'];
-                $stmtUpdate = $conn->prepare(
-                    "UPDATE password_reset_requests
-                     SET reset_token = ?, new_password = ?, status = 'pending', approved_at = NULL, created_at = NOW()
-                     WHERE id = ?"
-                );
-
-                if (!$stmtUpdate) {
-                    $error = "Lỗi khi cập nhật yêu cầu đổi mật khẩu.";
-                } else {
-                    $stmtUpdate->bind_param("ssi", $reset_token, $hash, $request_id);
-                    if ($stmtUpdate->execute()) {
-                        $_SESSION['success'] = "🔐 Yêu cầu đổi mật khẩu đã được cập nhật. Vui lòng chờ admin duyệt.";
-                        header("Location: account.php");
-                        exit;
-                    }
-                    $error = "Lỗi khi gửi yêu cầu đổi mật khẩu.";
-                    $stmtUpdate->close();
-                }
-            } else {
-                $stmtCreate = $conn->prepare(
-                    "INSERT INTO password_reset_requests (user_id, reset_token, new_password, status)
-                     VALUES (?, ?, ?, 'pending')"
-                );
-
-                if (!$stmtCreate) {
-                    $error = "Lỗi khi tạo yêu cầu đổi mật khẩu.";
-                } else {
-                    $stmtCreate->bind_param("iss", $user_id, $reset_token, $hash);
-                    if ($stmtCreate->execute()) {
-                        $_SESSION['success'] = "🔐 Yêu cầu đổi mật khẩu đã được gửi. Vui lòng chờ admin duyệt.";
-                        header("Location: account.php");
-                        exit;
-                    }
-                    $error = "Lỗi khi gửi yêu cầu đổi mật khẩu.";
-                    $stmtCreate->close();
-                }
-            }
-        }
-    }
+    header('Location: ' . base_url('pages/forgot-password.php'));
+    exit;
 }
 
 // --- LOGIC 3: HỦY ĐƠN HÀNG (CHỈ KHI ĐANG CHỜ) ---
@@ -1711,28 +1645,7 @@ foreach ($orders as $order) {
                                 <!-- Form Đổi mật khẩu -->
                                 <div class="col-md-12">
                                     <h6 class="subsection-title danger"><i class="fa-solid fa-shield-halved"></i> Bảo mật</h6>
-                                    <form method="POST">
-                                        <div class="row g-3">
-                                            <div class="col-md-4">
-                                                <label class="form-label small text-muted">Mật khẩu cũ</label>
-                                                <input type="password" name="old_password" class="form-control"
-                                                    required>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label small text-muted">Mật khẩu mới</label>
-                                                <input type="password" name="new_password" class="form-control"
-                                                    placeholder="Toi thieu 8 ky tu, gom chu hoa, chu thuong, so va ky tu dac biet" minlength="8" required>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label small text-muted">Xác nhận</label>
-                                                <input type="password" name="confirm_password" class="form-control"
-                                                    placeholder="Nhap lai mat khau moi" minlength="8" required>
-                                            </div>
-                                            <div class="col-12">
-                                                <button type="submit" name="change_password" class="btn-theme-danger">Đổi mật khẩu</button>
-                                            </div>
-                                        </div>
-                                    </form>
+                                    <a href="forgot-password.php" class="btn-theme-danger">Đổi mật khẩu qua Auth0</a>
                                 </div>
                             </div>
                         </div> <!-- End Tab Content -->

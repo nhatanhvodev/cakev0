@@ -10,9 +10,10 @@ assert_same('user', $_SESSION['role'], 'role set');
 assert_true(!isset($_SESSION['admin_logged_in']), 'user thuong khong co co admin');
 
 $_SESSION = [];
-apply_session_for_user(['id' => 1, 'username' => 'admin', 'role' => 'admin']);
+apply_session_for_user(['id' => 26, 'username' => 'admin', 'role' => 'admin', 'admin_id' => 1]);
 assert_true($_SESSION['admin_logged_in'] === true, 'admin co co admin_logged_in');
 assert_same(1, $_SESSION['admin_id'], 'admin_id set');
+assert_same(26, $_SESSION['user_id'], 'admin van co user mirror id');
 
 assert_same('/cakev0/pages/account.php', safe_redirect_target('/cakev0/pages/account.php', '/cakev0/index.php'), 'path noi bo ok');
 assert_same('/cakev0/index.php', safe_redirect_target('https://evil.com', '/cakev0/index.php'), 'chan URL ngoai');

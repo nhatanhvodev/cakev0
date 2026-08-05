@@ -23,9 +23,45 @@ if (!function_exists('auth0_extract_identity')) {
         return [
             'auth0_id' => $sub,
             'email'    => $email,
+            'email_verified' => ($claims['email_verified'] ?? true) !== false,
             'username' => $username,
             'role'     => $role,
         ];
+    }
+}
+
+if (!function_exists('resolve_local_admin')) {
+    function resolve_local_admin(mysqli $conn, array $identity): ?array
+    {
+        $email = strtolower(trim((string) ($identity['email'] ?? '')));
+        $username = trim((string) ($identity['username'] ?? ''));
+        $roleIsAdmin = ($identity['role'] ?? '') === 'admin';
+        $emailVerified = ($identity['email_verified'] ?? true) !== false;
+
+        $candidates = [];
+        if ($emailVerified && str_ends_with($email, '@gaubakery.vn')) {
+            $local = substr($email, 0, -strlen('@gaubakery.vn'));
+            if ($local !== '') {
+                $candidates[] = $local;
+            }
+        }
+
+        if ($roleIsAdmin && $username !== '') {
+            $candidates[] = $username;
+        }
+
+        foreach (array_values(array_unique($candidates)) as $candidate) {
+            $stmt = $conn->prepare("SELECT id, username FROM admins WHERE username = ? LIMIT 1");
+            $stmt->bind_param('s', $candidate);
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($row) {
+                return ['id' => (int) $row['id'], 'username' => (string) $row['username']];
+            }
+        }
+
+        return null;
     }
 }
 
@@ -35,7 +71,9 @@ if (!function_exists('resolve_local_user')) {
         $auth0Id  = (string) $identity['auth0_id'];
         $email    = (string) $identity['email'];
         $username = (string) $identity['username'];
-        $role     = $identity['role'] === 'admin' ? 'admin' : 'user';
+        $admin    = resolve_local_admin($conn, $identity);
+        $role     = $admin !== null || $identity['role'] === 'admin' ? 'admin' : 'user';
+        $sessionUsername = $admin['username'] ?? $username;
 
         // 1) Khop theo auth0_id
         $stmt = $conn->prepare("SELECT id, username FROM users WHERE auth0_id = ? LIMIT 1");
@@ -44,7 +82,12 @@ if (!function_exists('resolve_local_user')) {
         $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         if ($row) {
-            return ['id' => (int) $row['id'], 'username' => (string) $row['username'], 'role' => $role];
+            return [
+                'id' => (int) $row['id'],
+                'username' => $sessionUsername !== '' ? $sessionUsername : (string) $row['username'],
+                'role' => $role,
+                'admin_id' => $admin['id'] ?? null,
+            ];
         }
 
         // 2) Khop theo email -> link auth0_id vao dong cu
@@ -59,17 +102,25 @@ if (!function_exists('resolve_local_user')) {
             $upd->bind_param('si', $auth0Id, $id);
             $upd->execute();
             $upd->close();
-            return ['id' => $id, 'username' => (string) $row['username'], 'role' => $role];
+            return [
+                'id' => $id,
+                'username' => $sessionUsername !== '' ? $sessionUsername : (string) $row['username'],
+                'role' => $role,
+                'admin_id' => $admin['id'] ?? null,
+            ];
         }
 
         // 3) Tao moi (password rong: Auth0 quan credential)
         $empty = '';
+        if ($sessionUsername !== '') {
+            $username = $sessionUsername;
+        }
         $ins = $conn->prepare("INSERT INTO users (username, password, email, auth0_id) VALUES (?, ?, ?, ?)");
         $ins->bind_param('ssss', $username, $empty, $email, $auth0Id);
         $ins->execute();
         $newId = (int) $conn->insert_id;
         $ins->close();
-        return ['id' => $newId, 'username' => $username, 'role' => $role];
+        return ['id' => $newId, 'username' => $username, 'role' => $role, 'admin_id' => $admin['id'] ?? null];
     }
 }
 
@@ -82,7 +133,7 @@ if (!function_exists('apply_session_for_user')) {
 
         if ($_SESSION['role'] === 'admin') {
             $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_id'] = (int) $user['id'];
+            $_SESSION['admin_id'] = (int) ($user['admin_id'] ?? $user['id']);
         } else {
             unset($_SESSION['admin_logged_in'], $_SESSION['admin_id']);
         }

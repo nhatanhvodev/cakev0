@@ -11,6 +11,7 @@ $id = auth0_extract_identity([
 ]);
 assert_same('auth0|abc123', $id['auth0_id'], 'sub');
 assert_same('user@example.com', $id['email'], 'email lowercase');
+assert_true($id['email_verified'] === true, 'email verified default');
 assert_same('nhatanh', $id['username'], 'username tu custom claim');
 assert_same('user', $id['role'], 'role user');
 
@@ -37,5 +38,12 @@ $atFirst = auth0_extract_identity([
     'email' => '@nodomain.com',
 ]);
 assert_same('', $atFirst['username'], 'email bat dau bang @ -> username rong');
+
+$unverified = auth0_extract_identity([
+    'sub' => 'auth0|unverified',
+    'email' => 'admin@gaubakery.vn',
+    'email_verified' => false,
+]);
+assert_true($unverified['email_verified'] === false, 'giu email_verified false');
 
 echo "auth_bridge_identity_test ... ok\n";

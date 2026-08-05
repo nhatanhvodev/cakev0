@@ -114,6 +114,10 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
+            'Psr\\EventDispatcher\\' => 20,
+            'Psr\\Container\\' => 14,
+            'Psr\\Cache\\' => 10,
+            'PsrDiscovery\\' => 13,
             'PhpOffice\\PhpSpreadsheet\\' => 25,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
@@ -121,6 +125,11 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         array (
             'Matrix\\' => 7,
             'Masterminds\\' => 12,
+        ),
+        'H' => 
+        array (
+            'Http\\Message\\MultipartStream\\' => 29,
+            'Http\\Discovery\\' => 15,
         ),
         'G' => 
         array (
@@ -138,8 +147,13 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         ),
         'C' => 
         array (
+            'Composer\\Semver\\' => 16,
             'Composer\\Pcre\\' => 14,
             'Complex\\' => 8,
+        ),
+        'A' => 
+        array (
+            'Auth0\\SDK\\' => 10,
         ),
     );
 
@@ -177,6 +191,28 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
+        'Psr\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
+        ),
+        'Psr\\Container\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'Psr\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/cache/src',
+        ),
+        'PsrDiscovery\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr-discovery/log-implementations/src',
+            1 => __DIR__ . '/..' . '/psr-discovery/http-factory-implementations/src',
+            2 => __DIR__ . '/..' . '/psr-discovery/http-client-implementations/src',
+            3 => __DIR__ . '/..' . '/psr-discovery/event-dispatcher-implementations/src',
+            4 => __DIR__ . '/..' . '/psr-discovery/container-implementations/src',
+            5 => __DIR__ . '/..' . '/psr-discovery/cache-implementations/src',
+            6 => __DIR__ . '/..' . '/psr-discovery/discovery/src',
+        ),
         'PhpOffice\\PhpSpreadsheet\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
@@ -192,6 +228,14 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         'Masterminds\\' => 
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
+        ),
+        'Http\\Message\\MultipartStream\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/php-http/multipart-stream-builder/src',
+        ),
+        'Http\\Discovery\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/php-http/discovery/src',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -213,6 +257,10 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),
+        'Composer\\Semver\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/composer/semver/src',
+        ),
         'Composer\\Pcre\\' => 
         array (
             0 => __DIR__ . '/..' . '/composer/pcre/src',
@@ -220,6 +268,10 @@ class ComposerStaticInit62e10e6c8df9afc192311b196c75bb33
         'Complex\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/complex/classes/src',
+        ),
+        'Auth0\\SDK\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/auth0/auth0-php/src',
         ),
     );
 

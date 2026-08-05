@@ -14,12 +14,20 @@ if (!function_exists('auth0_import_user_id')) {
     }
 }
 
+if (!function_exists('auth0_import_username')) {
+    function auth0_import_username(array $row, bool $isAdmin): string
+    {
+        return str_replace('-', '_', auth0_import_user_id($row, $isAdmin));
+    }
+}
+
 if (!function_exists('build_import_payload')) {
     function build_import_payload(array $row, bool $isAdmin): array
     {
         $payload = [
             'email' => (string) $row['email'],
             'email_verified' => true,
+            'username' => auth0_import_username($row, $isAdmin),
             'user_id' => auth0_import_user_id($row, $isAdmin),
             'custom_password_hash' => [
                 'algorithm' => 'bcrypt',

@@ -1,5 +1,5 @@
 <?php
-// admin/bootstrap.php — request context for the modular admin.
+// admin/bootstrap.php - request context for the modular admin.
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
@@ -14,7 +14,30 @@ if (function_exists('ensureCartCouponInfrastructure')) {
     ensureCartCouponInfrastructure($conn);
 }
 
-// Auth guard — identical contract to legacy admin.php.
+// Neu co phien Auth0 nhung session app chua co, dong bo lai.
+if (!isset($_SESSION['user_id']) && empty($_SESSION['admin_logged_in'])) {
+    require_once __DIR__ . '/../includes/auth0.php';
+    require_once __DIR__ . '/../includes/auth_bridge.php';
+
+    $auth0Config = auth0_config();
+    $hasAuth0Config = $auth0Config['domain'] !== ''
+        && $auth0Config['clientId'] !== ''
+        && $auth0Config['clientSecret'] !== ''
+        && strlen((string) $auth0Config['cookieSecret']) >= 32;
+
+    if ($hasAuth0Config) {
+        try {
+            $creds = auth0_client()->getCredentials();
+            if ($creds !== null && $creds->user !== null) {
+                sync_session_from_auth0($conn, (array) $creds->user);
+            }
+        } catch (Throwable $e) {
+            // De guard ben duoi xu ly redirect neu khong dong bo duoc session.
+        }
+    }
+}
+
+// Auth guard - identical contract to legacy admin.php.
 if (!isset($_SESSION['admin_logged_in']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: ../pages/login.php');
     exit;

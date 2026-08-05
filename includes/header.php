@@ -1510,7 +1510,7 @@ if (isset($conn) && isset($_SESSION['user_id'])) {
               </div>
               <div class="notify-items" id="headerNotifyItems">
                 <?php if (!$isNotificationUser): ?>
-                  <a class="notify-empty" href="<?= $role === 'admin' ? BASE_URL . 'admin/index.php' : BASE_URL . 'pages/login.php' ?>">
+                  <a class="notify-empty" href="<?= $role === 'admin' ? base_url('admin/index.php') : base_url('pages/auth/login.php') ?>">
                     <span class="notify-icon"><i class="fa-solid <?= $role === 'admin' ? 'fa-gauge-high' : 'fa-user-lock' ?>" aria-hidden="true"></i></span>
                     <span class="notify-copy">
                       <strong><?= $role === 'admin' ? 'Thông báo vận hành' : 'Đăng nhập tài khoản' ?></strong>

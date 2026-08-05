@@ -31,4 +31,11 @@ $weird = auth0_extract_identity([
 ]);
 assert_same('user', $weird['role'], 'role la ep ve user');
 
+// Email bat dau bang @ -> username rong (khong co fallback)
+$atFirst = auth0_extract_identity([
+    'sub' => 'auth0|atfirst',
+    'email' => '@nodomain.com',
+]);
+assert_same('', $atFirst['username'], 'email bat dau bang @ -> username rong');
+
 echo "auth_bridge_identity_test ... ok\n";

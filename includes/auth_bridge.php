@@ -14,7 +14,8 @@ if (!function_exists('auth0_extract_identity')) {
             $username = (string) ($claims['nickname'] ?? '');
         }
         if ($username === '' && $email !== '') {
-            $username = substr($email, 0, strpos($email, '@') ?: strlen($email));
+            $atPos = strpos($email, '@');
+            $username = substr($email, 0, $atPos !== false ? $atPos : strlen($email));
         }
 
         $role = ((string) ($claims[AUTH0_CLAIM_ROLE] ?? '')) === 'admin' ? 'admin' : 'user';

@@ -12,7 +12,9 @@ $auth0->clear();
 $returnTo = safe_redirect_target($_GET['return'] ?? null, base_url('index.php'));
 $_SESSION['auth_return_to'] = $returnTo;
 
-$params = [];
+$params = [
+    'ui_locales' => 'vi',
+];
 if (($_GET['mode'] ?? '') === 'signup') {
     $params['screen_hint'] = 'signup';
 }

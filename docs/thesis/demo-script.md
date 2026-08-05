@@ -64,7 +64,7 @@ Lưu ý: một số kịch bản cần DB và đăng nhập. Nếu đang ở mô
 
 | Bước | Hành động | Kỳ vọng |
 |---|---|---|
-| 1 | Gõ: **"thanh toán vnpay được không"** | Bot trả lời chính sách thanh toán. |
+| 1 | Gõ: **"thanh toán chuyển khoản QR (SePay) được không"** | Bot trả lời chính sách thanh toán (COD và SePay VietQR). |
 | 2 | Gõ: **"đổi bánh được ko a"** | Normalizer map `ko -> không`, router nhận `policy_return`. |
 
 Điểm nhấn:

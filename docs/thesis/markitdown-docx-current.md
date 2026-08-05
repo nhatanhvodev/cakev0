@@ -63,13 +63,13 @@ CHƯƠNG 1: KHẢO SÁT HIỆN TRẠNG VÀ YÊU CẦU HỆ THỐNG
 
 Hệ thống là website thương mại điện tử dành cho cửa hàng bánh, phát triển từ mô hình đặt bánh trực tuyến truyền thống. Ngoài việc số hóa bán hàng và quản lý dữ liệu, phiên bản hiện tại tích hợp AI chăm sóc khách hàng để tư vấn, tra cứu thông tin nghiệp vụ và hỗ trợ các thao tác có kiểm soát.
 
-Khách hàng có thể xem danh sách và chi tiết sản phẩm, tìm kiếm, lưu sản phẩm yêu thích, quản lý giỏ hàng, áp dụng coupon, đặt bánh, chọn thanh toán COD, chuyển khoản hoặc VNPAY. Sau giao dịch phù hợp, hệ thống có thể sinh hóa đơn PDF và gửi email thông báo.
+Khách hàng có thể xem danh sách và chi tiết sản phẩm, tìm kiếm, lưu sản phẩm yêu thích, quản lý giỏ hàng, áp dụng coupon, đặt bánh, chọn thanh toán COD hoặc chuyển khoản QR qua SePay. Sau giao dịch phù hợp, hệ thống có thể sinh hóa đơn PDF và gửi email thông báo.
 
-Hệ thống hỗ trợ đăng ký có xác thực email, đăng nhập, quên mật khẩu, quản lý hồ sơ, lịch sử đơn hàng, đánh giá sản phẩm và gửi yêu cầu liên hệ. Widget AI CSKH có thể trả lời câu hỏi về sản phẩm, chính sách, đơn hàng, khuyến mãi và tiếp nhận yêu cầu báo giá bánh đặt riêng.
+Hệ thống hỗ trợ đăng nhập, đăng ký và quên mật khẩu qua Auth0 (Universal Login, xác minh email, đăng nhập Google), quản lý hồ sơ, lịch sử đơn hàng, đánh giá sản phẩm và gửi yêu cầu liên hệ. Widget AI CSKH có thể trả lời câu hỏi về sản phẩm, chính sách, đơn hàng, khuyến mãi và tiếp nhận yêu cầu báo giá bánh đặt riêng.
 
 Đối với quản trị viên, hệ thống tập trung nghiệp vụ quản lý sản phẩm, ảnh, tồn kho, đơn hàng, khách hàng, khuyến mãi, coupon, đánh giá, liên hệ, yêu cầu đặt lại mật khẩu, doanh thu, sản phẩm bán chạy và phiên chat cần hỗ trợ. Nhân viên hỗ trợ có thể nhận handoff, phản hồi, đóng hoặc mở lại phiên chat.
 
-Các đối tượng chính gồm khách hàng, quản trị viên, nhân viên hỗ trợ, AI CSKH, sản phẩm, giỏ hàng, đơn hàng, coupon, đánh giá và phiên hội thoại. Kiến trúc tách website PHP, dịch vụ AI FastAPI, cơ sở dữ liệu MySQL và các dịch vụ ngoài như VNPAY, mailer đa driver, Messenger và Telegram.
+Các đối tượng chính gồm khách hàng, quản trị viên, nhân viên hỗ trợ, AI CSKH, sản phẩm, giỏ hàng, đơn hàng, coupon, đánh giá và phiên hội thoại. Kiến trúc tách website PHP, dịch vụ AI FastAPI, cơ sở dữ liệu MySQL và các dịch vụ ngoài như Auth0 (xác thực), SePay (thanh toán QR), mailer đa driver, Messenger và Telegram.
 
 1.1.2. Đánh giá hiện trạng
 
@@ -128,7 +128,7 @@ Các đối tượng chính gồm khách hàng, quản trị viên, nhân viên 
 
 **v. Hạn chế về chức năng:**
 
-Hệ thống đã hỗ trợ thanh toán COD, chuyển khoản và VNPAY, đồng thời có khuyến mãi, coupon, báo cáo doanh thu và AI CSKH. Tuy nhiên, hệ thống chưa tích hợp thêm ví điện tử như MoMo hoặc ZaloPay, chưa quản lý kho nguyên liệu theo công thức bánh và chưa tối ưu điều phối giao hàng.
+Hệ thống đã hỗ trợ thanh toán COD và SePay (VietQR, tự đối soát qua webhook), đồng thời có khuyến mãi, coupon, báo cáo doanh thu và AI CSKH. Tuy nhiên, hệ thống chưa tích hợp thêm ví điện tử như MoMo hoặc ZaloPay, chưa quản lý kho nguyên liệu theo công thức bánh và chưa tối ưu điều phối giao hàng.
 
 Hệ thống đã có các công cụ đánh giá AI và bộ dữ liệu thử nghiệm, nhưng chưa lưu kết quả benchmark thực nghiệm vào kho mã nguồn. Vận hành Resend cũng chưa có webhook theo dõi trạng thái delivered/bounced và chưa có giao diện gửi lại email xác thực riêng.
 
@@ -153,16 +153,16 @@ Ngoài các chức năng nền tảng nêu trên, phiên bản hiện tại có 
 |  |  |  |
 | --- | --- | --- |
 | **Nhóm chức năng** | **Chức năng chi tiết** | **Đối tượng sử dụng** |
-| Tài khoản và bảo mật | Đăng ký, xác thực email, đăng nhập/đăng xuất, quên mật khẩu, quản lý hồ sơ, CSRF và password hash. | Khách hàng, quản trị viên |
+| Tài khoản và bảo mật | Đăng nhập/đăng ký/đăng xuất/quên mật khẩu qua Auth0 (Universal Login, xác minh email, đăng nhập Google, phát hiện mật khẩu rò rỉ); credential do Auth0 quản lý; quản lý hồ sơ; CSRF cho thao tác admin. | Khách hàng, quản trị viên |
 | Sản phẩm | Danh sách, tìm kiếm, chi tiết, ảnh phụ, tồn kho, nhãn dị ứng, bánh khuyến mãi và bánh bán chạy. | Khách hàng, quản trị viên |
 | Giỏ hàng và đặt hàng | Thêm/cập nhật/xóa giỏ hàng, nhập người nhận, địa chỉ, điện thoại, ghi chú và tạo đơn. | Khách hàng |
-| Thanh toán và coupon | COD, chuyển khoản QR, VNPAY sandbox; áp dụng coupon với điều kiện đơn tối thiểu, lượt dùng và thời gian hiệu lực. | Khách hàng, hệ thống |
+| Thanh toán và coupon | COD và SePay VietQR (webhook tự đối soát theo nội dung `DH<order_id>`); áp dụng coupon với điều kiện đơn tối thiểu, lượt dùng và thời gian hiệu lực. | Khách hàng, hệ thống |
 | Email và hóa đơn | Sinh PDF, gửi email có đính kèm qua SMTP, Gmail API hoặc Resend; đánh dấu invoice\_email\_sent\_at để hạn chế gửi trùng. | Hệ thống, quản trị viên |
 | Đánh giá và yêu thích | Hiển thị điểm trung bình, lọc đánh giá, quản trị duyệt/từ chối; lưu/xem/bỏ sản phẩm yêu thích. | Khách hàng, quản trị viên |
 | Quản trị vận hành | Quản lý sản phẩm, đơn, khách hàng, khuyến mãi, coupon, đánh giá, liên hệ, reset mật khẩu, doanh thu và sản phẩm bán chạy. | Quản trị viên |
 | AI chăm sóc khách hàng | Widget chat, lịch sử phiên, 20 intent, RAG, tra cứu đơn, tư vấn bánh, coupon, đánh giá, so sánh, dị ứng, yêu thích, báo giá bánh riêng và xử lý khiếu nại. | Khách hàng, AI CSKH |
 | Handoff và hỗ trợ | Chuyển cuộc hội thoại sang nhân viên, ticket hỗ trợ, quản trị nhận/đóng/mở lại phiên và trả lời thủ công. | Nhân viên, quản trị viên |
-| Tích hợp ngoài | PHP chat proxy, FastAPI AI service, API tạo đơn HMAC, Messenger webhook, VNPAY, Telegram và mailer đa driver. | Hệ thống |
+| Tích hợp ngoài | PHP chat proxy, FastAPI AI service, API tạo đơn HMAC, Auth0 (xác thực OIDC), Messenger webhook, SePay webhook, Telegram và mailer đa driver. | Hệ thống |
 
 1.2.2. Yêu cầu về phi chức năng
 
@@ -170,7 +170,7 @@ Ngoài các chức năng nền tảng nêu trên, phiên bản hiện tại có 
 * **Hiệu suất hoạt động:** Hệ thống có tốc độ xử lý nhanh, phản hồi kịp thời các thao tác như xem sản phẩm, thêm vào giỏ hàng và đặt hàng. Đảm bảo hoạt động ổn định khi có nhiều người truy cập cùng lúc.
 * **Tính tương thích và tối ưu:** Hệ thống hoạt động tốt trên các trình duyệt phổ biến như Chrome, Edge, Cốc Cốc. Tối ưu tốc độ tải trang và dung lượng dữ liệu để nâng cao trải nghiệm người dùng
 * **Tối ưu hóa tài nguyên:** Hệ thống nhẹ, chiếm ít tài nguyên phần cứng, hoạt động tốt trên nhiều nền tảng và trình duyệt khác nhau.
-* **Bảo mật:** mật khẩu được băm, các thao tác nhạy cảm có kiểm tra CSRF; đăng ký yêu cầu xác thực email; API nội bộ tạo đơn từ AI có chữ ký HMAC; VNPAY xác thực chữ ký phản hồi. Dịch vụ AI giới hạn tốc độ cho endpoint chat và chỉ thực hiện action nghiệp vụ sau khi dữ liệu đầu vào hợp lệ.
+* **Bảo mật:** xác thực người dùng do Auth0 đảm nhận (băm mật khẩu, xác minh email, phát hiện mật khẩu rò rỉ), ứng dụng không lưu mật khẩu; các thao tác admin có kiểm tra CSRF; API nội bộ tạo đơn từ AI có chữ ký HMAC; webhook SePay xác thực bằng API key và nội dung `DH<order_id>`. Dịch vụ AI giới hạn tốc độ cho endpoint chat và chỉ thực hiện action nghiệp vụ sau khi dữ liệu đầu vào hợp lệ.
 * **Khả năng bảo trì và nâng cấp:** website PHP, AI service FastAPI và mailer được tách theo thành phần. Hệ thống có thể mở rộng dashboard đánh giá AI, cổng thanh toán, workflow giao hàng, webhook Resend và phân quyền nhân viên chi tiết hơn.
 * **Hiệu quả chi phí:** Hệ thống được xây dựng với chi phí hợp lý, phù hợp với quy mô cửa hàng bánh. Tối ưu tài nguyên sử dụng để giảm chi phí vận hành lâu dài.
 
@@ -244,12 +244,13 @@ Bảng 5: Phỏng vấn nhân viên kho nguyên liệu
 |  |  |  |
 | --- | --- | --- |
 | **Actor** | **Use Case** | **Mô tả** |
-| Khách hàng | Mua sắm và tự phục vụ | Đăng ký/xác thực email, tìm kiếm bánh, yêu thích, giỏ hàng, coupon, đặt hàng, thanh toán, đánh giá, liên hệ và chat AI. |
+| Khách hàng | Mua sắm và tự phục vụ | Đăng nhập/đăng ký qua Auth0, tìm kiếm bánh, yêu thích, giỏ hàng, coupon, đặt hàng, thanh toán, đánh giá, liên hệ và chat AI. |
 | Quản trị viên | Quản trị vận hành | Quản lý sản phẩm, ảnh, tồn kho, đơn hàng, khách hàng, khuyến mãi, coupon, đánh giá, liên hệ, mật khẩu, doanh thu và phiên chat. |
 | Nhân viên hỗ trợ | Xử lý handoff | Nhận phiên chat cần hỗ trợ, trả lời khách hàng, đóng/mở lại phiên và theo dõi ticket. |
 | AI CSKH | Tư vấn và action nghiệp vụ | Phân loại 20 intent, truy xuất tri thức, trả lời, tra cứu đơn, tạo đơn COD theo điều kiện và chuyển người thật khi cần. |
-| VNPAY | Thanh toán trực tuyến | Trả kết quả thanh toán có chữ ký để hệ thống cập nhật trạng thái đơn và coupon. |
-| Mailer/Resend | Gửi email | Gửi email xác thực, liên hệ, đặt lại mật khẩu và hóa đơn PDF qua SMTP, Gmail API hoặc Resend. |
+| Auth0 | Xác thực người dùng | Universal Login (OIDC): đăng nhập/đăng ký, xác minh email, đặt lại mật khẩu; trả claim danh tính và role cho hệ thống. |
+| SePay | Thanh toán trực tuyến | Gửi webhook khi có giao dịch VietQR khớp nội dung `DH<order_id>` để hệ thống cập nhật trạng thái đơn và coupon. |
+| Mailer/Resend | Gửi email | Gửi email phản hồi liên hệ, thông báo đơn và hóa đơn PDF qua SMTP, Gmail API hoặc Resend (email xác minh/đặt lại mật khẩu do Auth0 gửi). |
 | Messenger/Telegram | Kênh và thông báo | Messenger nhận/gửi tin nhắn qua webhook; Telegram nhận thông báo handoff khi được cấu hình. |
 
 CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
@@ -260,7 +261,7 @@ CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
 * **Khách hàng:** Là người sử dụng hệ thống để xem sản phẩm, đặt bánh, hủy đơn, thanh toán và gửi đánh giá phản hồi. Khách hàng có thể đăng ký tài khoản, đăng nhập và theo dõi lịch sử đơn hàng của mình trên hệ thống.
 * **Nhân viên hỗ trợ:** là người tiếp nhận các phiên hội thoại được AI chuyển tiếp, phản hồi thủ công, theo dõi ticket và hoàn tất yêu cầu của khách hàng.
 * **AI CSKH:** là dịch vụ hội thoại tích hợp trên website và Messenger, có nhiệm vụ nhận diện intent, truy xuất dữ liệu/kho tri thức, trả lời và thực hiện action được cho phép; các trường hợp không đủ ngữ cảnh hoặc khiếu nại sẽ được handoff**.**
-* **Dịch vụ ngoài:** gồm VNPAY cho thanh toán, SMTP/Gmail API/Resend cho email, Messenger webhook cho kênh chat và Telegram cho thông báo handoff khi cấu hình.
+* **Dịch vụ ngoài:** gồm Auth0 cho xác thực, SePay cho thanh toán QR, SMTP/Gmail API/Resend cho email, Messenger webhook cho kênh chat và Telegram cho thông báo handoff khi cấu hình.
 
 **2.2. Xác định các ca sử dụng (Use Case)**
 
@@ -400,7 +401,7 @@ CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
 | **Use Case ID:** | UC-05 |
 | **Tên Use Case:** | Thanh toán |
 | **Tác nhân chính:** | Khách hàng |
-| **Tổng quan:** | Cho phép khách hàng thanh toán đơn hàng bằng COD, chuyển khoản ngân hàng (QR), hoặc VNPAY. |
+| **Tổng quan:** | Cho phép khách hàng thanh toán đơn hàng bằng COD hoặc chuyển khoản QR qua SePay (VietQR). |
 | **Độ ưu tiên:** | Cao |
 | **Mối quan hệ:** | <<include>> Chọn phương thức thanh toán  <<extend>>Xem hoá đơn |
 | **Tiền điều kiện:** | Đơn hàng đã được đặt |
@@ -559,13 +560,13 @@ CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
 | **Use Case Description** | |
 | **Use Case ID:** | UC-15 |
 | **Tên Use Case:** | Gửi email và hóa đơn PDF |
-| **Tác nhân chính:** | Hệ thống, khách hàng, VNPAY |
+| **Tác nhân chính:** | Hệ thống, khách hàng, SePay |
 | **Tổng quan:** | Mô tả quá trình gửi email xác thực/liên hệ/mật khẩu và hóa đơn PDF qua driver SMTP, Gmail API hoặc Resend theo cấu hình triển khai. |
 | **Độ ưu tiên:** | Cao |
-| **Mối quan hệ:** | <<include>> Sinh PDF hóa đơn, chọn mail driver và ghi nhận trạng thái gửi; <<extend>> Kết quả thanh toán VNPAY. |
+| **Mối quan hệ:** | <<include>> Sinh PDF hóa đơn, chọn mail driver và ghi nhận trạng thái gửi; <<extend>> Kết quả webhook thanh toán SePay. |
 | **Tiền điều kiện:** | Địa chỉ email hợp lệ; driver được cấu hình; với Resend cần RESEND\_API\_KEY và MAIL\_FROM\_ADDRESS. |
 | **Hậu điều kiện:** | Email được gửi thành công; hóa đơn PDF đính kèm và invoice\_email\_sent\_at được cập nhật để hạn chế gửi trùng. |
-| **Dòng sự kiện chính:** | 1. Đơn được xác nhận hoặc VNPAY trả kết quả thành công. 2. Hệ thống sinh hóa đơn PDF. 3. Mailer chọn SMTP/Gmail API/Resend. 4. Mailer gửi email và file đính kèm. 5. Hệ thống lưu thời điểm đã gửi hóa đơn. |
+| **Dòng sự kiện chính:** | 1. Đơn được xác nhận hoặc webhook SePay báo thanh toán thành công. 2. Hệ thống sinh hóa đơn PDF. 3. Mailer chọn SMTP/Gmail API/Resend. 4. Mailer gửi email và file đính kèm. 5. Hệ thống lưu thời điểm đã gửi hóa đơn. |
 | **Dòng sự kiện phụ:** | A. Thiếu cấu hình driver hoặc API lỗi: hệ thống ghi log và không đánh dấu gửi thành công. B. Hóa đơn đã được đánh dấu gửi: luồng bỏ qua để tránh gửi trùng. |
 
 **2.5. Sơ đồ hoạt động (Activity diagram)**
@@ -820,7 +821,7 @@ Hiện chưa có trang riêng để gửi lại email xác thực; đăng ký l�
 | Sản phẩm | banh, product\_images, stock, slug, nhãn dị ứng | Lưu danh mục, ảnh, tồn kho, xếp hạng bánh bán chạy và dữ liệu lọc/tư vấn AI. |
 | Đơn hàng | orders, order\_items, coupon\_code, coupon\_discount, invoice\_email\_sent\_at | Lưu đơn, chi tiết, coupon đã dùng và thời điểm gửi hóa đơn email. |
 | Coupon | cart\_coupons | Lưu phần trăm giảm, đơn tối thiểu, giới hạn lượt dùng, trạng thái và thời gian hiệu lực. |
-| Tài khoản | users, pending\_registrations, password\_reset\_requests, login\_logs | Quản lý tài khoản, xác thực email, yêu cầu đặt lại mật khẩu và nhật ký đăng nhập. |
+| Tài khoản | users (có cột auth0\_id liên kết Auth0), login\_logs | Quản lý tài khoản liên kết với Auth0 và nhật ký đăng nhập. Bảng pending\_registrations, password\_reset\_requests còn lại từ luồng auth local cũ, nay credential do Auth0 quản lý. |
 | Đánh giá/yêu thích | product\_reviews, reviews, favorites | Lưu đánh giá, trạng thái duyệt và sản phẩm khách hàng đã lưu. |
 | Liên hệ | contact\_requests | Lưu liên hệ từ form và lead báo giá bánh đặt riêng do AI tạo. |
 | Chat AI | chat\_sessions, chat\_messages, support\_tickets, chat\_session\_events, faq\_entries | Lưu phiên/tin nhắn, ticket, lịch sử workflow và nguồn FAQ cho AI. |
@@ -834,7 +835,7 @@ Hiện chưa có trang riêng để gửi lại email xác thực; đăng ký l�
 | AI service | POST /chat/send; GET /chat/history; POST /chat/handoff; GET /admin/sessions; POST /admin/session-action; POST /admin/reply | Xử lý hội thoại, lịch sử, handoff, workflow admin và cập nhật kho tri thức. |
 | API tạo đơn | /api/internal/orders/create.php | Nhận payload đã ký HMAC để tạo đơn COD từ AI sau khi kiểm tra dữ liệu. |
 | Messenger | GET/POST /channels/messenger/webhook | Xác minh webhook và nhận/gửi tin nhắn Facebook Messenger. |
-| VNPAY | vnpay/vnpay\_return.php | Xác thực chữ ký kết quả, cập nhật đơn và coupon khi thanh toán thành công. |
+| SePay | sepay/, api/sepay/webhook.php | Nhận webhook VietQR, xác thực API key và nội dung `DH<order_id>`, cập nhật đơn và coupon khi thanh toán thành công. |
 | Mailer | send\_custom\_mail(), send\_custom\_mail\_with\_attachments() | Gửi email xác thực, liên hệ, mật khẩu và hóa đơn PDF qua SMTP, Gmail API hoặc Resend. |
 
 CHƯƠNG 4: KIỂM THỬ VÀ ĐÁNH GIÁ HỆ THỐNG AI CSKH
@@ -912,18 +913,18 @@ CHƯƠNG 5: TỔNG KẾT
 
 Qua quá trình nghiên cứu, phân tích, thiết kế và đối chiếu với codebase hiện tại, hệ thống đã được mở rộng từ website đặt bánh trực tuyến cơ bản thành website thương mại điện tử tích hợp AI chăm sóc khách hàng. Hệ thống vừa tự động hóa bán hàng, vừa hỗ trợ tư vấn, tra cứu nghiệp vụ, chuyển tiếp nhân viên và gửi email trong các luồng quan trọng.
 
-Về chức năng khách hàng, hệ thống cung cấp xem/tìm kiếm sản phẩm, yêu thích, giỏ hàng, coupon, đặt hàng, COD/chuyển khoản/VNPAY, lịch sử đơn, cập nhật hồ sơ, đánh giá, liên hệ, xác thực email và yêu cầu đặt lại mật khẩu. Về quản trị, hệ thống hỗ trợ quản lý sản phẩm, đơn, khách, khuyến mãi, coupon, đánh giá, liên hệ, yêu cầu mật khẩu, doanh thu, sản phẩm bán chạy và các phiên chat cần hỗ trợ.
+Về chức năng khách hàng, hệ thống cung cấp xem/tìm kiếm sản phẩm, yêu thích, giỏ hàng, coupon, đặt hàng, thanh toán COD/SePay VietQR, lịch sử đơn, cập nhật hồ sơ, đánh giá, liên hệ, đăng nhập/đăng ký và đặt lại mật khẩu qua Auth0 (có xác minh email). Về quản trị, hệ thống hỗ trợ quản lý sản phẩm, đơn, khách, khuyến mãi, coupon, đánh giá, liên hệ, yêu cầu mật khẩu, doanh thu, sản phẩm bán chạy và các phiên chat cần hỗ trợ.
 
 AI CSKH có thể tiếp nhận tin nhắn từ widget hoặc Messenger, phân loại 20 intent, truy xuất dữ liệu MySQL và kho tri thức, tư vấn sản phẩm/chính sách, tra cứu đơn, tạo đơn COD theo điều kiện, tư vấn coupon, so sánh, lọc dị ứng, quản lý yêu thích, thu thập yêu cầu bánh đặt riêng và handoff khi cần.
 
-Về tích hợp, kiến trúc gồm website PHP, FastAPI AI service, API tạo đơn có chữ ký HMAC, VNPAY, công cụ sinh hóa đơn PDF và mailer đa driver SMTP/Gmail API/Resend. Đây là cơ sở phù hợp với đề tài “Xây dựng website thương mại điện tử tích hợp AI chăm sóc khách hàng”.
+Về tích hợp, kiến trúc gồm website PHP, FastAPI AI service, API tạo đơn có chữ ký HMAC, Auth0 (xác thực OIDC), SePay (thanh toán VietQR), công cụ sinh hóa đơn PDF và mailer đa driver SMTP/Gmail API/Resend. Đây là cơ sở phù hợp với đề tài “Xây dựng website thương mại điện tử tích hợp AI chăm sóc khách hàng”.
 
 **5.2. Ưu điểm và khuyết điểm của hệ thống**
 
 5.2.1. Ưu điểm của hệ thống
 
 * Quy trình bán hàng tương đối đầy đủ: sản phẩm, giỏ hàng, checkout, coupon, nhiều phương thức thanh toán và quản lý trạng thái đơn.
-* Trải nghiệm khách hàng được mở rộng bằng yêu thích, đánh giá, lịch sử đơn, xác thực email và email hóa đơn PDF.
+* Trải nghiệm khách hàng được mở rộng bằng yêu thích, đánh giá, lịch sử đơn, xác thực tài khoản qua Auth0 và email hóa đơn PDF.
 * Phân hệ quản trị tập trung các nghiệp vụ sản phẩm, đơn hàng, coupon, đánh giá, khách hàng, liên hệ, mật khẩu và chat hỗ trợ.
 * AI CSKH có action nghiệp vụ, dùng dữ liệu thật từ MySQL/kho tri thức và giảm tải các câu hỏi lặp lại cho nhân viên.
 * Handoff đưa các tình huống khiếu nại hoặc không đủ ngữ cảnh sang nhân viên, bảo đảm không cố tự động hóa các trường hợp không phù hợp.
@@ -934,7 +935,7 @@ Về tích hợp, kiến trúc gồm website PHP, FastAPI AI service, API tạo 
 
 * Chưa có quản lý kho nguyên liệu, định mức nguyên liệu theo từng loại bánh và cảnh báo nguyên liệu sắp hết.
 * Chưa tối ưu giao hàng, phân công shipper hoặc theo dõi vị trí giao hàng theo thời gian thực.
-* Thanh toán trực tuyến mới tập trung vào VNPAY; chưa tích hợp MoMo hoặc ZaloPay.
+* Thanh toán trực tuyến hiện dựa trên SePay VietQR; chưa tích hợp MoMo hoặc ZaloPay.
 * AI đã có dataset và công cụ đo lường, nhưng báo cáo cần bổ sung bảng kết quả benchmark thực tế trước khi bảo vệ.
 * Resend đã có trong code nhưng cần hoàn thiện hướng dẫn cấu hình, test mock payload và webhook theo dõi delivered/bounced.
 * Chưa có giao diện riêng cho chức năng gửi lại email xác thực; luồng hiện tại dùng đăng ký lại cùng username/email đang chờ xác thực.

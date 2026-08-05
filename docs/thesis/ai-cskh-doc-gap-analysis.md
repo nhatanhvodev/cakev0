@@ -12,7 +12,7 @@ Tài liệu DOCX hiện tại đủ khung cho một đồ án môn "Phân tích 
 
 > Xây dựng website thương mại điện tử tích hợp AI chăm sóc khách hàng
 
-Trạng thái cập nhật ngày 26/07/2026: bản Markdown mới `docs/thesis/markitdown-docx.md` đã được bổ sung các nhóm chức năng hiện có trong codebase, gồm AI CSKH, chat admin, Messenger, tạo đơn qua chat, coupon, yêu thích, đánh giá, VNPAY, hóa đơn PDF, email đa driver và Resend. File này vẫn giữ vai trò checklist phân tích gap để tiếp tục hoàn thiện bản khóa luận chính thức.
+Trạng thái cập nhật ngày 26/07/2026: bản Markdown mới `docs/thesis/markitdown-docx.md` đã được bổ sung các nhóm chức năng hiện có trong codebase, gồm AI CSKH, chat admin, Messenger, tạo đơn qua chat, coupon, yêu thích, đánh giá, SePay (thanh toán QR), hóa đơn PDF, email đa driver và Resend. File này vẫn giữ vai trò checklist phân tích gap để tiếp tục hoàn thiện bản khóa luận chính thức.
 
 Các phần hiện đã có:
 
@@ -43,13 +43,13 @@ Codebase hiện không chỉ là bản đặt bánh cơ bản. Có thể mô t�
 | Phân hệ | Nội dung nên đưa vào báo cáo |
 |---|---|
 | Sản phẩm | Quản lý bánh, loại bánh, giá, hình ảnh, mô tả, slug, gallery, best selling, tồn kho. |
-| Khách hàng | Đăng ký, xác thực email, đăng nhập, cập nhật tài khoản, xem lịch sử đơn. |
+| Khách hàng | Đăng nhập/đăng ký/xác minh email qua Auth0, cập nhật tài khoản, xem lịch sử đơn. |
 | Giỏ hàng và đặt hàng | Thêm/xóa/cập nhật số lượng, áp mã giảm giá, tạo đơn. |
-| Thanh toán | COD, chuyển khoản/QR, VNPAY, cập nhật trạng thái thanh toán. |
+| Thanh toán | COD và SePay VietQR (webhook tự cập nhật trạng thái thanh toán). |
 | Đánh giá | Đánh giá sản phẩm, duyệt đánh giá trong admin. |
 | Khuyến mãi/coupon | Bảng promotions và cart_coupons, mã WELCOME10 công khai cho AI. |
 | Yêu thích | Lưu và xem sản phẩm yêu thích. |
-| Hóa đơn/email | Xác thực email đăng ký, phản hồi liên hệ, thông báo yêu cầu mật khẩu, sinh hóa đơn PDF, gửi email có attachment qua SMTP/Gmail API/Resend, đánh dấu `invoice_email_sent_at` để hạn chế gửi trùng. |
+| Hóa đơn/email | Phản hồi liên hệ, thông báo trạng thái đơn, sinh hóa đơn PDF, gửi email có attachment qua SMTP/Gmail API/Resend, đánh dấu `invoice_email_sent_at` để hạn chế gửi trùng. (Email xác minh tài khoản và đặt lại mật khẩu do Auth0 gửi.) |
 | Quản trị | Dashboard, quản lý sản phẩm, khách hàng, đơn hàng, khuyến mãi, đánh giá, báo cáo. |
 
 ### 2.2. AI CSKH đã có trong code
@@ -103,7 +103,7 @@ Nên sửa đoạn mở đầu để nhấn mạnh vấn đề CSKH:
 
 Bổ sung vào `1.1.2. Đánh giá hiện trạng`:
 
-- Khách hàng hỏi lặp lại nhiều câu như giờ mở cửa, phí giao hàng, VNPAY/COD, đổi trả, bánh phù hợp dịp sinh nhật.
+- Khách hàng hỏi lặp lại nhiều câu như giờ mở cửa, phí giao hàng, SePay/COD, đổi trả, bánh phù hợp dịp sinh nhật.
 - Nhân viên phản hồi thủ công dễ chậm vào giờ cao điểm.
 - Tin nhắn từ nhiều kênh thiếu tập trung, khó theo dõi lịch sử hỗ trợ.
 - Khiếu nại cần được phân loại và chuyển người thật sớm.
@@ -285,7 +285,7 @@ Sau đó chuyển Chương 4 hiện tại thành:
 |---|---|---|
 | Dòng 234 | Tên đề tài vẫn là "Hệ Thống Quản Lý Đặt Bánh Trực Tuyến". | Đổi thành đề tài mới có AI CSKH. |
 | Dòng 244 | Lời cảm ơn nhắc "hệ thống quản lý Homestay". | Sửa thành "hệ thống thương mại điện tử đặt bánh trực tuyến tích hợp AI CSKH". |
-| Dòng 327 | Câu cũ mô tả hệ thống chưa có thanh toán online. | Không còn đúng vì tài liệu và code có VNPAY. Sửa thành "đã hỗ trợ COD/chuyển khoản/VNPAY, có thể mở rộng ví điện tử". |
+| Dòng 327 | Câu cũ mô tả hệ thống chưa có thanh toán online. | Không còn đúng vì code có thanh toán online. Sửa thành "đã hỗ trợ COD và SePay VietQR (tự đối soát qua webhook), có thể mở rộng ví điện tử". |
 | Dòng 449-452 | Actor chỉ có Quản lý và Khách hàng. | Thêm Nhân viên hỗ trợ, Trợ lý AI CSKH, AI Service. |
 | Dòng 454-471 | Use case chưa có AI. | Thêm nhóm use case AI CSKH. |
 | Dòng 725 | Mục Class diagram trong Markdown không có nội dung đọc được. | Kiểm tra DOCX gốc; nếu chỉ là hình thì thêm mô tả text và bảng lớp/thực thể. |
@@ -316,7 +316,7 @@ Sau đó chuyển Chương 4 hiện tại thành:
 
 Hệ thống được thiết kế theo kiến trúc lai giữa website thương mại điện tử PHP/MySQL và AI Service độc lập. Website chịu trách nhiệm hiển thị giao diện, quản lý sản phẩm, giỏ hàng, đơn hàng và thanh toán. AI Service được xây dựng bằng FastAPI, tiếp nhận tin nhắn từ website thông qua các API proxy của PHP. Sau khi nhận tin nhắn, AI Service lưu lịch sử hội thoại, chuẩn hóa tiếng Việt, phân loại ý định bằng Router Agent, sau đó chuyển đến agent phù hợp: Retrieval Agent để trả lời FAQ/chính sách/sản phẩm, Action Agent để tra cứu hoặc tạo đơn hàng, Chitchat Agent để trả lời hội thoại thông thường, và Handoff Agent để chuyển nhân viên khi có khiếu nại hoặc bot không đủ tự tin.
 
-Kho tri thức của AI gồm dữ liệu sản phẩm từ MySQL, FAQ và các trang chính sách. Dữ liệu này được index vào ChromaDB, kết hợp truy xuất ngữ nghĩa và BM25, sau đó hợp nhất kết quả bằng Reciprocal Rank Fusion. Cách tiếp cận này giúp hệ thống vừa hiểu được ngữ nghĩa câu hỏi tiếng Việt, vừa bắt chính xác tên sản phẩm hoặc từ khóa đặc thù như VNPAY, COD, gluten, bánh kem dâu.
+Kho tri thức của AI gồm dữ liệu sản phẩm từ MySQL, FAQ và các trang chính sách. Dữ liệu này được index vào ChromaDB, kết hợp truy xuất ngữ nghĩa và BM25, sau đó hợp nhất kết quả bằng Reciprocal Rank Fusion. Cách tiếp cận này giúp hệ thống vừa hiểu được ngữ nghĩa câu hỏi tiếng Việt, vừa bắt chính xác tên sản phẩm hoặc từ khóa đặc thù như SePay, COD, gluten, bánh kem dâu.
 
 ### 5.3. Đoạn mô tả đóng góp khóa luận
 

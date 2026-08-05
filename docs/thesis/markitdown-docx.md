@@ -344,7 +344,7 @@ Hệ thống được thiết kế với các đối tượng chính bao gồm k
 
 **v. Hạn chế về chức năng:**
 
-* Hệ thống hiện tại đã hỗ trợ thanh toán COD, chuyển khoản và VNPAY, nhưng chưa mở rộng sang các ví điện tử phổ biến như Momo hoặc ZaloPay.
+* Hệ thống hiện tại đã hỗ trợ thanh toán COD và SePay (VietQR, tự đối soát qua webhook), nhưng chưa mở rộng sang các ví điện tử phổ biến như Momo hoặc ZaloPay.
 * Hệ thống đã có khuyến mãi, coupon, báo cáo doanh thu và AI CSKH, nhưng vẫn chưa có quản lý kho nguyên liệu, tối ưu giao hàng và dashboard đánh giá hiệu quả AI ở mức vận hành đầy đủ.
 
 **1.2. Yêu cầu về chức năng hệ thống**
@@ -362,11 +362,11 @@ Hệ thống được thiết kế với các đối tượng chính bao gồm k
 * Chức năng đặt hàng
 * Chức năng thanh toán
 * Chức năng đánh giá sản phẩm
-* Chức năng đăng ký tài khoản có xác thực email
-* Chức năng quên mật khẩu và yêu cầu đặt lại mật khẩu
+* Chức năng đăng ký / đăng nhập qua Auth0 (Universal Login, xác minh email)
+* Chức năng quên mật khẩu / đặt lại mật khẩu qua Auth0
 * Chức năng lưu/xem/bỏ lưu sản phẩm yêu thích
 * Chức năng áp dụng mã giảm giá khi thanh toán
-* Chức năng thanh toán COD, chuyển khoản ngân hàng và VNPAY
+* Chức năng thanh toán COD và chuyển khoản QR qua SePay
 * Chức năng gửi hóa đơn PDF qua email sau khi đơn được xác nhận hoặc thanh toán thành công
 * Chức năng gửi email qua nhiều driver: SMTP, Gmail API hoặc Resend
 * Chức năng liên hệ cửa hàng và quản trị viên phản hồi qua email
@@ -384,10 +384,10 @@ Hệ thống được thiết kế với các đối tượng chính bao gồm k
 
 | Nhóm chức năng | Chức năng chi tiết | Đối tượng sử dụng |
 | --- | --- | --- |
-| Tài khoản và bảo mật | Đăng ký, đăng nhập, đăng xuất, xác thực email qua liên kết 24 giờ, gửi lại email xác thực bằng cách đăng ký lại cùng username/email đang chờ xác thực, kiểm tra độ mạnh mật khẩu, yêu cầu đặt lại mật khẩu, duyệt yêu cầu đặt lại mật khẩu bởi quản trị viên, CSRF cho các thao tác quan trọng. | Khách hàng, quản trị viên |
+| Tài khoản và bảo mật | Đăng nhập/đăng ký/đăng xuất/quên mật khẩu qua Auth0 (Universal Login, OIDC): Auth0 giữ credential, áp chính sách mật khẩu và phát hiện mật khẩu rò rỉ, gửi email xác minh và email đặt lại mật khẩu; đăng nhập bị chặn tới khi email được xác minh (có gửi lại email xác minh qua Management API); đăng nhập Google. CSRF cho các thao tác admin. | Khách hàng, quản trị viên |
 | Sản phẩm | Xem danh sách bánh, xem chi tiết sản phẩm, hiển thị ảnh chính và ảnh phụ, phân loại sản phẩm, tìm kiếm, mô tả sản phẩm, giá, tồn kho, nhãn dị ứng, sản phẩm khuyến mãi và sản phẩm bán chạy. | Khách hàng, quản trị viên |
 | Giỏ hàng và đặt hàng | Thêm sản phẩm vào giỏ, cập nhật số lượng, xóa sản phẩm, nhập thông tin người nhận, địa chỉ, số điện thoại, ghi chú, tạo đơn hàng và lưu chi tiết đơn hàng. | Khách hàng |
-| Thanh toán | Hỗ trợ COD, chuyển khoản ngân hàng QR Code và VNPAY sandbox; cập nhật trạng thái đơn sau kết quả VNPAY; xử lý mã giảm giá khi checkout. | Khách hàng, hệ thống |
+| Thanh toán | Hỗ trợ COD và SePay VietQR; webhook SePay tự cập nhật trạng thái đơn khi khớp nội dung `DH<order_id>`; xử lý mã giảm giá khi checkout. | Khách hàng, hệ thống |
 | Hóa đơn và email | Sinh hóa đơn PDF, gửi hóa đơn qua email có file đính kèm, đánh dấu thời điểm đã gửi hóa đơn để tránh gửi trùng, gửi email qua SMTP/Gmail API/Resend, cung cấp công cụ chẩn đoán mail. | Hệ thống, quản trị viên |
 | Đánh giá và phản hồi | Hiển thị điểm trung bình, phân bố sao, danh sách đánh giá sản phẩm, lọc đánh giá theo số sao, quản trị viên duyệt hoặc từ chối đánh giá. | Khách hàng, quản trị viên |
 | Yêu thích | Lưu/bỏ lưu sản phẩm yêu thích, xem trang sản phẩm đã lưu, hiển thị số lượng yêu thích trên header, AI có thể thêm/xem danh sách yêu thích khi khách đã đăng nhập. | Khách hàng, AI CSKH |
@@ -488,7 +488,7 @@ Bảng 5: Phỏng vấn nhân viên kho nguyên liệu
 | Quản lý khách hàng | Nhân viên có thể xem và cập nhật thông tin khách hàng khi cần. |
 | Quản lý sản phẩm | Nhân viên có thể xem và cập nhật thông tin sản phẩm theo quyền được cấp. |
 | Đăng nhập | Cho phép nhân viên đăng nhập vào hệ thống. |
-| Khách hàng | Thanh toán | Cho phép khách hàng thanh toán khi đặt bánh bằng tiền mặt, chuyển khoản hoặc thanh toán online. |
+| Khách hàng | Thanh toán | Cho phép khách hàng thanh toán khi đặt bánh bằng tiền mặt (COD) hoặc chuyển khoản QR qua SePay. |
 | Đặt bánh | Cho phép khách hàng chọn bánh, nhập thông tin và gửi đơn đặt bánh trực tuyến. |
 | Hủy đơn hàng | Cho phép khách hàng hủy đơn khi đơn chưa được xử lý. |
 | Đánh giá phản hồi | Khách hàng có thể gửi đánh giá hoặc phản hồi về sản phẩm và dịch vụ. |
@@ -501,11 +501,11 @@ Bảng 5: Phỏng vấn nhân viên kho nguyên liệu
 
 | Actor | Use Case | Mô tả |
 | --- | --- | --- |
-| Khách hàng | Xác thực email đăng ký | Sau khi đăng ký, hệ thống lưu thông tin vào bảng chờ xác thực và gửi liên kết xác thực qua email. Tài khoản chỉ được tạo chính thức khi khách hàng mở liên kết hợp lệ trong thời hạn 24 giờ. |
-| Khách hàng | Yêu cầu đặt lại mật khẩu | Khách hàng nhập email và mật khẩu mới; hệ thống tạo yêu cầu chờ duyệt để quản trị viên xác nhận trước khi cập nhật mật khẩu. |
+| Khách hàng | Xác minh email đăng ký | Sau khi đăng ký qua Auth0, Auth0 gửi email xác minh. Ứng dụng chặn đăng nhập cho tới khi email được xác minh (`pages/auth/callback.php` kiểm tra claim `email_verified`), kèm nút gửi lại email xác minh qua Auth0 Management API. |
+| Khách hàng | Đặt lại mật khẩu | Khách hàng dùng luồng "Quên mật khẩu" của Auth0; Auth0 gửi email đặt lại và tự cập nhật credential. Ứng dụng không lưu và không xử lý mật khẩu. |
 | Khách hàng | Lưu sản phẩm yêu thích | Khách hàng đăng nhập có thể lưu, bỏ lưu và xem danh sách bánh yêu thích. |
 | Khách hàng | Áp dụng mã giảm giá | Khách hàng nhập mã coupon ở bước checkout; hệ thống kiểm tra ngày hiệu lực, trạng thái hoạt động, đơn tối thiểu và giới hạn lượt dùng. |
-| Khách hàng | Thanh toán VNPAY | Khách hàng chọn VNPAY, hệ thống chuyển sang cổng thanh toán, xác thực chữ ký khi nhận kết quả và cập nhật trạng thái đơn hàng. |
+| Khách hàng | Thanh toán SePay | Khách hàng chọn chuyển khoản QR, hệ thống hiển thị mã VietQR; SePay gửi webhook khi nhận giao dịch khớp nội dung `DH<order_id>`, hệ thống xác thực API key và cập nhật trạng thái đơn hàng. |
 | Khách hàng | Nhận hóa đơn PDF qua email | Khi đơn được xác nhận hoặc thanh toán thành công, hệ thống sinh hóa đơn PDF và gửi cho khách hàng qua driver mail đang cấu hình. |
 | Khách hàng | Chat với AI CSKH | Khách hàng sử dụng widget chat để hỏi sản phẩm, chính sách, khuyến mãi, mã giảm giá, đánh giá, so sánh bánh, dị ứng, đơn hàng hoặc yêu cầu nhân viên hỗ trợ. |
 | Khách hàng | Đặt bánh qua chat | Khách hàng đã đăng nhập có thể đặt bánh COD qua hội thoại; AI thu thập sản phẩm, số lượng, người nhận, số điện thoại, địa chỉ và yêu cầu xác nhận trước khi gọi API nội bộ tạo đơn. |
@@ -529,7 +529,7 @@ CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
 * **Khách hàng:** Là người sử dụng hệ thống để xem sản phẩm, đặt bánh, hủy đơn, thanh toán và gửi đánh giá phản hồi. Khách hàng có thể đăng ký tài khoản, đăng nhập và theo dõi lịch sử đơn hàng của mình trên hệ thống.
 * **AI CSKH:** Là tác nhân phần mềm tiếp nhận tin nhắn từ widget chat hoặc Messenger, phân loại ý định, truy xuất tri thức, trả lời câu hỏi và thực hiện một số nghiệp vụ như tra cứu đơn, tạo đơn COD, tư vấn coupon, so sánh sản phẩm, lọc theo dị ứng, quản lý yêu thích và tạo lead báo giá bánh đặt riêng.
 * **Nhân viên hỗ trợ:** Là người tiếp nhận các phiên chat cần handoff, phản hồi trực tiếp cho khách hàng, xử lý khiếu nại và tiếp tục chăm sóc các lead được AI chuyển sang.
-* **Dịch vụ ngoài:** Bao gồm VNPAY cho thanh toán trực tuyến, Resend/Gmail API/SMTP cho gửi email, Facebook Messenger cho kênh chat ngoài website và Telegram cho thông báo handoff khi được cấu hình.
+* **Dịch vụ ngoài:** Bao gồm Auth0 cho xác thực người dùng, SePay cho thanh toán VietQR, Resend/Gmail API/SMTP cho gửi email, Facebook Messenger cho kênh chat ngoài website và Telegram cho thông báo handoff khi được cấu hình.
 
 **2.2. Xác định các ca sử dụng (Use Case)**
 
@@ -554,8 +554,8 @@ CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
 * Chức năng thanh toán
 * Chức năng đánh giá sản phẩm
 * Chức năng cập nhật thông tin cá nhân
-* Chức năng đăng ký có xác thực email
-* Chức năng yêu cầu đặt lại mật khẩu
+* Chức năng đăng ký / đăng nhập qua Auth0 (xác minh email)
+* Chức năng đặt lại mật khẩu qua Auth0
 * Chức năng lưu và xem sản phẩm yêu thích
 * Chức năng áp dụng mã giảm giá
 * Chức năng chat với AI CSKH
@@ -692,7 +692,7 @@ CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
 | **Use Case ID:** | UC-05 |
 | **Tên Use Case:** | Thanh toán |
 | **Tác nhân chính:** | Khách hàng |
-| **Tổng quan:** | Cho phép khách hàng thanh toán đơn hàng bằng COD, chuyển khoản ngân hàng (QR), hoặc VNPAY. |
+| **Tổng quan:** | Cho phép khách hàng thanh toán đơn hàng bằng COD hoặc chuyển khoản QR qua SePay (VietQR). |
 | **Độ ưu tiên:** | Cao |
 | **Mối quan hệ:** | <<include>> Chọn phương thức thanh toán  <<extend>>Xem hoá đơn |
 | **Tiền điều kiện:** | Đơn hàng đã được đặt |
@@ -1149,8 +1149,9 @@ Các màn hình và nghiệp vụ cần thể hiện trong tài liệu gồm:
 | AI service | `POST /chat/send`, `GET /chat/history`, `POST /chat/handoff`, `GET /admin/sessions`, `POST /admin/session-action`, `POST /admin/reply`, `POST /knowledge/index` | Xử lý hội thoại, lịch sử chat, handoff, workflow admin và cập nhật kho tri thức. |
 | API nội bộ tạo đơn | `/api/internal/orders/create.php` | Cho phép AI tạo đơn COD sau khi payload được ký bằng HMAC và dữ liệu hợp lệ. |
 | Messenger | `GET/POST /channels/messenger/webhook` | Xác minh webhook và nhận tin nhắn từ Facebook Messenger. |
-| VNPAY | `vnpay/vnpay_return.php` | Xác thực chữ ký kết quả thanh toán, cập nhật trạng thái đơn và tăng lượt dùng coupon nếu thanh toán thành công. |
-| Mailer | `send_custom_mail()`, `send_custom_mail_with_attachments()` | Gửi email xác thực, phản hồi liên hệ, thông báo mật khẩu và hóa đơn PDF qua SMTP, Gmail API hoặc Resend. |
+| SePay | `sepay/`, `api/sepay/webhook.php` | Nhận webhook VietQR, xác thực API key và nội dung `DH<order_id>`, cập nhật trạng thái đơn và tăng lượt dùng coupon nếu thanh toán thành công. |
+| Auth0 | `pages/auth/*.php`, `includes/auth0.php`, `includes/auth_bridge.php` | Universal Login (OIDC): đăng nhập/đăng ký, xác minh email, đặt lại mật khẩu; đồng bộ danh tính và role về `users.auth0_id`. |
+| Mailer | `send_custom_mail()`, `send_custom_mail_with_attachments()` | Gửi email phản hồi liên hệ, thông báo đơn và hóa đơn PDF qua SMTP, Gmail API hoặc Resend (email xác minh/đặt lại mật khẩu do Auth0 gửi). |
 
 CHƯƠNG 4: TỔNG KẾT
 
@@ -1158,14 +1159,14 @@ CHƯƠNG 4: TỔNG KẾT
 
 Sau quá trình nghiên cứu, phân tích, thiết kế và đối chiếu với codebase hiện tại, hệ thống đã được mở rộng từ website đặt bánh trực tuyến cơ bản thành website thương mại điện tử có tích hợp AI chăm sóc khách hàng. Hệ thống không chỉ hỗ trợ khách hàng mua bánh trên website mà còn hỗ trợ tư vấn tự động, tra cứu dữ liệu nghiệp vụ, chuyển tiếp nhân viên và gửi email trong các luồng quan trọng.
 
-Về mặt phân tích hệ thống, tài liệu đã xác định lại các tác nhân chính gồm khách hàng, quản trị viên, nhân viên hỗ trợ, AI CSKH, hệ thống và các dịch vụ ngoài như VNPAY, Messenger, SMTP/Gmail API/Resend. Các use case được bổ sung để phản ánh đúng các chức năng hiện có như xác thực email, quên mật khẩu, coupon, hóa đơn PDF, chat AI, đặt đơn COD qua chat, handoff và quản trị phiên chat.
+Về mặt phân tích hệ thống, tài liệu đã xác định lại các tác nhân chính gồm khách hàng, quản trị viên, nhân viên hỗ trợ, AI CSKH, hệ thống và các dịch vụ ngoài như Auth0, SePay, Messenger, SMTP/Gmail API/Resend. Các use case được bổ sung để phản ánh đúng các chức năng hiện có như xác thực qua Auth0, quên mật khẩu, coupon, hóa đơn PDF, chat AI, đặt đơn COD qua chat, handoff và quản trị phiên chat.
 
 Về mặt chức năng, hệ thống hiện đạt được các nhóm kết quả sau:
 
-* Đối với khách hàng: xem sản phẩm, tìm kiếm, xem chi tiết, lưu sản phẩm yêu thích, quản lý giỏ hàng, áp dụng mã giảm giá, đặt hàng, thanh toán COD/chuyển khoản/VNPAY, xem lịch sử đơn hàng, cập nhật thông tin cá nhân, đánh giá sản phẩm, gửi liên hệ, đăng ký có xác thực email và yêu cầu đặt lại mật khẩu.
+* Đối với khách hàng: xem sản phẩm, tìm kiếm, xem chi tiết, lưu sản phẩm yêu thích, quản lý giỏ hàng, áp dụng mã giảm giá, đặt hàng, thanh toán COD/SePay VietQR, xem lịch sử đơn hàng, cập nhật thông tin cá nhân, đánh giá sản phẩm, gửi liên hệ, đăng nhập/đăng ký và đặt lại mật khẩu qua Auth0 (có xác minh email).
 * Đối với quản trị viên: quản lý sản phẩm, ảnh sản phẩm, khách hàng, đơn hàng, trạng thái đơn, khuyến mãi, coupon, đánh giá, yêu cầu liên hệ, lead báo giá bánh đặt riêng, yêu cầu đặt lại mật khẩu, doanh thu, sản phẩm bán chạy và phiên chat cần hỗ trợ.
 * Đối với AI CSKH: tiếp nhận tin nhắn qua widget hoặc Messenger, phân loại 20 intent, truy xuất tri thức sản phẩm/chính sách/FAQ, tư vấn sản phẩm, trả lời chính sách, tra cứu đơn, tạo đơn COD, xem khuyến mãi, tư vấn coupon, xem đánh giá, so sánh bánh, lọc theo dị ứng, quản lý yêu thích, thu thập yêu cầu báo giá bánh thiết kế riêng và chuyển nhân viên khi cần.
-* Đối với hệ thống: cung cấp PHP proxy cho chat, FastAPI AI service, API nội bộ tạo đơn có HMAC, tích hợp VNPAY, sinh hóa đơn PDF, gửi email đa driver qua SMTP/Gmail API/Resend, lưu lịch sử chat và cập nhật kho tri thức AI.
+* Đối với hệ thống: cung cấp PHP proxy cho chat, FastAPI AI service, API nội bộ tạo đơn có HMAC, xác thực qua Auth0 (OIDC), thanh toán qua SePay webhook, sinh hóa đơn PDF, gửi email đa driver qua SMTP/Gmail API/Resend, lưu lịch sử chat và cập nhật kho tri thức AI.
 
 Tổng thể, hệ thống đã giải quyết được bài toán thương mại điện tử cho cửa hàng bánh ở cả hai hướng: tự động hóa quy trình bán hàng và nâng cao chất lượng chăm sóc khách hàng bằng AI. Đây là nền tảng phù hợp với định hướng đề tài “Xây dựng website thương mại điện tử tích hợp AI chăm sóc khách hàng”.
 
@@ -1176,7 +1177,7 @@ Tổng thể, hệ thống đã giải quyết được bài toán thương mạ
 Hệ thống có các ưu điểm chính:
 
 * Quy trình bán hàng trực tuyến tương đối đầy đủ, gồm xem sản phẩm, giỏ hàng, checkout, coupon, nhiều phương thức thanh toán và quản lý trạng thái đơn.
-* Trải nghiệm khách hàng được mở rộng bằng danh sách yêu thích, đánh giá sản phẩm, lịch sử đơn hàng, email xác thực và email hóa đơn.
+* Trải nghiệm khách hàng được mở rộng bằng danh sách yêu thích, đánh giá sản phẩm, lịch sử đơn hàng, xác thực tài khoản qua Auth0 và email hóa đơn.
 * Phân hệ quản trị tập trung nhiều nghiệp vụ vận hành: sản phẩm, đơn hàng, coupon, khuyến mãi, đánh giá, khách hàng, liên hệ, mật khẩu và chat hỗ trợ.
 * AI CSKH không chỉ trả lời FAQ mà còn có action nghiệp vụ, sử dụng dữ liệu thật từ MySQL và kho tri thức, giúp giảm tải cho nhân viên trong các câu hỏi lặp lại.
 * Cơ chế handoff giúp xử lý các trường hợp AI không phù hợp để tự động hóa, đặc biệt là khiếu nại hoặc yêu cầu gặp người thật.
@@ -1189,12 +1190,12 @@ Bên cạnh các kết quả đã đạt được, hệ thống vẫn còn một
 
 * Chưa có phân hệ quản lý kho nguyên liệu, định mức nguyên liệu theo từng loại bánh và cảnh báo tồn kho nguyên liệu.
 * Chưa có tối ưu hóa giao hàng, phân công shipper hoặc theo dõi vị trí giao hàng theo thời gian thực.
-* Thanh toán trực tuyến mới tập trung vào VNPAY; chưa tích hợp thêm ví điện tử như Momo hoặc ZaloPay.
+* Thanh toán trực tuyến hiện dựa trên SePay VietQR; chưa tích hợp thêm ví điện tử như Momo hoặc ZaloPay.
 * AI đã có bộ dữ liệu đánh giá và công cụ đo lường, nhưng tài liệu kết quả thực nghiệm cần bổ sung thêm bảng kết quả chạy thực tế trước khi bảo vệ.
 * Resend đã có trong code, nhưng tài liệu vận hành cần bổ sung hướng dẫn cấu hình `MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM_ADDRESS`; hệ thống chưa có webhook theo dõi trạng thái delivered/bounced của Resend.
-* Chưa có giao diện riêng cho chức năng “gửi lại email xác thực”; hiện khách có thể tạo email xác thực mới bằng cách đăng ký lại cùng username/email đang chờ xác thực.
-* Một số nhánh tích hợp ngoài như Resend API, Messenger và VNPAY cần kiểm thử thủ công hoặc test mock đầy đủ hơn để tăng độ tin cậy.
-* Bảo mật có CSRF, password hash, email verification và HMAC nội bộ, nhưng chưa có 2FA, phân quyền nhân viên chi tiết theo vai trò hoặc mã hóa dữ liệu nhạy cảm ở mức ứng dụng.
+* Email xác minh và đặt lại mật khẩu do Auth0 gửi; ứng dụng có trang nhắc xác minh (`pages/auth/verify-notice.php`) kèm nút gửi lại email xác minh qua Auth0 Management API.
+* Một số nhánh tích hợp ngoài như Resend API, Messenger và webhook SePay cần kiểm thử thủ công hoặc test mock đầy đủ hơn để tăng độ tin cậy.
+* Bảo mật có xác thực Auth0 (băm mật khẩu, xác minh email, phát hiện mật khẩu rò rỉ), CSRF cho thao tác admin và HMAC nội bộ, nhưng chưa bật 2FA, chưa phân quyền nhân viên chi tiết theo vai trò hoặc mã hóa dữ liệu nhạy cảm ở mức ứng dụng.
 
 **4.3. Hướng phát triển hệ thống trong tương lai**
 

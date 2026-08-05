@@ -74,7 +74,7 @@ line('[OK]  Management token: ' . substr($token, 0, 10) . '... (len=' . strlen($
 
 line('');
 line('--- Step 2: GET /api/v2/emails/provider ---');
-$provResp = auth0_http('GET', "https://{$domain}/api/v2/emails/provider",
+$provResp = auth0_http('GET', "https://{$domain}/api/v2/emails/provider?fields=name,enabled,default_from_address,credentials&include_fields=true",
     ['Authorization: Bearer ' . $token]
 );
 line('HTTP ' . $provResp['status']);

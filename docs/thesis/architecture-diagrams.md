@@ -357,4 +357,4 @@ Ghi chú:
 
 - Mail driver hiện hỗ trợ `smtp`, `gmail_api`, `resend`.
 - Resend yêu cầu `MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM_ADDRESS`.
-- Các nghiệp vụ dùng mail chung gồm xác thực đăng ký, phản hồi liên hệ, thông báo yêu cầu mật khẩu và hóa đơn PDF.
+- Các nghiệp vụ dùng mailer của ứng dụng gồm phản hồi liên hệ, thông báo trạng thái đơn và hóa đơn PDF. Email xác minh tài khoản và đặt lại mật khẩu do Auth0 gửi qua email provider của tenant (Resend).

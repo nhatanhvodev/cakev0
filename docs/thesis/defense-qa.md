@@ -84,7 +84,7 @@ Vì vậy khi bảo vệ nên nói: hệ thống tách `LLMClient` để thay pr
 
 ### Tại sao dùng ChromaDB + BM25?
 
-ChromaDB xử lý tìm kiếm ngữ nghĩa, hữu ích khi khách hỏi theo nhu cầu. BM25 bắt từ khóa chính xác như tên bánh, VNPAY, COD, gluten. Kết quả hai phía được hợp nhất bằng Reciprocal Rank Fusion, không cần chuẩn hóa score giữa cosine distance và BM25 score.
+ChromaDB xử lý tìm kiếm ngữ nghĩa, hữu ích khi khách hỏi theo nhu cầu. BM25 bắt từ khóa chính xác như tên bánh, SePay, COD, gluten. Kết quả hai phía được hợp nhất bằng Reciprocal Rank Fusion, không cần chuẩn hóa score giữa cosine distance và BM25 score.
 
 Dẫn chứng code: `ai-service/app/knowledge/vector_store.py`.
 
@@ -256,14 +256,29 @@ Có thể tái sử dụng kiến trúc, nhưng cần thay:
 
 Có. Code hiện hỗ trợ ba driver mail: `smtp`, `gmail_api`, `resend`. Driver được chọn bằng `MAIL_DRIVER`. Nếu đặt `MAIL_DRIVER=resend`, hệ thống dùng `RESEND_API_KEY` và `MAIL_FROM_ADDRESS` để gọi Resend API.
 
-Các luồng đang dùng mail chung:
+Các luồng đang dùng mail chung của ứng dụng:
 
-- Gửi email xác thực khi đăng ký.
 - Gửi phản hồi yêu cầu liên hệ từ admin.
-- Gửi thông báo liên quan đến yêu cầu đặt lại mật khẩu.
+- Gửi thông báo trạng thái đơn cho khách.
 - Gửi hóa đơn PDF sau khi đơn được xác nhận hoặc thanh toán thành công.
 
+Lưu ý: email **xác minh tài khoản** và **đặt lại mật khẩu** nay do **Auth0** gửi qua email provider của tenant (Resend), không đi qua mailer của ứng dụng.
+
 Điểm cần nói rõ khi bảo vệ: Resend đã có ở code, nhưng môi trường chạy thực tế phải cấu hình đúng biến môi trường. Nếu `.env` vẫn để `MAIL_DRIVER=gmail_api`, hệ thống sẽ chạy theo Gmail API chứ không dùng Resend.
+
+### Hệ thống xác thực người dùng thế nào?
+
+Xác thực do **Auth0** đảm nhận qua Universal Login (chuẩn OIDC). Ứng dụng không tự lưu mật khẩu: `pages/auth/login.php` chuyển hướng sang Auth0, `pages/auth/callback.php` đổi mã và tạo phiên, `pages/auth/logout.php` đăng xuất cả hai phía. Auth0 giữ credential, áp chính sách mật khẩu, phát hiện mật khẩu rò rỉ, gửi email xác minh và đặt lại mật khẩu. Bảng `users` liên kết với tài khoản Auth0 qua cột `auth0_id`; quyền admin đọc từ claim role của Auth0.
+
+Dẫn chứng code: `includes/auth0.php`, `includes/auth_bridge.php` (`sync_session_from_auth0()`), `includes/auth0_management.php`.
+
+### Đăng ký xong có bắt buộc xác minh email không?
+
+Có. `pages/auth/callback.php` kiểm tra claim `email_verified`; nếu chưa xác minh thì không tạo phiên và đưa người dùng sang `pages/auth/verify-notice.php` (có nút gửi lại email xác minh qua Auth0 Management API). Tài khoản đăng nhập bằng Google được Auth0 đánh dấu đã xác minh nên không bị chặn.
+
+### Hệ thống hỗ trợ những hình thức thanh toán nào?
+
+COD và **SePay VietQR**. Khi checkout, hệ thống sinh mã QR SePay; webhook `api/sepay/webhook.php` tự chuyển đơn sang `paid` khi SePay ghi nhận giao dịch có nội dung `DH<order_id>` (xác thực bằng `SEPAY_WEBHOOK_API_KEY`). Bản trước dùng VNPAY và chuyển khoản ngân hàng thủ công đã được thay bằng SePay để tự động đối soát.
 
 ### Vì sao cần `invoice_email_sent_at`?
 

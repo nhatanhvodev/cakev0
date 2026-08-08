@@ -305,3 +305,398 @@ Nên nêu thận trọng:
 | Handoff retry không luôn tạo ticket | Direct complaint/handoff tạo ticket; low-confidence/retry đánh dấu phiên để admin tiếp nhận. |
 | Phụ thuộc provider LLM/embedding | Có thể đổi provider qua config, nhưng production vẫn cần quản lý quota và key. |
 | Resend chưa có webhook trạng thái | Code gửi mail đã có, nhưng chưa theo dõi delivered/bounced bằng webhook nên phần vận hành email vẫn cần hoàn thiện. |
+
+---
+
+## G. Framework, mock API và tích hợp PHP ↔ Python
+
+### Web PHP đang dùng framework nào?
+
+Phần website **không dùng full-stack framework như Laravel/Symfony**. Đây là ứng dụng PHP theo kiểu server-rendered/traditional PHP, tổ chức bằng các file `pages/`, `api/`, `includes/`, `config/` và dùng Composer để kéo các thư viện cần thiết.
+
+`composer.json` hiện có các package chính như `auth0/auth0-php`, `phpmailer/phpmailer`, `dompdf/dompdf`, `phpoffice/phpspreadsheet` và `hernol/uploadthing-php`. `config/bootstrap.php` tự nạp Composer autoloader và tự đọc `.env`/`.env.local`.
+
+Cách trả lời ngắn khi bảo vệ: **PHP là core web/business application, không dùng MVC framework lớn; framework chính nằm ở AI service Python.**
+
+Dẫn chứng code:
+
+- `composer.json`
+- `config/bootstrap.php`
+- cấu trúc `pages/`, `api/`, `includes/`, `admin/`
+
+### AI CSKH Python đang dùng framework nào?
+
+AI service dùng **FastAPI** làm HTTP API, **Uvicorn** làm ASGI server, **Pydantic** để validate request/config, **LangGraph** để điều phối multi-agent, **LangChain** làm lớp tích hợp LLM/embedding, **ChromaDB + BM25** cho retrieval và **PyMySQL** để truy cập MySQL.
+
+Dẫn chứng:
+
+- `ai-service/requirements.txt`
+- `ai-service/pyproject.toml`
+- `ai-service/app/main.py`
+- `ai-service/app/engines/multiagent/graph.py`
+
+### Tại sao không viết toàn bộ AI bằng PHP?
+
+Có thể gọi LLM từ PHP, nhưng hệ sinh thái Python mạnh hơn cho LangGraph, LangChain, ChromaDB, embedding, evaluation và scientific metrics. Vì vậy codebase giữ PHP cho website/e-commerce và tách AI thành service Python riêng.
+
+Lợi ích của cách tách này:
+
+- Không phải rewrite website PHP hiện có.
+- AI có thể deploy/restart/scale độc lập.
+- Có thể thay engine baseline/multiagent/demo mà không thay frontend.
+- PHP giữ quyền kiểm soát các nghiệp vụ nhạy cảm như xác thực phiên và tạo đơn.
+
+### Luồng một tin nhắn từ trình duyệt tới AI đi như thế nào?
+
+Luồng web hiện tại là:
+
+`gau-chat-widget.js` → `POST /cakev0/api/chat/send.php` → PHP proxy dùng cURL → `POST {AI_SERVICE_URL}/chat/send` → FastAPI → engine → DB/LLM/RAG → FastAPI trả JSON → PHP trả nguyên JSON → widget render câu trả lời.
+
+Trong widget, `API` được đặt là `/cakev0/api/chat`; hàm `send()` gọi `send.php`. PHP `send.php` không tự sinh câu trả lời mà xây payload an toàn rồi forward sang FastAPI.
+
+Dẫn chứng:
+
+- `assets/js/gau-chat-widget.js` - `send()`
+- `api/chat/send.php`
+- `includes/chat_proxy_helpers.php`
+- `ai-service/app/api/chat.py` - `chat_send()`
+
+### Trình duyệt có gọi thẳng FastAPI không?
+
+Không trong luồng chat website chính. Browser gọi endpoint PHP cùng origin; PHP mới gọi FastAPI server-to-server.
+
+Cách này có ba lợi ích chính:
+
+1. Browser không cần biết URL nội bộ của AI service.
+2. PHP lấy danh tính từ session server-side và ký HMAC trước khi gửi sang Python.
+3. Frontend không thể tự ý chèn `user_id` để đọc dữ liệu của tài khoản khác.
+
+### PHP biết địa chỉ AI service bằng cách nào?
+
+Qua biến môi trường `AI_SERVICE_URL`. Hàm `chat_ai_service_url()` đọc biến này và fallback về `http://localhost:8000` khi chạy local ngoài Docker.
+
+Trong Docker Compose:
+
+- PHP `app`: `AI_SERVICE_URL=http://ai-service:8000`
+- Tên `ai-service` chính là DNS service name trong Docker network `bakery-net`.
+
+Do đó container PHP không gọi `localhost:8000`; nó gọi container Python qua service name.
+
+Dẫn chứng:
+
+- `includes/chat_proxy_helpers.php`
+- `docker-compose.yml`
+
+### Hai service PHP và Python kết nối nhau trong Docker ra sao?
+
+Cả `app`, `db`, `phpmyadmin` và `ai-service` cùng nằm trong Docker bridge network `bakery-net`. Docker DNS phân giải tên service:
+
+- PHP → AI: `http://ai-service:8000`
+- AI → PHP internal order API: `http://app/cakev0/api/internal/orders/create.php`
+- PHP/Python → MySQL: host `db`, port `3306`
+
+Đây là service-to-service communication trong private Docker network; port map `8080:80`, `8000:8000`, `3307:3306` chủ yếu để máy host truy cập khi development.
+
+### PHP và Python có dùng chung database không?
+
+Có. Cả hai cùng kết nối MySQL `banh_store`.
+
+Python dùng DB cho chat session, message, ticket, đọc dữ liệu phục vụ agent. PHP vẫn là application chính cho user, sản phẩm, đơn hàng, admin và các nghiệp vụ web.
+
+Điểm quan trọng khi trình bày: **dùng chung DB không có nghĩa AI được quyền tự ý sửa mọi bảng**. Với nghiệp vụ tạo đơn, AI gọi internal PHP API thay vì để LLM trực tiếp ghi transaction đơn hàng.
+
+### Vì sao tạo đơn lại đi Python → PHP một lần nữa?
+
+Đây là boundary nghiệp vụ có chủ đích. Python thu thập/hiểu ý người dùng, nhưng khi đủ dữ liệu thì gọi `INTERNAL_ORDER_API_URL`. PHP chịu trách nhiệm validate dữ liệu, xác thực HMAC, kiểm tra user/sản phẩm, transaction và tồn kho.
+
+Luồng rút gọn:
+
+`Chat → FastAPI Action Agent → order_create_service.py → PHP internal order API → MySQL transaction`.
+
+Nhờ vậy LLM không trở thành nguồn quyết định trực tiếp cho các thao tác tài chính/tồn kho.
+
+### Danh tính user được truyền từ PHP sang Python như thế nào?
+
+PHP không tin `user_id` do JavaScript gửi lên. `send.php` lấy `$_SESSION['user_id']`, sau đó tạo header:
+
+`X-User-Identity: <timestamp>:<user_id>:<hmac>`
+
+HMAC được tính bằng `INTERNAL_API_SECRET`. FastAPI `_verify_user_identity()` kiểm tra timestamp, chữ ký và chỉ dùng `user_id` đã ký làm `trusted_uid`; trường `req.user_id` trong body không được tin cậy cho quyết định truy cập dữ liệu.
+
+Đây là điểm bảo mật rất nên nhấn mạnh khi bảo vệ.
+
+Dẫn chứng:
+
+- `includes/chat_proxy_helpers.php` - `chat_user_identity_header()`
+- `api/chat/send.php`
+- `ai-service/app/api/chat.py` - `_verify_user_identity()`, `chat_send()`
+
+### Khách chưa đăng nhập được định danh thế nào?
+
+Widget tạo một `guest_token` ngẫu nhiên và giữ trong `localStorage.gau_chat_token`. Đồng thời `session_id` của cuộc hội thoại cũng được lưu ở `localStorage.gau_chat_session`.
+
+PHP chỉ forward `guest_token` khi không có user đăng nhập. FastAPI dùng user đã ký hoặc guest token để scope quyền sở hữu chat session.
+
+Dẫn chứng: `assets/js/gau-chat-widget.js`, `chat_build_forward_payload()` và `chat_history()`.
+
+### Mock API AI trong project được thực hiện như thế nào?
+
+Cần phân biệt ba mức:
+
+**1. Unit test LLM:** `FakeLLM` nhận danh sách response định trước, ghi lại các call và trả kết quả tuần tự. Test không tốn quota DeepSeek/Gemini.
+
+**2. API test:** FastAPI `TestClient` kết hợp `app.dependency_overrides[deps.get_engine]` để inject một `BaselineEngine` sử dụng `FakeLLM`, fake vector store và có thể `conn_factory=lambda: None`.
+
+**3. Demo an toàn:** đặt `ENGINE=demo`. `DemoEngine` vẫn thử chạy `MultiAgentEngine` thật; nếu có exception từ LLM/pipeline thì mới dùng `keyword_fallback()` và canned response.
+
+Dẫn chứng:
+
+- `ai-service/app/llm.py` - `FakeLLM`
+- `ai-service/tests/test_chat_api.py`
+- `ai-service/app/engines/demo.py`
+- `ai-service/app/deps.py`
+
+### `ENGINE=demo` có phải mock hoàn toàn AI API không?
+
+Không. Đây là **fallback wrapper**, không phải pure mock. `DemoEngine` khởi tạo `MultiAgentEngine` và ưu tiên chạy luồng thật. Chỉ khi luồng thật ném exception mới trả canned response theo keyword intent.
+
+Vì vậy khi bảo vệ nên nói: `ENGINE=demo` là chế độ demo-safe để giảm nguy cơ lỗi quota/provider, còn unit test mới dùng mock deterministic bằng `FakeLLM`.
+
+### PHP mock AI Python như thế nào trong test?
+
+Repo hiện **không có một fake FastAPI HTTP server riêng** để PHP gọi vào trong unit test. Test PHP hiện có `tests/chat_proxy_helpers_test.php`, tập trung kiểm tra boundary trước khi forward:
+
+- payload chỉ giữ field cho phép;
+- `session_id` được cast sang int;
+- `user_id` lấy từ authenticated session, không lấy từ client;
+- field lạ bị loại;
+- kiểm tra CSRF helper.
+
+Khi test end-to-end PHP ↔ Python, hệ thống dùng `AI_SERVICE_URL` trỏ tới AI service thật/local và có thể bật `ENGINE=demo` để giảm phụ thuộc provider.
+
+### Nếu hội đồng hỏi “mock endpoint AI mà không gọi provider thật” thì trả lời sao?
+
+Câu trả lời chuẩn theo code hiện tại:
+
+> Ở tầng Python, em mock tại dependency/LLM layer bằng `FakeLLM` và FastAPI `dependency_overrides`, nên endpoint `/chat/send` vẫn được test thật nhưng không gọi DeepSeek/Gemini. Ở tầng PHP, repo hiện kiểm thử payload/proxy helper; chưa xây một HTTP stub server riêng. Khi demo tích hợp, em dùng `ENGINE=demo` hoặc AI service local.
+
+Không nên nói project đã có WireMock/MockServer/fake HTTP service vì code hiện không có.
+
+### Nếu DeepSeek lỗi thì hệ thống có tự chuyển sang Gemini không?
+
+Không tự động. `build_llm_client()` chọn provider theo cấu hình. `DeepSeekClient.generate()` và `GeminiClient.generate()` hiện retry cùng provider một lần sau khoảng nghỉ, nhưng không có cross-provider failover DeepSeek → Gemini.
+
+Nếu `ENGINE=demo`, exception sau đó có thể được `DemoEngine` bắt và trả canned response. Nếu `ENGINE=multiagent`, lỗi provider vẫn có thể làm request thất bại.
+
+Dẫn chứng: `ai-service/app/llm.py`, `ai-service/app/engines/demo.py`.
+
+### Hệ thống chọn Baseline, Demo hay Multi-agent ở đâu?
+
+Trong `ai-service/app/deps.py`:
+
+- `ENGINE=baseline` → `BaselineEngine`
+- `ENGINE=demo` → `DemoEngine`
+- giá trị khác/default → `MultiAgentEngine`
+
+Điểm này giúp cùng một API contract `/chat/send` nhưng thay engine phía sau mà frontend/PHP không cần đổi.
+
+### Vì sao FastAPI dùng dependency injection cho engine?
+
+`engine=Depends(deps_mod.get_engine)` giúp tách HTTP API khỏi implementation AI. Production inject engine theo config; test có thể override dependency bằng fake engine.
+
+Đây là lý do `test_chat_api.py` có thể test routing/JSON contract mà không cần LLM thật hoặc MySQL thật.
+
+### Khi AI service không kết nối được thì web xử lý thế nào?
+
+`api/chat/send.php` dùng cURL timeout 30 giây. Nếu `curl_exec()` thất bại, PHP trả HTTP `502` cùng fallback message `Hệ thống chat đang bận...`.
+
+Ở browser, `send()` có `try/catch`; nếu fetch/JSON lỗi thì widget hiển thị `Không kết nối được, thử lại sau nhé.`.
+
+Đây là graceful degradation ở hai lớp: server proxy và UI.
+
+### Chat hiện có streaming/WebSocket không?
+
+Không. Luồng gửi message là synchronous HTTP request/response. Admin reply được widget phát hiện bằng polling history mỗi 4 giây.
+
+Nếu hội đồng hỏi hướng nâng cấp: có thể dùng SSE/WebSocket để stream token và push human-agent reply realtime, nhưng đó chưa phải implementation hiện tại.
+
+Dẫn chứng: `gau-chat-widget.js` - `setInterval(poll, 4000)`.
+
+---
+
+## H. Câu hỏi phản biện theo luồng codebase
+
+### Một request `/chat/send` được xử lý bên Python theo thứ tự nào?
+
+1. FastAPI middleware kiểm tra rate limit.
+2. Pydantic parse `ChatSendRequest`.
+3. `_verify_user_identity()` xác minh HMAC từ PHP nếu user đăng nhập.
+4. `chat_repo.get_or_create_session()` lấy/tạo session.
+5. Đọc history và lưu message của customer.
+6. Gọi `engine.handle(history, message, context)`.
+7. Engine chạy graph hoặc baseline/demo.
+8. Lưu bot reply, metadata, intent và trạng thái handoff.
+9. Trả `session_id`, `reply`, `handoff` cho PHP.
+
+Dẫn chứng chính: `ai-service/app/main.py`, `ai-service/app/api/chat.py`.
+
+### Multi-agent graph chạy theo flow nào?
+
+Entry point là `normalize`, sau đó `router`. Router chia request thành bốn nhóm:
+
+- retrieval;
+- action;
+- chitchat;
+- handoff.
+
+Retrieval có thể đi qua `rewrite` rồi quay lại retrieval khi `needs_retry=true`; các nhánh cuối cùng đều hội tụ tại `aggregate` rồi `END`.
+
+Dẫn chứng: `ai-service/app/engines/multiagent/graph.py` - `build_graph()`.
+
+### Retrieval retry tối đa bao nhiêu lần?
+
+`after_retrieval()` chỉ chuyển sang `rewrite` khi `retry_count < 2`. Mỗi lần rewrite tăng `retry_count` thêm 1. Vì vậy graph không retry vô hạn.
+
+Điểm thiết kế: giới hạn vòng lặp để kiểm soát latency/cost và sau đó aggregate/handoff theo tín hiệu của retrieval node.
+
+### Vì sao `order_create` và `custom_cake_quote` được “pin intent”?
+
+Đây là hai flow multi-turn. Khi người dùng đang nhập dở đơn hoặc yêu cầu bánh custom, câu tiếp theo như “2 cái”, “quận 7”, “thứ bảy” rất khó phân loại độc lập.
+
+`MultiAgentEngine.handle()` đọc metadata session; nếu draft đang mở thì gắn trước intent `order_create` hoặc `custom_cake_quote` với confidence 1.0. Router giữ nguyên các `PINNED_INTENTS` cho tới khi flow hoàn tất hoặc user dùng từ khóa hủy/dừng.
+
+Dẫn chứng: `graph.py` - `PINNED_INTENTS`, `_open_draft()`, `_open_custom_quote()`, `_has_exit_word()`.
+
+### History hội thoại được lưu ở frontend hay backend?
+
+Cả hai có state khác nhau:
+
+- Frontend chỉ giữ `guest_token` và `session_id` trong localStorage để reconnect.
+- Nội dung message chính được backend lưu trong `chat_sessions`/`chat_messages` ở MySQL.
+
+Khi reload/trang khác, widget gọi `history.php`, render lại lịch sử và tiếp tục session cũ.
+
+### Tại sao không lưu toàn bộ history trong localStorage?
+
+Vì localStorage nằm ở client, dễ bị sửa/xóa và không phù hợp làm nguồn sự thật cho handoff/admin/audit. Backend cần history chung để AI lấy context và để nhân viên CSKH xem cùng một cuộc hội thoại.
+
+LocalStorage chỉ giữ khóa nhận diện session phía browser.
+
+### Khi admin trả lời, khách nhận message bằng cách nào?
+
+Widget gọi `poll()` mỗi 4 giây vào `history.php`. Nó chỉ render thêm message mới có `sender === 'agent'` và `id > lastMsgId`.
+
+Vì vậy human handoff hiện hoạt động theo polling, không cần WebSocket.
+
+Dẫn chứng: `assets/js/gau-chat-widget.js` - `poll()`.
+
+### FastAPI rate limit đang hoạt động thế nào?
+
+Middleware trong `app/main.py` giới hạn `/chat/send` ở mức 20 request/60 giây theo ưu tiên key:
+
+1. `session_id`;
+2. `guest_token`;
+3. IP (`x-forwarded-for` hoặc client IP).
+
+State rate limit nằm trong memory của process Python.
+
+### Hạn chế của rate limit hiện tại là gì?
+
+Vì state là dictionary trong memory, nó không chia sẻ giữa nhiều worker/instance và bị reset khi process restart. Nếu scale ngang production, nên chuyển sang Redis hoặc rate limiter ở reverse proxy/API gateway.
+
+Đây là câu trả lời tốt nếu hội đồng hỏi “production scale thì sao?”.
+
+### CORS có vai trò gì nếu browser đã gọi PHP proxy?
+
+Đối với widget website chính, browser gọi cùng origin PHP nên CORS của FastAPI không phải lớp chính của request đó. Tuy nhiên AI service vẫn có CORS config để kiểm soát trường hợp client khác cần gọi trực tiếp và để deployment không mặc định mở origin không cần thiết.
+
+Trong production, `CORS_ORIGINS` được cấu hình theo origin website.
+
+### Vì sao có cả HMAC user identity và HMAC admin bypass?
+
+Hai header giải quyết hai trust boundary khác nhau:
+
+- `X-User-Identity`: chứng minh request thuộc user đang đăng nhập ở PHP.
+- `X-Admin-Bypass`: chứng minh request proxy từ luồng admin hợp lệ có quyền xem/điều khiển session CSKH.
+
+Cả hai dùng timestamp + HMAC để tránh client tự giả mạo và giảm replay window.
+
+### Nếu client tự gửi `user_id=1` tới FastAPI thì sao?
+
+`chat_send()` không dùng `req.user_id` làm danh tính tin cậy. Nó gọi `_verify_user_identity(x_user_identity)` và dùng kết quả đó làm `trusted_uid`. Không có header hợp lệ thì request được xử lý như guest.
+
+Đây là fix quan trọng chống IDOR/spoof user qua body.
+
+### Tại sao PHP proxy lọc lại payload thay vì forward nguyên JSON?
+
+`chat_build_forward_payload()` chỉ tạo payload mới từ các field cho phép. Nó loại field lạ và lấy `user_id` từ session đã xác thực.
+
+Test `tests/chat_proxy_helpers_test.php` còn kiểm tra trực tiếp tình huống client gửi `user_id=999` và field `evil`; output vẫn dùng authenticated user id và bỏ field lạ.
+
+### DB chat và DB nghiệp vụ có transaction giống nhau không?
+
+Không phải mọi thao tác đều cùng một transaction xuyên PHP và Python. Chat session/message được quản lý bên Python repository. Nghiệp vụ tạo đơn được đóng gói trong transaction của PHP internal order API.
+
+Không có distributed transaction giữa hai service; thay vào đó hệ thống phân boundary để mỗi nghiệp vụ quan trọng có transaction local rõ ràng.
+
+### Nếu Python DB unavailable thì test API vẫn chạy được vì sao?
+
+Trong test, `EngineDeps` có thể dùng `conn_factory=lambda: None`. `chat_send()` khi không có connection vẫn gọi engine và trả response, với `session_id=0`; history trả danh sách rỗng.
+
+Đây là kỹ thuật test isolation, không phải mô tả rằng production luôn bỏ qua lỗi DB.
+
+Dẫn chứng: `ai-service/tests/test_chat_api.py`.
+
+### ChromaDB mất dữ liệu khi container restart thì sao?
+
+`app/main.py` có startup hook `_auto_reindex_if_empty()`. Nếu collection `products` trống, service best-effort rebuild index từ nguồn dữ liệu.
+
+Trong Docker Compose local còn mount volume `ai_chroma_data`; còn free-tier deployment không có persistent disk thì startup reindex là cơ chế phục hồi.
+
+### Vì sao auto-reindex được viết “best-effort”?
+
+Startup AI service không nên fail hoàn toàn chỉ vì reindex lỗi tạm thời. Hook bắt exception và log `auto-reindex skipped`; health endpoint vẫn có thể phản ánh số product indexed qua `_safe_count()`.
+
+Trade-off: service lên được nhưng retrieval có thể suy giảm cho tới khi index được phục hồi.
+
+### LLM response có được trả thẳng cho người dùng không?
+
+Không phải mọi nhánh đều đơn giản “prompt → text”. Multi-agent có router, retrieval/action/handoff và aggregate. Với retrieval, citation được lọc theo tài liệu đã lấy; với action, response có thể chứa `products`, `order` hoặc type đặc biệt.
+
+API chuẩn hóa kết quả bằng `EngineReply`, sau đó `chat_send()` lưu metadata và trả JSON cho widget.
+
+### Vì sao frontend không cần biết đang chạy Baseline hay Multi-agent?
+
+Vì cả các engine đều implement contract `handle(history, user_message, context) -> EngineReply`, còn FastAPI giữ contract HTTP cố định.
+
+Đây là abstraction quan trọng: thay engine phục vụ nghiên cứu/evaluation mà không sửa PHP và JavaScript.
+
+### Nếu muốn thay DeepSeek bằng provider khác thì sửa chỗ nào?
+
+Thiết kế hiện tại đã có `LLMClient` protocol và `build_llm_client(settings)`. Để thêm provider mới, nên tạo client mới implement `generate(system, user)` rồi mở rộng factory theo config.
+
+Phần router/graph/retrieval không nên phụ thuộc trực tiếp SDK của provider.
+
+### Điểm coupling lớn nhất giữa PHP và Python là gì?
+
+Các coupling chính là:
+
+- HTTP contract của chat/admin/internal order API;
+- HMAC secret/header format;
+- schema MySQL dùng chung;
+- một số tên bảng/field nghiệp vụ;
+- URL cấu hình qua environment.
+
+Do đó nếu đổi schema hoặc API contract cần version/migration đồng bộ hai service.
+
+### Nếu cần scale hệ thống thì scale phần nào độc lập được?
+
+AI service có thể scale độc lập với PHP vì giao tiếp qua HTTP. Tuy nhiên trước khi scale nhiều instance AI cần xử lý các state đang nằm local như in-memory rate limit và đảm bảo Chroma/index dùng storage phù hợp hoặc được rebuild/replicate nhất quán.
+
+PHP và MySQL cũng có bottleneck riêng; tách service giúp nhìn rõ từng điểm cần scale thay vì tăng tài nguyên cho một monolith duy nhất.
+
+### Câu trả lời 30 giây khi hội đồng hỏi “toàn hệ thống kết nối ra sao?”
+
+> Website chính viết bằng PHP nhận request từ người dùng. Chat widget JavaScript không gọi LLM trực tiếp mà gọi PHP proxy. PHP lấy session đăng nhập, ký danh tính bằng HMAC rồi forward request qua HTTP tới FastAPI Python. FastAPI quản lý chat session, chạy LangGraph để router sang retrieval, action, chitchat hoặc handoff; retrieval dùng ChromaDB/BM25 và LLM, còn nghiệp vụ nhạy cảm như tạo đơn được gọi ngược về internal PHP API để PHP transaction với MySQL. Kết quả quay lại FastAPI → PHP → widget. Khi chuyển người thật, admin làm việc trên cùng dữ liệu chat và widget poll history để nhận câu trả lời của nhân viên.
+
+Đây là câu tóm tắt nên học thuộc vì bao quát đúng boundary của codebase hiện tại.
